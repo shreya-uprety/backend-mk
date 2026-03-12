@@ -1,0 +1,75 @@
+{
+  "scenario_id": "sc_08_real_patient_masld",
+  "patient_demographics": { "age": 54, "sex": "male" },
+  "referral_summary": {
+    "symptoms": ["asymptomatic - elevated liver enzymes found on routine screening", "mild afternoon fatigue"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 122,
+    "AST_IU_L": 84,
+    "ALP_IU_L": 35,
+    "Bilirubin_umol_L": 15,
+    "Albumin_g_L": 42,
+    "GGT_IU_L": 155
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 4,
+    "bmi": 34.1,
+    "known_liver_disease": false,
+    "comorbidities": ["Type 2 Diabetes", "Hypertension", "Obesity"]
+  },
+  "risk_factors": {
+    "alcohol_risk": {
+      "units_weekly": 4,
+      "level": "low",
+      "exceeds_guidelines": false
+    },
+    "bmi_category": {
+      "value": 34.1,
+      "category": "obese"
+    },
+    "diabetes_status": {
+      "present": true,
+      "type": "type_2"
+    },
+    "cancer_history": {
+      "present": false,
+      "types": [],
+      "metastasis_risk": "none"
+    },
+    "symptom_severity": {
+      "has_red_flag_symptoms": false,
+      "jaundice": false,
+      "weight_loss": false,
+      "abdominal_mass": false,
+      "dark_urine_pale_stools": false,
+      "pain_severity": "none",
+      "symptom_list": ["asymptomatic - elevated liver enzymes found on routine screening", "mild afternoon fatigue"]
+    },
+    "liver_disease_history": {
+      "known_disease": false,
+      "details": "none"
+    }
+  },
+  "derived_metrics": {
+    "r_factor": {
+      "value": 11.3,
+      "formula": "(ALT/ULN) / (ALP/ULN) = (122/40) / (35/130) = 3.05 / 0.27",
+      "zone": "hepatitic"
+    },
+    "uln_multiples": {
+      "ALT": 3.05,
+      "AST": 2.1,
+      "ALP": 0.27,
+      "Bilirubin": 0.75,
+      "GGT": 3.1
+    },
+    "ast_alt_ratio": {
+      "value": 0.69,
+      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
+    },
+    "albumin_status": "normal",
+    "overall_lab_severity": "moderately_elevated"
+  }
+}

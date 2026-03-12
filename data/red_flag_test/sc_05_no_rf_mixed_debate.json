@@ -1,0 +1,75 @@
+{
+  "scenario_id": "sc_05_no_rf_mixed_debate",
+  "patient_demographics": { "age": 51, "sex": "male" },
+  "referral_summary": {
+    "symptoms": ["none", "routine diabetic checkup"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 140,
+    "AST_IU_L": 110,
+    "ALP_IU_L": 210,
+    "Bilirubin_umol_L": 30,
+    "Albumin_g_L": 39,
+    "GGT_IU_L": 180
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 18,
+    "bmi": 36.5,
+    "known_liver_disease": false,
+    "comorbidities": ["Type 2 Diabetes", "Hypertension"]
+  },
+  "risk_factors": {
+    "alcohol_risk": {
+      "units_weekly": 18,
+      "level": "moderate",
+      "exceeds_guidelines": true
+    },
+    "bmi_category": {
+      "value": 36.5,
+      "category": "obese"
+    },
+    "diabetes_status": {
+      "present": true,
+      "type": "type_2"
+    },
+    "cancer_history": {
+      "present": false,
+      "types": [],
+      "metastasis_risk": "none"
+    },
+    "symptom_severity": {
+      "has_red_flag_symptoms": false,
+      "jaundice": false,
+      "weight_loss": false,
+      "abdominal_mass": false,
+      "dark_urine_pale_stools": false,
+      "pain_severity": "none",
+      "symptom_list": ["routine diabetic checkup"]
+    },
+    "liver_disease_history": {
+      "known_disease": false,
+      "details": "none"
+    }
+  },
+  "derived_metrics": {
+    "r_factor": {
+      "value": 2.16,
+      "formula": "(ALT/ULN) / (ALP/ULN) = (140/40) / (210/130) = 3.5 / 1.62",
+      "zone": "mixed"
+    },
+    "uln_multiples": {
+      "ALT": 3.5,
+      "AST": 2.75,
+      "ALP": 1.62,
+      "Bilirubin": 1.5,
+      "GGT": 3.6
+    },
+    "ast_alt_ratio": {
+      "value": 0.79,
+      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
+    },
+    "albumin_status": "low_normal",
+    "overall_lab_severity": "moderately_elevated"
+  }
+}

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.api.routes import health, pipeline
+from app.api.routes import health, pipeline, decisions
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -23,8 +23,11 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(pipeline.router)
+app.include_router(decisions.router)
 
 static_dir = Path(__file__).resolve().parent.parent / "static"
+data_dir = Path(__file__).resolve().parent.parent / "data"
+app.mount("/data", StaticFiles(directory=str(data_dir)), name="data")
 app.mount("/static", StaticFiles(directory=str(static_dir), html=True), name="static")
 
 

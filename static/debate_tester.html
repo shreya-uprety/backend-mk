@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedForce - AI Debate Loop Tester</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f0f2f5;
+        color: #333;
+        min-height: 100vh;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+    .header-badge {
+        background: rgba(255,255,255,0.15);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 16px auto;
+        padding: 0 16px;
+    }
+
+    /* Tab navigation */
+    .tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+    }
+    .tab {
+        padding: 10px 20px;
+        background: white;
+        border: 1px solid #ddd;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.2s;
+    }
+    .tab.active {
+        background: #fff;
+        color: #cc0000;
+        border-color: #cc0000;
+        border-bottom: 2px solid white;
+        position: relative;
+        top: 1px;
+    }
+    .tab.active.pattern { color: #0044cc; border-color: #0044cc; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Layout */
+    .panel-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .card-header {
+        padding: 10px 14px;
+        font-weight: 700;
+        font-size: 12px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-header.red { background: #fff5f5; color: #cc0000; }
+    .card-header.blue { background: #f0f4ff; color: #0044cc; }
+    .card-header.green { background: #f0faf0; color: #006600; }
+    .card-header.purple { background: #f8f0ff; color: #6600cc; }
+    .card-body { padding: 12px 14px; }
+
+    /* Textarea */
+    textarea {
+        width: 100%;
+        min-height: 320px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 11.5px;
+        line-height: 1.5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        resize: vertical;
+        background: #fafbfc;
+    }
+    textarea:focus { outline: none; border-color: #4a90d9; background: #fff; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+    .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex: 1;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-red { background: linear-gradient(135deg, #cc0000, #aa0000); color: white; }
+    .btn-red:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-blue { background: linear-gradient(135deg, #0044cc, #0033aa); color: white; }
+    .btn-blue:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-outline {
+        background: white;
+        border: 1px solid #ddd;
+        color: #666;
+    }
+    .btn-outline:hover { background: #f5f5f5; }
+
+    /* Scenario pills */
+    .scenario-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+    .pill {
+        padding: 4px 10px;
+        background: #f0f0f0;
+        border-radius: 12px;
+        font-size: 10px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        transition: all 0.15s;
+    }
+    .pill:hover { background: #e0e0e0; }
+    .pill.active { background: #0044cc; color: white; border-color: #0044cc; }
+
+    /* Config */
+    .config-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .config-row label { font-size: 11px; color: #666; min-width: 60px; }
+    .config-row input {
+        flex: 1;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 11px;
+        font-family: monospace;
+    }
+
+    /* Status */
+    .status {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        margin-top: 8px;
+        display: none;
+    }
+    .status.loading { display: block; background: #fff8e1; color: #e37400; }
+    .status.success { display: block; background: #e6f4ea; color: #137333; }
+    .status.error { display: block; background: #fce8e6; color: #c5221f; }
+
+    /* Response display */
+    .response-area { min-height: 320px; }
+
+    /* Decision banner */
+    .decision-banner {
+        padding: 14px 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        display: none;
+    }
+    .decision-banner.show { display: block; }
+    .decision-banner.red-flag {
+        background: linear-gradient(135deg, #ffeaea, #ffd4d4);
+        border: 1px solid #ff9999;
+    }
+    .decision-banner.no-flag {
+        background: linear-gradient(135deg, #eafff0, #d4ffe0);
+        border: 1px solid #66cc88;
+    }
+    .decision-banner.cholestatic {
+        background: linear-gradient(135deg, #fff5e0, #ffeccc);
+        border: 1px solid #ffbb55;
+    }
+    .decision-banner.hepatitic {
+        background: linear-gradient(135deg, #ffe0e0, #ffcccc);
+        border: 1px solid #ff8888;
+    }
+    .decision-banner.mixed {
+        background: linear-gradient(135deg, #e8e0ff, #d8ccff);
+        border: 1px solid #aa88ff;
+    }
+    .decision-title { font-size: 16px; font-weight: 800; }
+    .decision-sub { font-size: 11px; margin-top: 4px; opacity: 0.8; }
+    .confidence-bar {
+        height: 6px;
+        background: #e0e0e0;
+        border-radius: 3px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    .confidence-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s;
+    }
+
+    /* Agent cards */
+    .agent-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        overflow: hidden;
+    }
+    .agent-header {
+        padding: 8px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+    .agent-header.safety { background: #fff5f5; color: #cc0000; border-left: 3px solid #cc0000; }
+    .agent-header.guideline { background: #f0f4ff; color: #0044cc; border-left: 3px solid #0044cc; }
+    .agent-header.statistician { background: #f0fff0; color: #006600; border-left: 3px solid #006600; }
+    .agent-verdict {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+    .verdict-yes { background: #ffd4d4; color: #cc0000; }
+    .verdict-no { background: #d4ffd4; color: #006600; }
+    .verdict-cholestatic { background: #fff0d4; color: #996600; }
+    .verdict-hepatitic { background: #ffd4d4; color: #cc0000; }
+    .verdict-mixed { background: #e0d4ff; color: #6600cc; }
+    .agent-body {
+        padding: 8px 12px;
+        font-size: 11px;
+        line-height: 1.6;
+        border-top: 1px solid #f0f0f0;
+        display: none;
+    }
+    .agent-body.open { display: block; }
+    .agent-body p { margin-bottom: 6px; }
+    .factor-tag {
+        display: inline-block;
+        padding: 1px 6px;
+        background: #f0f0f0;
+        border-radius: 3px;
+        font-size: 10px;
+        margin: 1px 2px;
+    }
+
+    /* Debate section */
+    .debate-section {
+        margin-bottom: 10px;
+    }
+    .debate-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #999;
+        margin-bottom: 4px;
+    }
+    .debate-item {
+        padding: 4px 0 4px 12px;
+        font-size: 11px;
+        border-left: 2px solid #ddd;
+        margin-bottom: 3px;
+        line-height: 1.5;
+    }
+    .debate-item.pro { border-left-color: #cc0000; }
+    .debate-item.con { border-left-color: #006600; }
+    .debate-item.contention { border-left-color: #cc6600; }
+
+    .synthesis-box {
+        background: #f8f8ff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 11px;
+        line-height: 1.7;
+        margin-top: 8px;
+    }
+    .synthesis-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #6600cc;
+        margin-bottom: 4px;
+    }
+
+    /* Vote tally */
+    .vote-tally {
+        display: flex;
+        gap: 8px;
+        margin: 8px 0;
+    }
+    .vote-chip {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* Raw JSON toggle */
+    .raw-toggle {
+        font-size: 11px;
+        color: #0066cc;
+        cursor: pointer;
+        margin-top: 8px;
+        display: inline-block;
+    }
+    .raw-json {
+        display: none;
+        margin-top: 8px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 12px;
+        border-radius: 6px;
+        font-family: 'Consolas', monospace;
+        font-size: 10.5px;
+        max-height: 400px;
+        overflow: auto;
+        white-space: pre-wrap;
+    }
+    .raw-json.show { display: block; }
+
+    /* R-factor box */
+    .r-factor-box {
+        background: #f8f0ff;
+        border: 1px solid #d8ccff;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+    .r-factor-value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #6600cc;
+    }
+    .r-factor-formula {
+        font-size: 10px;
+        font-family: monospace;
+        color: #888;
+        margin-top: 2px;
+    }
+    .r-factor-interp {
+        font-size: 11px;
+        margin-top: 4px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+        .panel-grid { grid-template-columns: 1fr; }
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>MedForce Milton Key — AI Debate Loop Tester</h1>
+        <p>Multi-Agent Clinical Decision System — Module 0 (Risk Factors) + Module A (Red Flag) + Module B (Pattern Analysis)</p>
+    </div>
+    <span class="header-badge">v1.0 PROTOTYPE</span>
+</div>
+
+<div class="container">
+    <!-- Config -->
+    <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header" style="background: #f8f8f8; color: #333;">API Configuration</div>
+        <div class="card-body">
+            <div class="config-row">
+                <label>Base URL:</label>
+                <input type="text" id="base-url" value="http://localhost:8000">
+            </div>
+            <div style="display:flex;gap:16px;">
+                <div class="config-row" style="flex:1;">
+                    <label>Extract:</label>
+                    <input type="text" id="m0-endpoint" value="/api/v1/decisions/extract-risk-factors">
+                </div>
+                <div class="config-row" style="flex:1;">
+                    <label>Red Flag:</label>
+                    <input type="text" id="rf-endpoint" value="/api/v1/decisions/red-flag-check">
+                </div>
+                <div class="config-row" style="flex:1;">
+                    <label>Pattern:</label>
+                    <input type="text" id="pa-endpoint" value="/api/v1/decisions/pattern-analysis">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick load scenarios -->
+    <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header" style="background: #f8f8f8; color: #333;">
+            Quick Load Scenario
+            <span style="font-weight:normal;font-size:10px;color:#999;">Click to populate input JSON</span>
+        </div>
+        <div class="card-body">
+            <div class="scenario-pills" id="scenario-pills"></div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('rf')">Module A: Red Flag Determinator</div>
+        <div class="tab pattern" onclick="switchTab('pa')">Module B: LFT Pattern Analyzer</div>
+    </div>
+
+    <!-- Tab A: Red Flag -->
+    <div class="tab-content active" id="tab-rf">
+        <div class="panel-grid">
+            <div>
+                <div class="card">
+                    <div class="card-header red">Request Payload</div>
+                    <div class="card-body">
+                        <textarea id="rf-input" placeholder="Paste patient JSON here..."></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-red" id="rf-send" onclick="sendRequest('rf')">Analyze Red Flags</button>
+                            <button class="btn btn-outline" onclick="clearPanel('rf')">Clear</button>
+                        </div>
+                        <div class="status" id="rf-status"></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-header green">Response — Debate Result</div>
+                    <div class="card-body response-area" id="rf-response">
+                        <div style="text-align:center;padding:60px 20px;color:#ccc;">
+                            <div style="font-size:36px;">?</div>
+                            <p style="font-size:12px;margin-top:8px;">Send a request to see the debate result</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab B: Pattern Analysis -->
+    <div class="tab-content" id="tab-pa">
+        <div class="panel-grid">
+            <div>
+                <div class="card">
+                    <div class="card-header blue">Request Payload</div>
+                    <div class="card-body">
+                        <textarea id="pa-input" placeholder="Paste patient JSON here..."></textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-blue" id="pa-send" onclick="sendRequest('pa')">Analyze LFT Pattern</button>
+                            <button class="btn btn-outline" onclick="clearPanel('pa')">Clear</button>
+                        </div>
+                        <div class="status" id="pa-status"></div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-header purple">Response — Debate Result</div>
+                    <div class="card-body response-area" id="pa-response">
+                        <div style="text-align:center;padding:60px 20px;color:#ccc;">
+                            <div style="font-size:36px;">?</div>
+                            <p style="font-size:12px;margin-top:8px;">Send a request to see the debate result</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Workflow Runner -->
+    <div class="card" style="margin-top: 16px;">
+        <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #0f3460); color: white;">
+            Full Workflow: Extract Risk Factors -> Red Flag -> Pattern Analysis
+            <button class="btn" style="padding:6px 14px;font-size:11px;background:rgba(255,255,255,0.2);color:white;" onclick="runFullWorkflow()">Run Full Pipeline</button>
+        </div>
+        <div class="card-body">
+            <div id="workflow-progress" style="display:none;margin-bottom:10px;">
+                <div style="display:flex;gap:4px;align-items:center;font-size:11px;">
+                    <span class="wf-step" id="wf-step-0" style="padding:3px 10px;border-radius:10px;background:#eee;">Module 0: Extract</span>
+                    <span style="color:#ccc;">-></span>
+                    <span class="wf-step" id="wf-step-1" style="padding:3px 10px;border-radius:10px;background:#eee;">Module A: Red Flag</span>
+                    <span style="color:#ccc;">-></span>
+                    <span class="wf-step" id="wf-step-2" style="padding:3px 10px;border-radius:10px;background:#eee;">Module B: Pattern</span>
+                </div>
+            </div>
+            <div class="status" id="workflow-status"></div>
+            <div id="workflow-results" style="margin-top:8px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Scenario Data ──
+const SCENARIOS = {
+    "sc_01": { label: "SC01: Critical Red Flag", file: "sc_01_critical_redflag.json", color: "#cc0000" },
+    "sc_02": { label: "SC02: Soft Red Flag (Pain)", file: "sc_02_soft_redflag_pain.json", color: "#e67300" },
+    "sc_03": { label: "SC03: Clear Cholestatic", file: "sc_03_no_rf_clear_cholestatic.json", color: "#0066cc" },
+    "sc_04": { label: "SC04: Clear Hepatitic", file: "sc_04_no_rf_clear_hepatitic.json", color: "#cc6600" },
+    "sc_05": { label: "SC05: Mixed Debate", file: "sc_05_no_rf_mixed_debate.json", color: "#6600cc" },
+    "sc_06": { label: "SC06: Isolated Bilirubin", file: "sc_06_edge_isolated_bilirubin.json", color: "#009999" },
+    "sc_07": { label: "SC07: Cancer History", file: "sc_07_contextual_redflag.json", color: "#990066" },
+    "sc_08": { label: "SC08: Real Patient (MASLD)", file: "sc_08_real_patient_masld.json", color: "#336600" },
+};
+
+const scenarioData = {};
+
+// ── Init: Load all scenario JSONs ──
+async function loadScenarios() {
+    const pillsEl = document.getElementById('scenario-pills');
+    for (const [key, sc] of Object.entries(SCENARIOS)) {
+        // Try loading from backend data folder
+        try {
+            const res = await fetch(`/data/red_flag_test/${sc.file}`);
+            if (res.ok) {
+                scenarioData[key] = await res.json();
+            }
+        } catch (e) { /* ignore */ }
+
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.textContent = sc.label;
+        pill.style.borderColor = sc.color;
+        pill.onclick = () => loadScenario(key, pill);
+        pillsEl.appendChild(pill);
+    }
+}
+
+function loadScenario(key, pillEl) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    if (pillEl) pillEl.classList.add('active');
+
+    const data = scenarioData[key];
+    if (data) {
+        const json = JSON.stringify(data, null, 2);
+        document.getElementById('rf-input').value = json;
+        document.getElementById('pa-input').value = json;
+    } else {
+        alert('Scenario data not loaded. Enter JSON manually or ensure the server is running.');
+    }
+}
+
+// ── Tab switching ──
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    if (tab === 'rf') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('tab-rf').classList.add('active');
+    } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tab-pa').classList.add('active');
+    }
+}
+
+// ── Send request ──
+async function sendRequest(module) {
+    const baseUrl = document.getElementById('base-url').value;
+    const endpoint = module === 'rf'
+        ? document.getElementById('rf-endpoint').value
+        : document.getElementById('pa-endpoint').value;
+    const inputEl = document.getElementById(`${module}-input`);
+    const statusEl = document.getElementById(`${module}-status`);
+    const responseEl = document.getElementById(`${module}-response`);
+    const btnEl = document.getElementById(`${module}-send`);
+
+    let payload;
+    try {
+        payload = JSON.parse(inputEl.value);
+    } catch (e) {
+        setStatus(statusEl, 'error', `Invalid JSON: ${e.message}`);
+        return;
+    }
+
+    setStatus(statusEl, 'loading', 'Sending to debate engine... Agents are analyzing...');
+    btnEl.disabled = true;
+
+    try {
+        const res = await fetch(`${baseUrl}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            const msg = data.detail || JSON.stringify(data);
+            setStatus(statusEl, 'error', `Error ${res.status}: ${msg}`);
+            responseEl.innerHTML = `<pre style="color:#cc0000;font-size:11px;white-space:pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
+            btnEl.disabled = false;
+            return;
+        }
+
+        const timeMs = data.processing_metadata?.processing_time_ms || 0;
+        const shortCircuit = data.processing_metadata?.short_circuited ? ' (unanimous — synthesizer skipped!)' : '';
+        setStatus(statusEl, 'success', `Debate complete in ${(timeMs/1000).toFixed(1)}s! ${data.processing_metadata?.total_agents || 3} agents participated.${shortCircuit}`);
+
+        if (module === 'rf') {
+            renderRedFlagResponse(responseEl, data);
+        } else {
+            renderPatternResponse(responseEl, data);
+        }
+
+    } catch (err) {
+        setStatus(statusEl, 'error', `Network error: ${err.message}`);
+    }
+
+    btnEl.disabled = false;
+}
+
+// ── Render Red Flag Response ──
+function renderRedFlagResponse(el, data) {
+    const isRedFlag = data.final_decision === 'RED_FLAG_PRESENT';
+    const ds = data.debate_summary || {};
+    const conf = (data.confidence_score * 100).toFixed(0);
+
+    let html = `
+        <div class="decision-banner show ${isRedFlag ? 'red-flag' : 'no-flag'}">
+            <div class="decision-title">${isRedFlag ? 'RED FLAG PRESENT' : 'NO RED FLAGS'}</div>
+            <div class="decision-sub">${data.recommended_action || ''}</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width:${conf}%;background:${isRedFlag ? '#cc0000' : '#22aa44'};"></div>
+            </div>
+            <div style="font-size:10px;margin-top:3px;color:#888;">Confidence: ${conf}% | Consensus: ${ds.consensus_reached ? 'YES' : 'NO — SPLIT VOTE'}</div>
+        </div>`;
+
+    html += renderVoteTally(ds.vote_tally, 'rf');
+    html += renderAgentPerspectives(ds.agent_perspectives, 'rf');
+    html += renderDebateArguments(ds);
+    html += renderSynthesis(ds.synthesis_rationale);
+    html += renderRawToggle(data, 'rf');
+
+    el.innerHTML = html;
+}
+
+// ── Render Pattern Response ──
+function renderPatternResponse(el, data) {
+    const cls = (data.final_classification || '').toLowerCase();
+    const ds = data.debate_summary || {};
+    const conf = (data.confidence_score * 100).toFixed(0);
+    const rf = data.r_factor || {};
+
+    let html = `
+        <div class="decision-banner show ${cls}">
+            <div class="decision-title">${data.final_classification || 'UNKNOWN'} Pattern</div>
+            <div class="decision-sub">${data.recommended_action || ''}</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width:${conf}%;background:${cls === 'hepatitic' ? '#cc0000' : cls === 'cholestatic' ? '#cc8800' : '#6600cc'};"></div>
+            </div>
+            <div style="font-size:10px;margin-top:3px;color:#888;">Confidence: ${conf}% | Consensus: ${ds.consensus_reached ? 'YES' : 'NO — SPLIT VOTE'}</div>
+        </div>`;
+
+    if (rf.value !== undefined) {
+        html += `
+            <div class="r-factor-box">
+                <div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;">R-Factor</div>
+                <div class="r-factor-value">${rf.value}</div>
+                <div class="r-factor-formula">${rf.formula || ''}</div>
+                <div class="r-factor-interp">${rf.interpretation || ''}</div>
+            </div>`;
+    }
+
+    html += renderVoteTally(ds.vote_tally, 'pa');
+    html += renderAgentPerspectives(ds.agent_perspectives, 'pa');
+    html += renderDebateArguments(ds);
+    html += renderSynthesis(ds.synthesis_rationale);
+    html += renderRawToggle(data, 'pa');
+
+    el.innerHTML = html;
+}
+
+// ── Shared renderers ──
+function renderVoteTally(tally, module) {
+    if (!tally) return '';
+    let html = '<div class="vote-tally">';
+    for (const [label, count] of Object.entries(tally)) {
+        const color = label.includes('red_flag') || label === 'hepatitic' ? '#ffd4d4'
+            : label.includes('no_red') ? '#d4ffd4'
+            : label === 'cholestatic' ? '#fff0d4'
+            : '#e0d4ff';
+        html += `<div class="vote-chip" style="background:${color};">${label.replace(/_/g, ' ')}: ${count}</div>`;
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderAgentPerspectives(perspectives, module) {
+    if (!perspectives || perspectives.length === 0) return '';
+    let html = '';
+    const personaClasses = { 'The Cautious Safety-Net': 'safety', 'The Guideline Adherent': 'guideline', 'The Statistical Analyst': 'statistician' };
+    const verdictClasses_rf = { 'RED_FLAG_PRESENT': 'verdict-yes', 'NO_RED_FLAG': 'verdict-no' };
+    const verdictClasses_pa = { 'CHOLESTATIC': 'verdict-cholestatic', 'HEPATITIC': 'verdict-hepatitic', 'MIXED': 'verdict-mixed' };
+
+    perspectives.forEach((agent, i) => {
+        const pClass = personaClasses[agent.agent_persona] || 'guideline';
+        const verdict = agent.verdict || agent.classification || '';
+        const vClass = module === 'rf'
+            ? (verdictClasses_rf[verdict] || 'verdict-no')
+            : (verdictClasses_pa[verdict] || 'verdict-mixed');
+        const agentConf = ((agent.confidence || 0) * 100).toFixed(0);
+        const uid = `agent-${module}-${i}`;
+
+        html += `
+            <div class="agent-card">
+                <div class="agent-header ${pClass}" onclick="toggleAgent('${uid}')">
+                    <span>${agent.agent_persona} <span style="font-weight:normal;opacity:0.6;">(${agentConf}%)</span></span>
+                    <span class="agent-verdict ${vClass}">${verdict}</span>
+                </div>
+                <div class="agent-body" id="${uid}">
+                    <p>${agent.reasoning || ''}</p>
+                    <div style="margin-top:6px;">
+                        ${(agent.key_factors_cited || []).map(f => `<span class="factor-tag">${f}</span>`).join(' ')}
+                    </div>
+                </div>
+            </div>`;
+    });
+    return html;
+}
+
+function renderDebateArguments(ds) {
+    let html = '';
+
+    if (ds.key_arguments_for_red_flag?.length || ds.key_arguments_for_primary?.length) {
+        const args = ds.key_arguments_for_red_flag || ds.key_arguments_for_primary || [];
+        html += `<div class="debate-section"><div class="debate-label">Arguments FOR</div>`;
+        args.forEach(a => { html += `<div class="debate-item pro">${a}</div>`; });
+        html += '</div>';
+    }
+
+    if (ds.key_arguments_against_red_flag?.length || ds.key_arguments_against_primary?.length) {
+        const args = ds.key_arguments_against_red_flag || ds.key_arguments_against_primary || [];
+        html += `<div class="debate-section"><div class="debate-label">Arguments AGAINST</div>`;
+        args.forEach(a => { html += `<div class="debate-item con">${a}</div>`; });
+        html += '</div>';
+    }
+
+    if (ds.key_contention_points?.length) {
+        html += `<div class="debate-section"><div class="debate-label">Points of Contention</div>`;
+        ds.key_contention_points.forEach(a => { html += `<div class="debate-item contention">${a}</div>`; });
+        html += '</div>';
+    }
+
+    return html;
+}
+
+function renderSynthesis(rationale) {
+    if (!rationale) return '';
+    return `
+        <div class="synthesis-box">
+            <div class="synthesis-label">Synthesizer's Rationale</div>
+            ${rationale}
+        </div>`;
+}
+
+function renderRawToggle(data, module) {
+    const uid = `raw-${module}`;
+    return `
+        <div class="raw-toggle" onclick="document.getElementById('${uid}').classList.toggle('show')">
+            Toggle Raw JSON
+        </div>
+        <div class="raw-json" id="${uid}">${JSON.stringify(data, null, 2)}</div>`;
+}
+
+function toggleAgent(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+// ── Full Workflow ──
+function setWfStep(step, state) {
+    // state: 'pending', 'active', 'done', 'skipped', 'error'
+    const el = document.getElementById(`wf-step-${step}`);
+    if (!el) return;
+    const colors = { pending: '#eee', active: '#fff3cd', done: '#d4edda', skipped: '#e2e3e5', error: '#f8d7da' };
+    const textColors = { pending: '#999', active: '#856404', done: '#155724', skipped: '#666', error: '#721c24' };
+    el.style.background = colors[state] || '#eee';
+    el.style.color = textColors[state] || '#999';
+    if (state === 'active') el.style.fontWeight = '700';
+}
+
+async function runFullWorkflow() {
+    const rfInput = document.getElementById('rf-input').value;
+    if (!rfInput) {
+        alert('Load a scenario first (click a scenario pill and ensure input has JSON).');
+        return;
+    }
+
+    const statusEl = document.getElementById('workflow-status');
+    const resultsEl = document.getElementById('workflow-results');
+    const progressEl = document.getElementById('workflow-progress');
+    const baseUrl = document.getElementById('base-url').value;
+
+    let payload;
+    try {
+        payload = JSON.parse(rfInput);
+    } catch (e) {
+        setStatus(statusEl, 'error', `Invalid JSON: ${e.message}`);
+        return;
+    }
+
+    resultsEl.innerHTML = '';
+    progressEl.style.display = 'block';
+    setWfStep(0, 'pending'); setWfStep(1, 'pending'); setWfStep(2, 'pending');
+
+    const startTime = Date.now();
+
+    try {
+        // ── Step 1: Module 0 — Extract Risk Factors ──
+        setWfStep(0, 'active');
+        setStatus(statusEl, 'loading', 'Step 1/3: Extracting risk factors (deterministic, <1s)...');
+
+        const m0Endpoint = document.getElementById('m0-endpoint').value;
+        const m0Res = await fetch(`${baseUrl}${m0Endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const m0Data = await m0Res.json();
+
+        if (!m0Res.ok) {
+            setWfStep(0, 'error');
+            setStatus(statusEl, 'error', `Risk factor extraction failed: ${m0Data.detail || 'Unknown error'}`);
+            return;
+        }
+
+        setWfStep(0, 'done');
+
+        // Enrich payload with risk factors and derived metrics for downstream modules
+        const enrichedPayload = {
+            ...payload,
+            risk_factors: m0Data.risk_factors,
+            derived_metrics: m0Data.derived_metrics,
+        };
+
+        // Show Module 0 result
+        const completeness = m0Data.completeness || {};
+        const rfactors = m0Data.risk_factors || {};
+        const derivedM = m0Data.derived_metrics || {};
+        const m0Time = m0Data.processing_metadata?.processing_time_ms || 0;
+
+        resultsEl.innerHTML = `<div class="card" style="margin-bottom:12px;">
+            <div class="card-header green">Step 1: Risk Factor Extraction (${m0Time}ms)</div>
+            <div class="card-body" style="font-size:11px;">
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Completeness: <b>${((completeness.score || 0) * 100).toFixed(0)}%</b></span>
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Alcohol: <b>${rfactors.alcohol_risk?.level || '?'}</b></span>
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">BMI: <b>${rfactors.bmi_category?.category || '?'}</b></span>
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Diabetes: <b>${rfactors.diabetes_status?.present ? rfactors.diabetes_status.type : 'none'}</b></span>
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Cancer: <b>${rfactors.cancer_history?.present ? 'YES' : 'none'}</b></span>
+                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Red Flag Symptoms: <b>${rfactors.symptom_severity?.has_red_flag_symptoms ? 'YES' : 'none'}</b></span>
+                </div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">R-factor: <b>${derivedM.r_factor?.value || '?'}</b> (${derivedM.r_factor?.zone || '?'})</span>
+                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Lab Severity: <b>${derivedM.overall_lab_severity || '?'}</b></span>
+                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Albumin: <b>${derivedM.albumin_status || '?'}</b></span>
+                </div>
+                ${(completeness.warnings || []).length > 0 ? '<div style="color:#e37400;margin-top:4px;">' + completeness.warnings.map(w => '&#9888; ' + w).join('<br>') + '</div>' : ''}
+            </div>
+        </div>`;
+
+        // Update input fields with enriched payload
+        const enrichedJson = JSON.stringify(enrichedPayload, null, 2);
+        document.getElementById('rf-input').value = enrichedJson;
+        document.getElementById('pa-input').value = enrichedJson;
+
+        // ── Step 2: Module A — Red Flag Check ──
+        setWfStep(1, 'active');
+        setStatus(statusEl, 'loading', 'Step 2/3: Running Red Flag debate (3 agents analyzing)...');
+
+        const rfEndpoint = document.getElementById('rf-endpoint').value;
+        const rfRes = await fetch(`${baseUrl}${rfEndpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(enrichedPayload),
+        });
+        const rfData = await rfRes.json();
+
+        if (!rfRes.ok) {
+            setWfStep(1, 'error');
+            setStatus(statusEl, 'error', `Red Flag check failed: ${rfData.detail || 'Unknown error'}`);
+            return;
+        }
+
+        setWfStep(1, 'done');
+        const isRedFlag = rfData.final_decision === 'RED_FLAG_PRESENT';
+        const rfTime = rfData.processing_metadata?.processing_time_ms || 0;
+        const rfShortCircuit = rfData.processing_metadata?.short_circuited ? ' (unanimous — synthesizer skipped)' : '';
+
+        resultsEl.innerHTML += `<div class="card" style="margin-bottom:12px;">
+            <div class="card-header red">Step 2: Red Flag Result (${(rfTime/1000).toFixed(1)}s${rfShortCircuit})</div>
+            <div class="card-body">
+                <div class="decision-banner show ${isRedFlag ? 'red-flag' : 'no-flag'}">
+                    <div class="decision-title">${rfData.final_decision}</div>
+                    <div class="decision-sub">Confidence: ${(rfData.confidence_score * 100).toFixed(0)}% | ${rfData.recommended_action}</div>
+                </div>
+            </div>
+        </div>`;
+
+        if (isRedFlag) {
+            setWfStep(2, 'skipped');
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            setStatus(statusEl, 'success', `Red flag detected — urgent pathway. Pattern analysis skipped. Total: ${totalTime}s`);
+            return;
+        }
+
+        // ── Step 3: Module B — Pattern Analysis ──
+        setWfStep(2, 'active');
+        setStatus(statusEl, 'loading', 'Step 3/3: Running LFT Pattern debate (3 agents analyzing)...');
+
+        const paEndpoint = document.getElementById('pa-endpoint').value;
+        const paRes = await fetch(`${baseUrl}${paEndpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(enrichedPayload),
+        });
+        const paData = await paRes.json();
+
+        if (!paRes.ok) {
+            setWfStep(2, 'error');
+            setStatus(statusEl, 'error', `Pattern analysis failed: ${paData.detail || 'Unknown error'}`);
+            return;
+        }
+
+        setWfStep(2, 'done');
+        const cls = (paData.final_classification || '').toLowerCase();
+        const paTime = paData.processing_metadata?.processing_time_ms || 0;
+        const paShortCircuit = paData.processing_metadata?.short_circuited ? ' (unanimous — synthesizer skipped)' : '';
+
+        resultsEl.innerHTML += `<div class="card">
+            <div class="card-header blue">Step 3: Pattern Analysis Result (${(paTime/1000).toFixed(1)}s${paShortCircuit})</div>
+            <div class="card-body">
+                <div class="decision-banner show ${cls}">
+                    <div class="decision-title">${paData.final_classification} Pattern</div>
+                    <div class="decision-sub">Confidence: ${(paData.confidence_score * 100).toFixed(0)}% | R-factor: ${paData.r_factor?.value || 'N/A'} (${paData.r_factor?.zone || ''}) | ${paData.recommended_action}</div>
+                </div>
+            </div>
+        </div>`;
+
+        const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        setStatus(statusEl, 'success', `Full pipeline complete in ${totalTime}s: Extract -> ${rfData.final_decision} -> ${paData.final_classification}`);
+
+    } catch (err) {
+        setStatus(statusEl, 'error', `Network error: ${err.message}`);
+    }
+}
+
+// ── Helpers ──
+function setStatus(el, type, msg) {
+    el.className = `status ${type}`;
+    el.textContent = msg;
+}
+
+function clearPanel(module) {
+    document.getElementById(`${module}-input`).value = '';
+    document.getElementById(`${module}-status`).className = 'status';
+    document.getElementById(`${module}-response`).innerHTML = `
+        <div style="text-align:center;padding:60px 20px;color:#ccc;">
+            <div style="font-size:36px;">?</div>
+            <p style="font-size:12px;margin-top:8px;">Send a request to see the debate result</p>
+        </div>`;
+}
+
+// ── Boot ──
+loadScenarios();
+</script>
+</body>
+</html>

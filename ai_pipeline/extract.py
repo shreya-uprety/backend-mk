@@ -92,8 +92,8 @@ Return ONLY valid JSON (no markdown, no code fences):
       "qa": [["question", "answer"]]
     }
   ],
-  "confidence": "high, medium, or low",
-  "source_image_count": 1,
+  "confidence": "high" | "medium" | "low",
+  "source_image_count": <number>,
   "notes": "any issues with extraction or data quality"
 }
 
