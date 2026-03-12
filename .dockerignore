@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.git/
+.gitignore
+data/
+synthetic_medical_records/
+docs/
+*.md
