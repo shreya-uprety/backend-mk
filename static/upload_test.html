@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedForce - Photo Upload Test</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        color: #333;
+        min-height: 100vh;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #003366, #0066cc);
+        color: white;
+        padding: 20px 30px;
+    }
+    .header h1 { font-size: 20px; }
+    .header p { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .upload-panel {
+        flex: 0 0 380px;
+    }
+
+    .results-panel {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .card-header {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        font-weight: bold;
+        font-size: 13px;
+        color: #003366;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .card-body { padding: 16px; }
+
+    /* Upload area */
+    .drop-zone {
+        border: 2px dashed #b0c4de;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color: #0066cc;
+        background: #e8f0fe;
+    }
+    .drop-zone-icon { font-size: 36px; margin-bottom: 10px; }
+    .drop-zone-text { font-size: 14px; color: #555; }
+    .drop-zone-hint { font-size: 11px; color: #999; margin-top: 6px; }
+
+    .file-input { display: none; }
+
+    /* Preview grid */
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .preview-item {
+        position: relative;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+    }
+    .preview-item img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        display: block;
+    }
+    .preview-item .remove-btn {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        cursor: pointer;
+        line-height: 18px;
+        text-align: center;
+    }
+    .preview-name {
+        font-size: 9px;
+        padding: 2px 4px;
+        background: #f5f5f5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-count {
+        font-size: 12px;
+        color: #666;
+        margin-top: 8px;
+    }
+
+    /* Extract button */
+    .extract-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #003366, #0066cc);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: opacity 0.2s;
+    }
+    .extract-btn:hover { opacity: 0.9; }
+    .extract-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* Status */
+    .status {
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        margin-top: 12px;
+        display: none;
+    }
+    .status.info { display: block; background: #e8f0fe; color: #1a73e8; }
+    .status.success { display: block; background: #e6f4ea; color: #137333; }
+    .status.error { display: block; background: #fce8e6; color: #c5221f; }
+    .status.loading { display: block; background: #fff8e1; color: #e37400; }
+
+    /* Results */
+    .patient-banner-result {
+        background: linear-gradient(to bottom, #e6eff8, #d0e2f2);
+        padding: 12px 16px;
+        border-bottom: 1px solid #b0c4de;
+    }
+    .patient-banner-result h2 {
+        font-size: 16px;
+        color: #003366;
+        margin-bottom: 4px;
+    }
+    .patient-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #555;
+    }
+
+    .section-card {
+        border: 1px solid #e0e0e0;
+        border-top: 3px solid #5b7f9e;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        background: white;
+    }
+    .section-header {
+        background: #f8f9fa;
+        padding: 8px 12px;
+        font-weight: bold;
+        font-size: 12px;
+        color: #003366;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+    }
+    .section-type {
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: normal;
+    }
+    .section-body {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .kv-row {
+        display: flex;
+        padding: 3px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .kv-label {
+        font-weight: bold;
+        color: #003366;
+        min-width: 130px;
+        flex-shrink: 0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+        margin: 6px 0;
+    }
+    .data-table th, .data-table td {
+        border: 1px solid #e0e0e0;
+        padding: 4px 8px;
+        text-align: left;
+    }
+    .data-table th {
+        background: #f0f4fa;
+        color: #003366;
+    }
+    .data-table tr:nth-child(even) { background: #fafbfc; }
+
+    .list-item { padding: 2px 0 2px 12px; }
+    .list-item::before { content: "- "; color: #999; }
+
+    .high-value { color: red; font-weight: bold; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .confidence-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    .confidence-high { background: #e6f4ea; color: #137333; }
+    .confidence-medium { background: #fff8e1; color: #e37400; }
+    .confidence-low { background: #fce8e6; color: #c5221f; }
+
+    .validation-info {
+        font-size: 11px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    /* API URL config */
+    .api-config {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .api-config label { font-size: 11px; color: #666; white-space: nowrap; }
+    .api-config input {
+        flex: 1;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: monospace;
+    }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>MedForce Milton Key - Photo Upload Test</h1>
+    <p>Upload iPad photos of patient EHR screens to extract structured medical data</p>
+</div>
+
+<div class="container">
+    <!-- Left: Upload Panel -->
+    <div class="upload-panel">
+        <div class="card">
+            <div class="card-header">API Configuration</div>
+            <div class="card-body">
+                <div class="api-config">
+                    <label>Endpoint:</label>
+                    <input type="text" id="api-url" value="http://localhost:8000/pipeline/extract">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Upload Photos</div>
+            <div class="card-body">
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-icon">+</div>
+                    <div class="drop-zone-text">Drop iPad photos here or click to browse</div>
+                    <div class="drop-zone-hint">JPEG, PNG - Max 20 files, 10MB each</div>
+                </div>
+                <input type="file" id="file-input" class="file-input" multiple accept="image/jpeg,image/png,image/jpg">
+
+                <div class="preview-grid" id="preview-grid"></div>
+                <div class="file-count" id="file-count"></div>
+
+                <button class="extract-btn" id="extract-btn" disabled>Extract Patient Data</button>
+
+                <div class="status" id="status"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">How It Works</div>
+            <div class="card-body" style="font-size: 12px; color: #666; line-height: 1.6;">
+                <p><b>1.</b> Upload overlapping photos of any EHR screen</p>
+                <p><b>2.</b> Photos are validated as medical records</p>
+                <p><b>3.</b> AI extracts and deduplicates all clinical data</p>
+                <p><b>4.</b> Returns a unified structured patient record</p>
+                <p style="margin-top: 8px; font-style: italic;">Works with Cerner, Epic, MEDITECH, paper charts, or any clinical document.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Results Panel -->
+    <div class="results-panel">
+        <div id="results-area">
+            <div class="card">
+                <div class="card-body empty-state">
+                    <div class="empty-state-icon">+</div>
+                    <p>Upload photos and click "Extract Patient Data" to see results here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── State ──
+let selectedFiles = [];
+
+// ── DOM refs ──
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const previewGrid = document.getElementById('preview-grid');
+const fileCount = document.getElementById('file-count');
+const extractBtn = document.getElementById('extract-btn');
+const statusEl = document.getElementById('status');
+const resultsArea = document.getElementById('results-area');
+
+// ── Drop zone ──
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    addFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+    addFiles(fileInput.files);
+    fileInput.value = '';
+});
+
+function addFiles(fileList) {
+    for (const f of fileList) {
+        if (selectedFiles.length >= 20) break;
+        if (!f.type.match(/^image\/(jpeg|jpg|png)$/)) continue;
+        selectedFiles.push(f);
+    }
+    renderPreviews();
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    renderPreviews();
+}
+
+function renderPreviews() {
+    previewGrid.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'preview-item';
+        const url = URL.createObjectURL(f);
+        div.innerHTML = `
+            <img src="${url}" alt="${f.name}">
+            <button class="remove-btn" onclick="removeFile(${i})">x</button>
+            <div class="preview-name">${f.name}</div>
+        `;
+        previewGrid.appendChild(div);
+    });
+    fileCount.textContent = selectedFiles.length > 0 ? `${selectedFiles.length} file(s) selected` : '';
+    extractBtn.disabled = selectedFiles.length === 0;
+}
+
+// ── Extract ──
+extractBtn.addEventListener('click', async () => {
+    if (selectedFiles.length === 0) return;
+
+    const apiUrl = document.getElementById('api-url').value;
+    setStatus('loading', `Uploading ${selectedFiles.length} photos and extracting data... This may take 1-3 minutes.`);
+    extractBtn.disabled = true;
+
+    const formData = new FormData();
+    selectedFiles.forEach(f => formData.append('files', f));
+
+    try {
+        const res = await fetch(apiUrl, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            const detail = data.detail;
+            const msg = typeof detail === 'object' ? detail.message : detail;
+            setStatus('error', `Error: ${msg}`);
+            extractBtn.disabled = false;
+            return;
+        }
+
+        setStatus('success', `Extracted ${data.sections_count} sections for ${data.patient.name} (Confidence: ${data.confidence})`);
+        renderResults(data);
+
+    } catch (err) {
+        setStatus('error', `Network error: ${err.message}. Is the FastAPI server running?`);
+    }
+    extractBtn.disabled = false;
+});
+
+function setStatus(type, msg) {
+    statusEl.className = `status ${type}`;
+    statusEl.textContent = msg;
+}
+
+// ── Render Results ──
+function renderResults(data) {
+    const record = data.record;
+    const patient = record.patient;
+    const meta = record.extraction_metadata;
+    const confClass = `confidence-${meta.confidence}`;
+
+    let html = `
+    <div class="card">
+        <div class="patient-banner-result">
+            <h2>${patient.name || 'Unknown Patient'}</h2>
+            <div class="patient-meta">
+                ${patient.dob ? `<span>DOB: ${patient.dob}</span>` : ''}
+                ${patient.age ? `<span>Age: ${patient.age}</span>` : ''}
+                ${patient.sex ? `<span>Sex: ${patient.sex}</span>` : ''}
+                ${patient.mrn ? `<span>MRN: ${patient.mrn}</span>` : ''}
+                <span class="confidence-badge ${confClass}">${meta.confidence} confidence</span>
+            </div>
+            <div class="validation-info">
+                ${data.validation ? `Validated: ${data.validation.valid_image_count}/${data.validation.total_image_count} images are medical records` : ''}
+                | ${meta.source_images.length} images processed
+                | Session: ${data.session_id}
+            </div>
+        </div>
+    </div>`;
+
+    record.sections.forEach(section => {
+        html += `<div class="section-card">
+            <div class="section-header">
+                <span>${section.title}${section.date ? ' - ' + section.date : ''}</span>
+                <span class="section-type">${section.type}</span>
+            </div>
+            <div class="section-body">`;
+
+        // Key-value data
+        if (section.data) {
+            for (const [k, v] of Object.entries(section.data)) {
+                if (Array.isArray(v)) {
+                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v.join(', ')}</span></div>`;
+                } else if (typeof v === 'object' && v !== null) {
+                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span></span></div>`;
+                    for (const [k2, v2] of Object.entries(v)) {
+                        html += `<div class="kv-row" style="padding-left:20px;"><span class="kv-label">${k2}</span><span>${v2}</span></div>`;
+                    }
+                } else {
+                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v}</span></div>`;
+                }
+            }
+        }
+
+        // List items
+        if (section.items && section.items.length > 0) {
+            section.items.forEach(item => {
+                if (typeof item === 'object') {
+                    const parts = Object.entries(item).map(([k, v]) => v ? `${k}: ${v}` : '').filter(Boolean);
+                    html += `<div class="list-item">${parts.join(' | ')}</div>`;
+                } else {
+                    html += `<div class="list-item">${item}</div>`;
+                }
+            });
+        }
+
+        // Tables
+        if (section.tables) {
+            section.tables.forEach(table => {
+                html += `<div style="font-weight:bold;color:#003366;margin:6px 0 4px;">${table.name || ''}</div>`;
+                html += `<table class="data-table"><tr>`;
+                (table.headers || []).forEach(h => { html += `<th>${h}</th>`; });
+                html += `</tr>`;
+                (table.rows || []).forEach(row => {
+                    html += `<tr>`;
+                    row.forEach((cell, i) => {
+                        const isAbnormal = cell && typeof cell === 'string' &&
+                            (cell.toUpperCase().includes('HIGH') || cell.toUpperCase().includes('LOW') || cell.toUpperCase().includes('CRIT'));
+                        const prevIsAbnormal = i === 1 && row[2] && typeof row[2] === 'string' &&
+                            (row[2].toUpperCase().includes('HIGH') || row[2].toUpperCase().includes('LOW') || row[2].toUpperCase().includes('CRIT'));
+                        html += `<td class="${isAbnormal || prevIsAbnormal ? 'high-value' : ''}">${cell || ''}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+                html += `</table>`;
+            });
+        }
+
+        // Findings
+        if (section.findings) {
+            html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Findings</div>`;
+            for (const [k, v] of Object.entries(section.findings)) {
+                html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v}</span></div>`;
+            }
+        }
+
+        // Impression
+        if (section.impression) {
+            html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Impression</div>`;
+            section.impression.forEach(imp => { html += `<div class="list-item">${imp}</div>`; });
+        }
+
+        // Diagnosis
+        if (section.diagnosis) {
+            html += `<div class="kv-row"><span class="kv-label">Diagnosis</span><span>${section.diagnosis}</span></div>`;
+        }
+
+        // Summary
+        if (section.summary) {
+            html += `<div class="kv-row"><span class="kv-label">Summary</span><span>${section.summary}</span></div>`;
+        }
+
+        // Rationale
+        if (section.rationale) {
+            html += `<div class="kv-row"><span class="kv-label">Rationale</span><span>${section.rationale}</span></div>`;
+        }
+
+        // Immediate issues
+        if (section.immediate_issues && section.immediate_issues.length > 0) {
+            html += `<div style="font-weight:bold;color:#cc0000;margin:6px 0 3px;">Immediate Issues</div>`;
+            section.immediate_issues.forEach(issue => {
+                html += `<div style="padding:2px 0 2px 12px;color:#cc0000;">- ${issue}</div>`;
+            });
+        }
+
+        // Plan
+        if (section.plan) {
+            html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Plan</div>`;
+            section.plan.forEach(p => { html += `<div class="list-item">${p}</div>`; });
+        }
+
+        // QA
+        if (section.qa) {
+            section.qa.forEach(([q, a]) => {
+                html += `<div style="margin-bottom:6px;"><div style="font-weight:bold;color:#003366;">${q}</div><div style="padding-left:12px;">${a}</div></div>`;
+            });
+        }
+
+        html += `</div></div>`;
+    });
+
+    // Raw JSON toggle
+    html += `
+    <div class="card">
+        <div class="card-header" style="cursor:pointer;" onclick="document.getElementById('raw-json').style.display = document.getElementById('raw-json').style.display === 'none' ? 'block' : 'none'">
+            Raw JSON Response (click to toggle)
+        </div>
+        <div class="card-body" id="raw-json" style="display:none;">
+            <pre style="font-size:11px;overflow-x:auto;white-space:pre-wrap;">${JSON.stringify(record, null, 2)}</pre>
+        </div>
+    </div>`;
+
+    resultsArea.innerHTML = html;
+}
+</script>
+</body>
+</html>

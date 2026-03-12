@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerner - Hepatology Clinic</title>
+<style>
+    /* Basic Reset and Layout */
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        font-size: 12px;
+        color: #333;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header/Banner Styles */
+    .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2px 5px;
+        background-color: #dfe8f6;
+        border-bottom: 1px solid #c3c3c3;
+    }
+    .top-nav a {
+        text-decoration: none;
+        color: #333;
+        padding: 2px 5px;
+        margin-right: 5px;
+        border: 1px solid transparent;
+    }
+    .top-nav a:hover {
+        border-color: #a0a0a0;
+        background-color: #eee;
+    }
+    .patient-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 10px;
+        background-color: #f0f4fa;
+        border-bottom: 1px solid #ccc;
+        font-weight: bold;
+    }
+    .patient-info {
+        display: flex;
+        gap: 15px;
+    }
+    .patient-name {
+        font-size: 14px;
+        color: #003366;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+        display: flex;
+        background-color: #dfe8f6;
+        border-bottom: 1px solid #c3c3c3;
+        padding-top: 5px;
+        padding-left: 5px;
+    }
+    .nav-tab {
+        padding: 5px 10px;
+        cursor: pointer;
+        border: 1px solid #c3c3c3;
+        border-bottom: none;
+        margin-right: 2px;
+        background-color: #ececec;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: #333;
+    }
+    .nav-tab.active {
+        background-color: #fff;
+        font-weight: bold;
+        position: relative;
+        top: 1px;
+        border-bottom: 1px solid #fff;
+    }
+
+    /* Main Layout */
+    .main-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: #fff;
+        border-right: 1px solid #c3c3c3;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    .content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #f4f4f4;
+        padding: 10px;
+        overflow-y: auto;
+    }
+
+    /* Sidebar Sections */
+    .sidebar-section {
+        border: 1px solid #c3c3c3;
+        border-top: 2px solid #5b7f9e;
+        border-radius: 3px;
+        margin-bottom: 10px;
+        background: #fff;
+    }
+    .sidebar-header {
+        background: linear-gradient(to bottom, #e6eff8, #d0e2f2);
+        padding: 5px 8px;
+        font-weight: bold;
+        color: #003366;
+        border-bottom: 1px solid #c3c3c3;
+        display: flex;
+        justify-content: space-between;
+    }
+    .sidebar-content {
+        padding: 5px;
+    }
+    .sidebar-list-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+    }
+    .sidebar-date {
+        color: #777;
+        font-size: 11px;
+    }
+    .high-value { color: red; font-weight: bold; }
+    .normal-value { color: #333; }
+
+    /* Editor / Content Panel Styles */
+    .editor-container {
+        background-color: #fff;
+        border: 1px solid #c3c3c3;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .editor-toolbar {
+        background-color: #f0f4fa;
+        border-bottom: 1px solid #c3c3c3;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+    }
+    .toolbar-btn {
+        border: 1px solid #c3c3c3;
+        background: linear-gradient(to bottom, #f9f9f9, #e3e3e3);
+        padding: 4px 8px;
+        margin-right: 5px;
+        cursor: pointer;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        border-radius: 2px;
+    }
+    .toolbar-btn:hover {
+        background: #e9e9e9;
+    }
+    .toolbar-icon { margin-right: 4px; }
+    .toolbar-separator {
+        border-left: 1px solid #c3c3c3;
+        height: 18px;
+        margin: 0 5px;
+    }
+    .letter-content {
+        padding: 30px;
+        overflow-y: auto;
+        font-family: 'Times New Roman', serif;
+        font-size: 14px;
+        line-height: 1.5;
+        flex: 1;
+    }
+    .placeholder {
+        background-color: #fff2cc;
+        border: 1px solid #e6b800;
+        padding: 0 4px;
+    }
+    .letter-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 10px;
+    }
+    .letter-section-title {
+        font-weight: bold;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        text-decoration: underline;
+    }
+    p { margin: 10px 0; }
+
+    /* Tab content panels */
+    .tab-panel { display: none; flex: 1; flex-direction: column; }
+    .tab-panel.active { display: flex; }
+
+    /* Data tables */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+    .data-table th, .data-table td {
+        border: 1px solid #d0d0d0;
+        padding: 4px 8px;
+        text-align: left;
+    }
+    .data-table th {
+        background: linear-gradient(to bottom, #e6eff8, #d0e2f2);
+        color: #003366;
+        font-weight: bold;
+    }
+    .data-table tr:nth-child(even) { background-color: #f8f9fc; }
+    .data-table tr:hover { background-color: #eef3fa; }
+
+    /* Section panels inside content */
+    .content-section {
+        background: #fff;
+        border: 1px solid #c3c3c3;
+        border-top: 2px solid #5b7f9e;
+        border-radius: 3px;
+        margin-bottom: 10px;
+    }
+    .content-section-header {
+        background: linear-gradient(to bottom, #e6eff8, #d0e2f2);
+        padding: 6px 10px;
+        font-weight: bold;
+        color: #003366;
+        border-bottom: 1px solid #c3c3c3;
+    }
+    .content-section-body {
+        padding: 10px;
+    }
+
+    /* Key-value rows */
+    .kv-row {
+        display: flex;
+        padding: 3px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .kv-label {
+        font-weight: bold;
+        color: #003366;
+        min-width: 140px;
+        flex-shrink: 0;
+    }
+    .kv-value { color: #333; }
+
+    /* Assessment plan items */
+    .plan-item {
+        padding: 4px 0 4px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        position: relative;
+    }
+    .plan-item::before {
+        content: counter(plan-counter) ".";
+        counter-increment: plan-counter;
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+        color: #003366;
+    }
+    .plan-list { counter-reset: plan-counter; }
+
+    /* QA items */
+    .qa-item { margin-bottom: 8px; }
+    .qa-question { font-weight: bold; color: #003366; margin-bottom: 2px; }
+    .qa-answer { padding-left: 10px; color: #333; }
+
+    /* Loading spinner */
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #777;
+        font-style: italic;
+    }
+</style>
+</head>
+<body>
+
+<!-- Top Nav & Banner -->
+<div class="top-nav">
+    <div>
+        <a href="#">Task</a> <a href="#">Edit</a> <a href="#">View</a> <a href="#">Patient</a> <a href="#">Chart</a> <a href="#">Links</a> <a href="#">Notifications</a> <a href="#">Help</a>
+    </div>
+    <div>
+        <a href="#">Print</a> <a href="#" id="last-updated">0 minutes ago</a>
+    </div>
+</div>
+
+<div class="patient-banner">
+    <div class="patient-info">
+        <span class="patient-name" id="banner-name">[Loading...]</span>
+        <span id="banner-dob">DOB: --</span>
+        <span id="banner-age">Age: --</span>
+        <span id="banner-mrn">MRN: MK-0003</span>
+        <span id="banner-sex">Sex: --</span>
+        <span id="banner-rfv">RFV: Hepatitis B Evaluation</span>
+    </div>
+    <div>
+        <a href="#" style="font-weight: normal; font-size: 11px; color: #0066cc;">(Expand All) Customize View</a>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="nav-tabs" id="nav-tabs">
+    <div class="nav-tab active" data-tab="summary">Ambulatory Summary</div>
+    <div class="nav-tab" data-tab="referral">Referral Letter</div>
+    <div class="nav-tab" data-tab="results">Results Review</div>
+    <div class="nav-tab" data-tab="notes">Clinical Notes</div>
+    <div class="nav-tab" data-tab="orders">Orders / MAR</div>
+    <div class="nav-tab" data-tab="imaging">Imaging</div>
+</div>
+
+<!-- Main Content Layout -->
+<div class="main-container">
+    <!-- Left Sidebar (always visible, populated dynamically) -->
+    <div class="sidebar" id="sidebar">
+        <div class="loading">Loading sidebar...</div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+
+        <!-- TAB: Ambulatory Summary -->
+        <div class="tab-panel active" id="panel-summary">
+            <div class="loading">Loading summary...</div>
+        </div>
+
+        <!-- TAB: Referral Letter -->
+        <div class="tab-panel" id="panel-referral">
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn"><span class="toolbar-icon">&#128190;</span> Save</button>
+                    <button class="toolbar-btn"><span class="toolbar-icon">&#10004;</span> Sign / Submit</button>
+                    <button class="toolbar-btn"><span class="toolbar-icon">&#10006;</span> Cancel</button>
+                    <div class="toolbar-separator"></div>
+                    <select style="font-size:11px; margin-right: 5px; padding: 2px;"><option>Normal Text</option></select>
+                    <button class="toolbar-btn" style="font-weight:bold; padding: 4px 6px;">B</button>
+                    <button class="toolbar-btn" style="font-style:italic; padding: 4px 6px;">I</button>
+                    <button class="toolbar-btn" style="text-decoration:underline; padding: 4px 6px;">U</button>
+                    <div style="flex:1;"></div>
+                    <span style="font-size:11px; margin-right:5px;">Template:</span>
+                    <select style="font-size:11px; padding: 2px;"><option>Hepatology Referral</option></select>
+                </div>
+                <div class="letter-content" id="referral-content">
+                    <div class="loading">Loading referral letter...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: Results Review -->
+        <div class="tab-panel" id="panel-results">
+            <div class="loading">Loading results...</div>
+        </div>
+
+        <!-- TAB: Clinical Notes -->
+        <div class="tab-panel" id="panel-notes">
+            <div class="loading">Loading clinical notes...</div>
+        </div>
+
+        <!-- TAB: Orders / MAR -->
+        <div class="tab-panel" id="panel-orders">
+            <div class="loading">Loading orders...</div>
+        </div>
+
+        <!-- TAB: Imaging -->
+        <div class="tab-panel" id="panel-imaging">
+            <div class="loading">Loading imaging reports...</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// =============================================
+//  Data Fetching Layer (Local -> GCS Fallback)
+// =============================================
+
+const LOCAL_BASE = '../synthetic_medical_records/p0003/structured_data/';
+const GCS_BASE = 'https://storage.googleapis.com/milton-key-dev/synthetic_medical_records/p0003/structured_data/';
+
+const FILE_MAP = {
+    profile:      '1_patient_profile.json',
+    referral:     '2_gp_referral_letter.json',
+    questionnaire:'3_patient_questionnaire.json',
+    consultation: '4_consultation_notes.json',
+    labs:         '5_liver_lab_results.json',
+    ultrasound:   '6_ultrasound_report.json',
+    imaging2:     '7_fibroscan_report.json',
+    medications:  '8_medication_list.json',
+    vitals:       '9_vitals_report.json',
+    assessment:   '10_hepatologist_assessment.json',
+};
+
+const dataCache = {};
+
+async function fetchJSON(key) {
+    if (dataCache[key]) return dataCache[key];
+    const filename = FILE_MAP[key];
+    try {
+        const res = await fetch(LOCAL_BASE + filename);
+        if (!res.ok) throw new Error('Local fetch failed');
+        const data = await res.json();
+        dataCache[key] = data;
+        return data;
+    } catch (e) {
+        console.warn(`Local fetch failed for ${key}, trying GCS fallback...`);
+        try {
+            const res = await fetch(GCS_BASE + filename);
+            if (!res.ok) throw new Error('GCS fetch failed');
+            const data = await res.json();
+            dataCache[key] = data;
+            return data;
+        } catch (e2) {
+            console.error(`Failed to load ${key} from both local and GCS`, e2);
+            return null;
+        }
+    }
+}
+
+async function fetchAll() {
+    const keys = Object.keys(FILE_MAP);
+    await Promise.all(keys.map(k => fetchJSON(k)));
+    return dataCache;
+}
+
+// =============================================
+//  Helper: check if value is flagged HIGH
+// =============================================
+function isAbnormal(refStr) {
+    if (!refStr) return false;
+    const upper = refStr.toUpperCase();
+    return upper.includes('HIGH') || upper.includes('CRIT') || upper.includes('LOW');
+}
+
+// =============================================
+//  Render: Patient Banner
+// =============================================
+function renderBanner(profile, referral) {
+    if (!profile) return;
+    const d = profile.demographics;
+    document.getElementById('banner-name').textContent = d['Full Name'] || 'Unknown';
+    document.getElementById('banner-age').textContent = `Age: ${d['Age'] || '--'} Years`;
+    document.getElementById('banner-sex').textContent = `Sex: ${d['Gender'] || '--'}`;
+    if (referral && referral.patient_dob) {
+        document.getElementById('banner-dob').textContent = `DOB: ${referral.patient_dob}`;
+    }
+}
+
+// =============================================
+//  Render: Sidebar
+// =============================================
+function renderSidebar(profile, meds, labs, vitals, assessment) {
+    const sb = document.getElementById('sidebar');
+    let html = '';
+
+    // Problems section (derived from assessment)
+    html += `<div class="sidebar-section">
+        <div class="sidebar-header">Problems <span>&#9660;</span></div>
+        <div class="sidebar-content">`;
+    if (assessment && assessment.diagnosis) {
+        html += `<div class="sidebar-list-item"><span>${assessment.diagnosis}</span></div>`;
+    }
+    if (assessment && assessment.immediate_issues) {
+        assessment.immediate_issues.forEach(issue => {
+            html += `<div class="sidebar-list-item"><span style="color:#cc0000;">- ${issue}</span></div>`;
+        });
+    }
+    if (profile) {
+        const bmi = profile.demographics['BMI'] || '';
+        if (bmi.includes('Obese')) html += `<div class="sidebar-list-item"><span>Obesity (${bmi})</span></div>`;
+    }
+    html += `</div></div>`;
+
+    // Allergies
+    html += `<div class="sidebar-section">
+        <div class="sidebar-header">Allergies <span>&#9660;</span></div>
+        <div class="sidebar-content">`;
+    if (meds && meds.allergies) {
+        meds.allergies.forEach(a => {
+            html += `<div class="sidebar-list-item"><span>${a}</span></div>`;
+        });
+    } else {
+        html += `<div class="sidebar-list-item"><span>No Known Drug Allergies</span></div>`;
+    }
+    html += `</div></div>`;
+
+    // Medications
+    const medCount = meds ? (meds.current ? meds.current.length : 0) + (meds.inpatient ? meds.inpatient.length : 0) : 0;
+    html += `<div class="sidebar-section">
+        <div class="sidebar-header">Medications (${medCount} active) <span>&#9660;</span></div>
+        <div class="sidebar-content">`;
+    if (meds && meds.note) {
+        html += `<div class="sidebar-list-item"><span style="color:#777;font-style:italic;">${meds.note}</span></div>`;
+    }
+    if (meds && meds.current) {
+        meds.current.forEach(m => {
+            html += `<div class="sidebar-list-item"><span><b>Rx</b> ${m[0]} ${m[1]} ${m[2]}</span><span class="sidebar-date">${m[3]}</span></div>`;
+        });
+    }
+    if (meds && meds.inpatient) {
+        meds.inpatient.forEach(m => {
+            html += `<div class="sidebar-list-item"><span><b>IP</b> ${m}</span></div>`;
+        });
+    }
+    html += `</div></div>`;
+
+    // Vitals snapshot
+    if (vitals && vitals.vitals) {
+        html += `<div class="sidebar-section">
+            <div class="sidebar-header">Latest Vitals <span style="font-weight:normal;font-size:11px;">${vitals.date || ''}</span></div>
+            <div class="sidebar-content">
+            <table style="width:100%; font-size:11px; border-collapse: collapse;">`;
+        for (const [k, v] of Object.entries(vitals.vitals)) {
+            const cls = (k === 'BP' && parseInt(v) > 140) ? 'high-value' : 'normal-value';
+            html += `<tr><td style="padding:2px;"><b>${k}</b></td><td style="text-align:right;padding:2px;" class="${cls}">${v}</td></tr>`;
+        }
+        html += `</table></div></div>`;
+    }
+
+    // Labs snapshot
+    if (labs && labs.sections && labs.sections[0]) {
+        html += `<div class="sidebar-section">
+            <div class="sidebar-header">General Labs <span style="font-weight:normal;font-size:11px;">${labs.date || ''}</span></div>
+            <div class="sidebar-content">
+            <table style="width:100%; font-size:11px; border-collapse: collapse;">
+            <tr style="border-bottom:1px solid #eee;"><td></td><td style="text-align:right;padding:2px;font-weight:bold;">Result</td><td style="text-align:right;padding:2px;font-weight:bold;">Ref</td></tr>`;
+        labs.sections[0].rows.forEach(row => {
+            const cls = isAbnormal(row[2]) ? 'high-value' : 'normal-value';
+            html += `<tr><td style="padding:2px;">${row[0]}</td><td style="text-align:right;padding:2px;" class="${cls}">${row[1]}</td><td style="text-align:right;padding:2px;color:#777;font-size:10px;">${row[2]}</td></tr>`;
+        });
+        html += `</table></div></div>`;
+    }
+
+    sb.innerHTML = html;
+}
+
+// =============================================
+//  Render: Ambulatory Summary Tab
+// =============================================
+function renderSummary(profile, vitals, meds, labs, assessment) {
+    const el = document.getElementById('panel-summary');
+    let html = '';
+
+    // Patient Profile
+    if (profile) {
+        html += `<div class="content-section"><div class="content-section-header">Patient Profile</div><div class="content-section-body">`;
+        for (const [k, v] of Object.entries(profile.demographics)) {
+            html += `<div class="kv-row"><span class="kv-label">${k}</span><span class="kv-value">${v}</span></div>`;
+        }
+        if (profile.social_history) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#003366;">Social History</div>`;
+            profile.social_history.forEach(s => { html += `<div style="padding:2px 0 2px 10px;">- ${s}</div>`; });
+        }
+        if (profile.lifestyle) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#003366;">Lifestyle</div>`;
+            profile.lifestyle.forEach(s => { html += `<div style="padding:2px 0 2px 10px;">- ${s}</div>`; });
+        }
+        html += `</div></div>`;
+    }
+
+    // Vitals
+    if (vitals) {
+        html += `<div class="content-section"><div class="content-section-header">Vitals &amp; Measurements - ${vitals.date || ''}</div><div class="content-section-body">`;
+        html += `<table class="data-table"><tr><th>Measurement</th><th>Value</th></tr>`;
+        for (const [k, v] of Object.entries(vitals.vitals)) {
+            html += `<tr><td><b>${k}</b></td><td>${v}</td></tr>`;
+        }
+        html += `</table></div></div>`;
+    }
+
+    // Assessment & Plan
+    if (assessment) {
+        html += `<div class="content-section"><div class="content-section-header">Assessment &amp; Plan</div><div class="content-section-body">`;
+        html += `<div class="kv-row"><span class="kv-label">Diagnosis</span><span class="kv-value">${assessment.diagnosis || ''}</span></div>`;
+        if (assessment.summary) {
+            html += `<div class="kv-row"><span class="kv-label">Summary</span><span class="kv-value">${assessment.summary}</span></div>`;
+        }
+        if (assessment.rationale) {
+            html += `<div class="kv-row"><span class="kv-label">Rationale</span><span class="kv-value">${assessment.rationale}</span></div>`;
+        }
+        if (assessment.immediate_issues) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#cc0000;">Immediate Issues</div>`;
+            assessment.immediate_issues.forEach(issue => {
+                html += `<div style="padding:2px 0 2px 10px;color:#cc0000;">- ${issue}</div>`;
+            });
+        }
+        if (assessment.plan) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#003366;">Plan</div><div class="plan-list">`;
+            assessment.plan.forEach(p => { html += `<div class="plan-item">${p}</div>`; });
+            html += `</div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    el.innerHTML = html;
+}
+
+// =============================================
+//  Render: Referral Letter Tab
+// =============================================
+function renderReferral(ref) {
+    const el = document.getElementById('referral-content');
+    if (!ref) { el.innerHTML = '<p>No referral letter data available.</p>'; return; }
+
+    el.innerHTML = `
+        <div class="letter-header">
+            <div>
+                <p><b>To:</b> ${ref.receiving_clinic}</p>
+                <p><b>From:</b> ${ref.referring_physician}</p>
+            </div>
+            <div><b>Date:</b> ${ref.date}</div>
+        </div>
+        <p><b>Dear Colleague,</b></p>
+        <p><b>Re:</b> ${ref.patient_name}, <b>DOB:</b> ${ref.patient_dob}</p>
+        <p>Thank you for seeing this patient, whom I am referring for specialist hepatology assessment and management.</p>
+
+        <div class="letter-section-title">Reason for Referral:</div>
+        <p>${ref.reason_for_referral}</p>
+
+        <div class="letter-section-title">History of Presenting Complaint:</div>
+        <p>${ref.hpi}</p>
+
+        ${ref.pmhx ? `<div class="letter-section-title">Relevant Past Medical History:</div><p>${ref.pmhx}</p>` : ''}
+
+        <div class="letter-section-title">Alcohol Intake:</div>
+        <p>${ref.alcohol_intake}</p>
+
+        ${ref.family_history ? `<div class="letter-section-title">Family History:</div><p>${ref.family_history}</p>` : ''}
+
+        <div class="letter-section-title">Current Medications &amp; Allergies:</div>
+        <p><b>Medications:</b> ${ref.medications}</p>
+        <p><b>Allergies:</b> ${ref.allergies}</p>
+
+        ${ref.investigations_note ? `<div class="letter-section-title">Recent Investigations (Results Attached):</div><p>${ref.investigations_note}</p>` : ''}
+
+        <p style="margin-top:30px;">${(ref.sign_off || '').replace(/\n/g, '<br>')}</p>
+    `;
+}
+
+// =============================================
+//  Render: Results Review Tab
+// =============================================
+function renderResults(labs) {
+    const el = document.getElementById('panel-results');
+    if (!labs) { el.innerHTML = '<div class="loading">No lab results available.</div>'; return; }
+
+    let html = `<div class="content-section"><div class="content-section-header">Lab Results - ${labs.date || ''}</div><div class="content-section-body">`;
+
+    labs.sections.forEach(section => {
+        html += `<div style="font-weight:bold;color:#003366;margin:8px 0 4px 0;">${section.title}</div>`;
+        html += `<table class="data-table"><tr>`;
+        section.headers.forEach(h => { html += `<th>${h}</th>`; });
+        html += `</tr>`;
+        section.rows.forEach(row => {
+            html += `<tr>`;
+            row.forEach((cell, i) => {
+                if (i === 2 && isAbnormal(cell)) {
+                    html += `<td class="high-value">${cell}</td>`;
+                } else if (i === 1 && row[2] && isAbnormal(row[2])) {
+                    html += `<td class="high-value">${cell}</td>`;
+                } else {
+                    html += `<td>${cell}</td>`;
+                }
+            });
+            html += `</tr>`;
+        });
+        html += `</table>`;
+    });
+
+    html += `</div></div>`;
+    el.innerHTML = html;
+}
+
+// =============================================
+//  Render: Clinical Notes Tab
+// =============================================
+function renderNotes(consultation, questionnaire, assessment) {
+    const el = document.getElementById('panel-notes');
+    let html = '';
+
+    // Consultation Notes
+    if (consultation) {
+        html += `<div class="content-section"><div class="content-section-header">Consultation Notes - ${consultation.date || ''}${consultation.time ? ' ' + consultation.time : ''}</div><div class="content-section-body">`;
+        html += `<div class="kv-row"><span class="kv-label">Chief Complaint</span><span class="kv-value">${consultation.cc || ''}</span></div>`;
+        html += `<div class="kv-row"><span class="kv-label">HPI</span><span class="kv-value">${consultation.hpi || ''}</span></div>`;
+        if (consultation.exam) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#003366;">Physical Examination</div>`;
+            for (const [k, v] of Object.entries(consultation.exam)) {
+                html += `<div class="kv-row"><span class="kv-label">${k}</span><span class="kv-value">${v}</span></div>`;
+            }
+        }
+        html += `<div class="kv-row" style="margin-top:8px;"><span class="kv-label">Assessment</span><span class="kv-value">${consultation.assessment || ''}</span></div>`;
+        html += `</div></div>`;
+    }
+
+    // Questionnaire
+    if (questionnaire && questionnaire.qa) {
+        html += `<div class="content-section"><div class="content-section-header">Pre-Consultation Questionnaire</div><div class="content-section-body">`;
+        if (questionnaire.note) {
+            html += `<div style="padding:3px 0 8px 0;font-style:italic;color:#777;">${questionnaire.note}</div>`;
+        }
+        questionnaire.qa.forEach(qa => {
+            html += `<div class="qa-item"><div class="qa-question">${qa[0]}</div><div class="qa-answer">${qa[1]}</div></div>`;
+        });
+        html += `</div></div>`;
+    }
+
+    // Assessment & Plan
+    if (assessment) {
+        html += `<div class="content-section"><div class="content-section-header">Hepatologist Assessment &amp; Plan</div><div class="content-section-body">`;
+        html += `<div class="kv-row"><span class="kv-label">Patient</span><span class="kv-value">${assessment.patient || ''}</span></div>`;
+        html += `<div class="kv-row"><span class="kv-label">Diagnosis</span><span class="kv-value">${assessment.diagnosis || ''}</span></div>`;
+        if (assessment.summary) {
+            html += `<div class="kv-row"><span class="kv-label">Summary</span><span class="kv-value">${assessment.summary}</span></div>`;
+        }
+        if (assessment.rationale) {
+            html += `<div class="kv-row"><span class="kv-label">Rationale</span><span class="kv-value">${assessment.rationale}</span></div>`;
+        }
+        if (assessment.immediate_issues) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#cc0000;">Immediate Issues</div>`;
+            assessment.immediate_issues.forEach(issue => {
+                html += `<div style="padding:2px 0 2px 10px;color:#cc0000;">- ${issue}</div>`;
+            });
+        }
+        if (assessment.plan) {
+            html += `<div style="margin-top:8px;font-weight:bold;color:#003366;">Plan</div><div class="plan-list">`;
+            assessment.plan.forEach(p => { html += `<div class="plan-item">${p}</div>`; });
+            html += `</div>`;
+        }
+        html += `</div></div>`;
+    }
+
+    el.innerHTML = html || '<div class="loading">No clinical notes available.</div>';
+}
+
+// =============================================
+//  Render: Orders / MAR Tab
+// =============================================
+function renderOrders(meds) {
+    const el = document.getElementById('panel-orders');
+    if (!meds) { el.innerHTML = '<div class="loading">No medication data available.</div>'; return; }
+
+    let html = '';
+
+    if (meds.note) {
+        html += `<div class="content-section"><div class="content-section-header">Note</div><div class="content-section-body">
+            <div style="padding:3px 0;font-style:italic;color:#777;">${meds.note}</div>
+        </div></div>`;
+    }
+
+    if (meds.current) {
+        html += `<div class="content-section"><div class="content-section-header">Current Medication Orders</div><div class="content-section-body">`;
+        html += `<table class="data-table"><tr><th>Medication</th><th>Dose</th><th>Frequency</th><th>Indication</th><th>Status</th></tr>`;
+        meds.current.forEach(m => {
+            html += `<tr><td><b>${m[0]}</b></td><td>${m[1]}</td><td>${m[2]}</td><td>${m[3]}</td><td style="color:green;">Active</td></tr>`;
+        });
+        html += `</table></div></div>`;
+    }
+
+    if (meds.inpatient) {
+        html += `<div class="content-section"><div class="content-section-header">Inpatient Orders</div><div class="content-section-body">`;
+        html += `<table class="data-table"><tr><th>Order</th><th>Status</th></tr>`;
+        meds.inpatient.forEach(m => {
+            html += `<tr><td><b>${m}</b></td><td style="color:green;">Active</td></tr>`;
+        });
+        html += `</table></div></div>`;
+    }
+
+    if (meds.allergies) {
+        html += `<div class="content-section"><div class="content-section-header">Allergies</div><div class="content-section-body">`;
+        meds.allergies.forEach(a => {
+            html += `<div style="padding:3px 0;">&#9888; ${a}</div>`;
+        });
+        html += `</div></div>`;
+    }
+
+    el.innerHTML = html || '<div class="loading">No orders available.</div>';
+}
+
+// =============================================
+//  Render: Imaging Tab
+// =============================================
+function renderImaging(ultrasound, imaging2) {
+    const el = document.getElementById('panel-imaging');
+    let html = '';
+
+    [ultrasound, imaging2].forEach(report => {
+        if (!report) return;
+        html += `<div class="content-section"><div class="content-section-header">${report.title} - ${report.date || ''}</div><div class="content-section-body">`;
+
+        if (report.indication) {
+            html += `<div class="kv-row"><span class="kv-label">Indication</span><span class="kv-value">${report.indication}</span></div>`;
+        }
+
+        if (report.findings) {
+            html += `<div style="margin-top:6px;font-weight:bold;color:#003366;">Findings</div>`;
+            for (const [k, v] of Object.entries(report.findings)) {
+                html += `<div class="kv-row"><span class="kv-label">${k}</span><span class="kv-value">${v}</span></div>`;
+            }
+        }
+
+        if (report.impression) {
+            html += `<div style="margin-top:6px;font-weight:bold;color:#003366;">Impression</div>`;
+            report.impression.forEach(imp => {
+                html += `<div style="padding:2px 0 2px 10px;">- ${imp}</div>`;
+            });
+        }
+
+        html += `</div></div>`;
+    });
+
+    el.innerHTML = html || '<div class="loading">No imaging reports available.</div>';
+}
+
+// =============================================
+//  Tab Switching
+// =============================================
+document.getElementById('nav-tabs').addEventListener('click', function(e) {
+    const tab = e.target.closest('.nav-tab');
+    if (!tab) return;
+
+    // Update active tab
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    // Show corresponding panel
+    const tabId = tab.dataset.tab;
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + tabId);
+    if (panel) panel.classList.add('active');
+});
+
+// =============================================
+//  Initialization
+// =============================================
+async function init() {
+    await fetchAll();
+
+    const d = dataCache;
+
+    // Banner
+    renderBanner(d.profile, d.referral);
+
+    // Sidebar (always visible)
+    renderSidebar(d.profile, d.medications, d.labs, d.vitals, d.assessment);
+
+    // All tab panels
+    renderSummary(d.profile, d.vitals, d.medications, d.labs, d.assessment);
+    renderReferral(d.referral);
+    renderResults(d.labs);
+    renderNotes(d.consultation, d.questionnaire, d.assessment);
+    renderOrders(d.medications);
+    renderImaging(d.ultrasound, d.imaging2);
+
+    // Update timestamp
+    document.getElementById('last-updated').textContent = 'Just now';
+}
+
+init();
+</script>
+
+</body>
+</html>
