@@ -4,7 +4,9 @@ __pycache__/
 .env
 .git/
 .gitignore
-data/
+data/ipad_photos/
+data/pipeline_output/
+data/sample_results/
 synthetic_medical_records/
 docs/
 *.md
