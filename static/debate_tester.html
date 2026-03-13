@@ -675,7 +675,7 @@ async function loadScenarios() {
     for (const [key, sc] of Object.entries(SCENARIOS)) {
         // Try loading from backend data folder
         try {
-            const res = await fetch(`/data/red_flag_test/${sc.file}`);
+            const res = await fetch(`/api/scenarios/${sc.file}`);
             if (res.ok) {
                 scenarioData[key] = await res.json();
             }
@@ -815,7 +815,7 @@ async function extractFromPhotos() {
         );
 
         banner.className = 'extract-result-banner show success';
-        banner.innerHTML = `<b>${patientName}</b> — ${sectionsCount} sections extracted | Confidence: ${confidence} | ${data.validation?.valid_image_count || '?'}/${data.validation?.total_image_count || '?'} valid images | Session: ${data.session_id || '?'}`;
+        banner.innerHTML = `<b>${patientName}</b> — ${sectionsCount} sections extracted | Confidence: ${confidence} | ${data.validation?.valid_image_count || '?'}/${data.validation?.total_image_count || '?'} valid images | Patient ID: ${data.patient_id || '?'}`;
 
     } catch (err) {
         setStatus(statusEl, 'error', `Network error: ${err.message}. Is the FastAPI server running?`);

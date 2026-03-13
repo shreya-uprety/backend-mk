@@ -1,0 +1,286 @@
+{
+  "patient": {
+    "name": "Arthur Pendleton",
+    "dob": "12/08/1969",
+    "mrn": "MK-0001",
+    "age": "54",
+    "sex": "Male"
+  },
+  "extraction_metadata": {
+    "source_images": [
+      "imaging.jpeg",
+      "notes1.jpeg",
+      "notes2.jpeg",
+      "orders.jpeg",
+      "referral1.jpeg",
+      "referral2.jpeg",
+      "results.jpeg",
+      "summary1.jpeg",
+      "summary2.jpeg"
+    ],
+    "extraction_date": "2026-03-12T11:35:13.538554+00:00",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
+  },
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "MASLD with severe steatosis and significant fibrosis (F2-F3)",
+        "Obesity (34.1 (Obese Class I))"
+      ]
+    },
+    {
+      "type": "allergies",
+      "title": "Allergies",
+      "items": [
+        "NKDA"
+      ]
+    },
+    {
+      "type": "medications",
+      "title": "Current Medication Orders",
+      "tables": [
+        {
+          "headers": [
+            "Medication",
+            "Dose",
+            "Frequency",
+            "Indication",
+            "Status"
+          ],
+          "rows": [
+            [
+              "Metformin",
+              "1000mg",
+              "BID",
+              "T2DM",
+              "Active"
+            ],
+            [
+              "Ramipril",
+              "10mg",
+              "OD",
+              "HTN",
+              "Active"
+            ],
+            [
+              "Atorvastatin",
+              "20mg",
+              "OD",
+              "Lipids",
+              "Active"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "November 2, 2023",
+      "data": {
+        "BP": "142/88",
+        "HR": "78",
+        "Temp": "36.8 C",
+        "BMI": "34.1"
+      }
+    },
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "October 30, 2023",
+      "tables": [
+        {
+          "headers": [
+            "Test",
+            "Result",
+            "Ref Range"
+          ],
+          "rows": [
+            [
+              "ALT",
+              "122 U/L",
+              "7-56 (HIGH)"
+            ],
+            [
+              "AST",
+              "84 U/L",
+              "10-40 (HIGH)"
+            ],
+            [
+              "ALP",
+              "35 U/L",
+              "44-147"
+            ],
+            [
+              "GGT",
+              "155 U/L",
+              "9-48 (HIGH)"
+            ],
+            [
+              "Bilirubin Tot",
+              "0.9 mg/dL",
+              "0.1-1.2"
+            ],
+            [
+              "Albumin",
+              "4.2 g/dL",
+              "3.4-5.4"
+            ],
+            [
+              "Platelets",
+              "245 X10^9/L",
+              "150-450"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "lab_results",
+      "title": "Screening",
+      "date": "October 30, 2023",
+      "tables": [
+        {
+          "headers": [
+            "Test",
+            "Result"
+          ],
+          "rows": [
+            [
+              "HBsAg",
+              "Negative"
+            ],
+            [
+              "Anti-HCV",
+              "Negative"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "imaging",
+      "title": "DIAGNOSTIC ULTRASOUND - ABDOMEN",
+      "date": "November 2, 2023",
+      "findings": {
+        "Liver": "Diffusely enlarged (18.5cm). Diffusely increased echogenicity causing posterior attenuation.",
+        "Spleen": "Normal size (11 cm)",
+        "Ascites": "None."
+      },
+      "impression": [
+        "Severe diffuse hepatic steatosis and hepatomegaly",
+        "No evidence of cirrhosis"
+      ]
+    },
+    {
+      "type": "imaging",
+      "title": "TRANSIENT ELASTOGRAPHY (FIBROSCAN)",
+      "date": "November 2, 2023",
+      "findings": {
+        "LSM (Stiffness)": "8.9 kPa",
+        "CAP (Steatosis)": "365 dB/m",
+        "IQR/Med": "15%"
+      },
+      "impression": [
+        "LSM 8.9 kPa suggests significant fibrosis (F2-F3)",
+        "CAP 365 dB/m indicates severe steatosis (S3)"
+      ]
+    },
+    {
+      "type": "consultation_notes",
+      "title": "Consultation Notes",
+      "date": "November 2, 2023 10:30",
+      "data": {
+        "chief_complaint": "Elevated liver enzymes on screening.",
+        "hpi": "54M, asymptomatic. Confirms low alcohol use. Reports difficulty managing diet due to work stress.",
+        "physical_examination": {
+          "general": "Well-appearing, obese male.",
+          "abdomen": "Soft, obese, non-tender. Liver edge palpable 2cm below costal margin, smooth/firm. Spleen not palpable.",
+          "skin": "No stigmata of chronic liver disease."
+        },
+        "assessment": "Highly suggestive of MASLD given metabolic syndrome and ALT-AST pattern. Need to stage fibrosis."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        [
+          "Main Symptoms",
+          "None really. Maybe feel a bit tired in the afternoons."
+        ],
+        [
+          "Alcohol intake",
+          "< 5 drinks a week total. Beer/wine on weekends."
+        ],
+        [
+          "Medications / Supplements",
+          "Metformin, Ramipril, Atorvastatin (occasional), multivitamin, fish oil."
+        ],
+        [
+          "Family History of Liver Disease",
+          "No"
+        ],
+        [
+          "Metabolic Risk Factors",
+          "Yes. Type 2 diabetes, high blood pressure, overweight."
+        ]
+      ]
+    },
+    {
+      "type": "assessment_plan",
+      "title": "Hepatologist Assessment & Plan",
+      "data": {
+        "patient": "Arthur Pendleton",
+        "diagnosis": "MASLD with severe steatosis and significant fibrosis (F2-F3)"
+      },
+      "summary": "54M with metabolic syndrome. Labs show hepatocellular injury. Fibroscan indicates bridging fibrosis likely.",
+      "plan": [
+        "1. Lifestyle modification (aim 7-10% weight loss). Dietitian referral.",
+        "2. Optimize T2DM control (discussed GLP-1 with GP).",
+        "3. Repeat fibroscan in 6 months."
+      ]
+    },
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "October 15, 2023",
+      "data": {
+        "to": "Hepatology Department, St. Mary's Hospital",
+        "from": "Dr. S. Mehta, Onkoywd Faculty Practitioner",
+        "patient_name": "Arthur Pendleton",
+        "patient_dob": "12/08/1969",
+        "reason_for_referral": "Evaluation of unexpectedly elevated liver transaminases found during routine insurance medical in a patient with metabolic risk factors, to rule out non-alcoholic fatty liver disease and stage potential fibrosis.",
+        "history_of_presenting_complaint": "Patient is currently asymptomatic. Denies jaundice, abdominal pain, or fatigue. The issue was found incidentally on routine blood work.",
+        "relevant_past_medical_history": [
+          "Type 2 Diabetes Mellitus (diagnosed 3 years ago, poorly controlled, HBA1c 8.2%)",
+          "Hypertension",
+          "Obesity (BMI 34.1)"
+        ],
+        "alcohol_intake": "Occasional social use only. Denies significant consumption (max 4 units/week).",
+        "family_history": "No known family history of liver disease.",
+        "current_medications_allergies": {
+          "medications": "Metformin 1000mg BID, Ramipril 10mg OD, Atorvastatin 20mg OD, Fish Oil supplements.",
+          "allergies": "No Known Drug Allergies."
+        },
+        "recent_investigations_results_attached": "Routine bloods showing ALT 114 U/L, AST 78 U/L, GGT 145 U/L."
+      }
+    },
+    {
+      "type": "patient_profile",
+      "title": "Patient Profile",
+      "data": {
+        "full_name": "Arthur Pendleton",
+        "age": "54",
+        "gender": "Male",
+        "occupation": "Logistics Manager (Sedentary)",
+        "height": "178 cm",
+        "weight": "108 kg",
+        "bmi": "34.1 (Obese Class I)"
+      }
+    }
+  ]
+}

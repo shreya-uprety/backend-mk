@@ -152,7 +152,37 @@ def load_images_from_bytes(file_bytes_list: list[tuple[str, bytes]]) -> list[Ima
     return images, filenames
 
 
-# ── Legacy function for backward compat with run_all_patients ────────────
+def load_images_from_storage(patient_id: str) -> tuple[list[Image.Image], list[str]]:
+    """Load patient images from storage backend (GCS or local)."""
+    from concurrent.futures import ThreadPoolExecutor
+    from storage import get_storage
+
+    storage = get_storage()
+    blobs = storage.list_blobs(f"ipad_photos/{patient_id}")
+    image_blobs = sorted(
+        b for b in blobs
+        if b.lower().endswith((".jpeg", ".jpg", ".png"))
+    )
+    if not image_blobs:
+        raise FileNotFoundError(f"No images found for patient {patient_id}")
+
+    # Download images in parallel to avoid latency stacking
+    def _load_one(blob_path: str) -> tuple[Image.Image, str]:
+        data = storage.read_bytes(blob_path)
+        img = _resize_image(Image.open(BytesIO(data)))
+        filename = blob_path.split("/")[-1]
+        return img, filename
+
+    images, filenames = [], []
+    with ThreadPoolExecutor(max_workers=min(len(image_blobs), 8)) as executor:
+        for img, name in executor.map(_load_one, image_blobs):
+            images.append(img)
+            filenames.append(name)
+
+    return images, filenames
+
+
+# ── Legacy function for backward compat ──────────────────────────────
 
 def extract_and_merge(images_dir: Path) -> dict:
     """Send all images from a directory in a single Gemini call."""

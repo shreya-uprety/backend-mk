@@ -1,0 +1,102 @@
+{
+  "patient": {
+    "name": "James Porter",
+    "dob": "14/06/2003",
+    "mrn": "MK-SC06",
+    "age": "22",
+    "sex": "Male"
+  },
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
+  },
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "No significant past medical history"
+      ]
+    },
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["None", "", ""]
+        ]
+      }]
+    },
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 7, 2026",
+      "data": {
+        "BP": "118/72",
+        "HR": "64",
+        "Temp": "36.5 C",
+        "Weight": "68 kg",
+        "Height": "176 cm",
+        "BMI": "22.0"
+      }
+    },
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 7, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "25 U/L", "7-56"],
+          ["AST", "22 U/L", "10-40"],
+          ["ALP", "60 U/L", "44-147"],
+          ["GGT", "20 U/L", "9-48"],
+          ["Bilirubin Total", "65 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "48 g/L", "35-50"]
+        ]
+      }]
+    },
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 7, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. M. Torres, Central MK Medical Group",
+        "urgency": "Routine",
+        "reason_for_referral": "Isolated unconjugated hyperbilirubinemia found on routine bloods during university exam stress period. Slight yellowing of eyes noted on examination. All other LFTs entirely normal.",
+        "relevant_past_medical_history": [],
+        "alcohol_intake": "Minimal — about 2 units per week."
+      }
+    },
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 7, 2026 15:00",
+      "data": {
+        "chief_complaint": "University student. Noticed slight yellowing of eyes during exam period. Otherwise well. No pain, no systemic symptoms.",
+        "hpi": "22M, healthy university student. Reports slight yellowing of eyes noticed by flatmate. Currently under exam stress, not sleeping well, skipping meals. No abdominal pain, no dark urine, no pale stools, no weight loss, no fever.",
+        "physical_examination": {
+          "general": "Slim, well-appearing young male. Mildly icteric sclera.",
+          "abdomen": "Soft, non-tender. No organomegaly.",
+          "skin": "Mild scleral icterus. No skin jaundice. No rashes."
+        },
+        "assessment": "Isolated hyperbilirubinemia with completely normal liver enzymes. Classic presentation for Gilbert syndrome — triggered by fasting/stress. Refer for confirmation and reassurance."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "Slight yellowing of eyes noticed during exam stress. No pain. No other symptoms."],
+        ["Alcohol intake", "About 2 units per week. Occasional beer with mates."],
+        ["Medications / Supplements", "None"],
+        ["Family History of Liver Disease", "Dad says he had something similar as a teenager — yellow eyes but nothing wrong"],
+        ["Metabolic Risk Factors", "None. Healthy weight, no diabetes."]
+      ]
+    }
+  ]
+}

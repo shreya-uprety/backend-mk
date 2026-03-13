@@ -6,4 +6,5 @@ python-dotenv==1.0.1
 httpx==0.28.1
 python-multipart==0.0.20
 google-genai==1.12.1
+google-cloud-storage>=2.14.0
 Pillow==11.1.0

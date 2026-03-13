@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "Agentic nursing assistant for patient record analysis, risk assessment, and consultation support."
     APP_VERSION: str = "0.1.0"
     GOOGLE_API_KEY: str = ""
+    GCS_BUCKET_NAME: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

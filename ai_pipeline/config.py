@@ -11,9 +11,8 @@ if not GOOGLE_API_KEY:
 
 GEMINI_MODEL = "gemini-2.5-flash"
 
+# Logical path prefixes (used as storage keys, not filesystem paths)
 DATA_DIR = BASE_DIR / "data"
 IPAD_PHOTOS_DIR = DATA_DIR / "ipad_photos"
 PIPELINE_OUTPUT_DIR = DATA_DIR / "pipeline_output"
 GROUND_TRUTH_DIR = BASE_DIR / "synthetic_medical_records"
-
-PIPELINE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

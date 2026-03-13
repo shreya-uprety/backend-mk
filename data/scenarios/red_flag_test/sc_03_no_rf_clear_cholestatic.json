@@ -1,0 +1,104 @@
+{
+  "patient": {
+    "name": "Margaret Hillier",
+    "dob": "03/07/1970",
+    "mrn": "MK-SC03",
+    "age": "55",
+    "sex": "Female"
+  },
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
+  },
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Hyperlipidemia (on statin)"
+      ]
+    },
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["Simvastatin", "40mg", "ON"],
+          ["Calcium + Vitamin D", "1 tablet", "OD"]
+        ]
+      }]
+    },
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "February 28, 2026",
+      "data": {
+        "BP": "132/76",
+        "HR": "68",
+        "Temp": "36.7 C",
+        "Weight": "72 kg",
+        "Height": "160 cm",
+        "BMI": "28.0"
+      }
+    },
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "February 28, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "35 U/L", "7-56"],
+          ["AST", "32 U/L", "10-40"],
+          ["ALP", "380 U/L", "44-147 (HIGH)"],
+          ["GGT", "250 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "21 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "43 g/L", "35-50"]
+        ]
+      }]
+    },
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 1, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. S. Patel, Wolverton Health Centre",
+        "urgency": "Routine",
+        "reason_for_referral": "Incidental finding of raised ALP and GGT on annual review bloods. Patient is completely asymptomatic. Normal transaminases.",
+        "relevant_past_medical_history": [
+          "Hyperlipidemia"
+        ],
+        "alcohol_intake": "Minimal — approximately 4 units per week."
+      }
+    },
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "February 28, 2026 10:00",
+      "data": {
+        "chief_complaint": "Annual review — no complaints. Bloods taken routinely.",
+        "physical_examination": {
+          "general": "Well-appearing, healthy female.",
+          "abdomen": "Soft, non-tender. No organomegaly.",
+          "skin": "No jaundice."
+        },
+        "assessment": "Incidental raised ALP 380 and GGT 250 with normal transaminases. Cholestatic pattern. Needs further investigation — refer hepatology."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "None. Feeling perfectly well. This was found on routine blood tests."],
+        ["Alcohol intake", "About 4 units per week. Glass of wine with dinner a few times a week."],
+        ["Medications / Supplements", "Simvastatin, Calcium + Vit D"],
+        ["Family History of Liver Disease", "No"],
+        ["Metabolic Risk Factors", "High cholesterol. No diabetes."]
+      ]
+    }
+  ]
+}

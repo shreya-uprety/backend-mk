@@ -1,6 +1,5 @@
 """Orchestrator: runs the full pipeline from images to structured data."""
 
-import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,9 +9,11 @@ from .extract import (
     extract_and_merge,
     extract_and_merge_from_images,
     load_images_from_bytes,
+    load_images_from_storage,
     validate_images,
 )
 from .schema import PatientRecord, ExtractionMetadata, PatientIdentifiers
+from storage import get_storage
 
 CONFIDENCE_THRESHOLD = "low"  # reject only if below this
 CONFIDENCE_LEVELS = {"high": 3, "medium": 2, "low": 1}
@@ -37,18 +38,13 @@ def _build_record(merged: dict, source_images: list[str]) -> PatientRecord:
     )
 
 
-def _save_record(record: PatientRecord, output_dir: Path, raw: dict) -> Path:
-    """Save raw response and final record to output directory."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    with open(output_dir / "raw_response.json", "w") as f:
-        json.dump(raw, f, indent=2)
-
-    output_path = output_dir / "record.json"
-    with open(output_path, "w") as f:
-        json.dump(record.model_dump(exclude_none=True), f, indent=2)
-
-    return output_path
+def _save_record(record: PatientRecord, output_prefix: str, raw: dict) -> str:
+    """Save raw response and final record to storage."""
+    storage = get_storage()
+    storage.write_json(f"{output_prefix}/raw_response.json", raw)
+    record_path = f"{output_prefix}/record.json"
+    storage.write_json(record_path, record.model_dump(exclude_none=True))
+    return record_path
 
 
 def run_pipeline(
@@ -56,23 +52,36 @@ def run_pipeline(
     output_dir: Path | None = None,
     patient_id: str = "p0001",
 ) -> PatientRecord:
-    """Run pipeline from a directory of images (for batch/CLI use)."""
-    images_dir = images_dir or (IPAD_PHOTOS_DIR / patient_id)
-    patient_output_dir = (output_dir or PIPELINE_OUTPUT_DIR) / patient_id
+    """Run pipeline from stored images (for batch/CLI use).
 
+    If images_dir is given, reads from local disk (legacy).
+    Otherwise, reads from storage backend (GCS or local data/).
+    """
     print("=" * 60)
     print(f"AI PIPELINE: {patient_id} — iPad Photos -> Structured Patient Data")
     print("=" * 60)
 
     print(f"\n[{patient_id}] Processing images...")
-    merged = extract_and_merge(images_dir)
-    source_images = merged.pop("source_images", [])
 
+    if images_dir:
+        # Legacy local path mode
+        merged = extract_and_merge(images_dir)
+    else:
+        # Storage-backed mode
+        images, filenames = load_images_from_storage(patient_id)
+        print(f"  Loaded {len(images)} images from storage")
+        print(f"  Sending to Gemini in one call...")
+        merged = extract_and_merge_from_images(images)
+        merged["source_images"] = filenames
+
+    source_images = merged.pop("source_images", [])
     record = _build_record(merged, source_images)
-    output_path = _save_record(record, patient_output_dir, merged)
+
+    output_prefix = f"pipeline_output/{patient_id}"
+    record_path = _save_record(record, output_prefix, merged)
 
     print(f"\n  DONE — {len(record.sections)} sections | Patient: {record.patient.name} | Confidence: {record.extraction_metadata.confidence}")
-    print(f"  Output: {output_path}")
+    print(f"  Output: {record_path}")
 
     return record
 
@@ -110,7 +119,7 @@ def run_pipeline_from_uploads(
 
         merged = ext_future.result()
 
-    # Step 3: Check confidence
+    # Check confidence
     confidence = merged.get("confidence", "medium")
     conf_level = CONFIDENCE_LEVELS.get(confidence, 0)
     threshold_level = CONFIDENCE_LEVELS.get(CONFIDENCE_THRESHOLD, 1)
@@ -124,21 +133,26 @@ def run_pipeline_from_uploads(
             "session_id": None,
         }
 
-    # Step 4: Build record
+    # Build record
     record = _build_record(merged, filenames)
 
-    # Step 5: Save
-    session_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:6]
-    patient_name = (record.patient.name or "unknown").replace(" ", "_").lower()
-    output_dir = PIPELINE_OUTPUT_DIR / f"upload_{patient_name}_{session_id}"
-    _save_record(record, output_dir, merged)
+    # Save to storage using MRN as patient_id
+    mrn = record.patient.mrn or ""
+    if mrn:
+        patient_id = mrn
+    else:
+        patient_name = (record.patient.name or "unknown").replace(" ", "_").lower()
+        patient_id = patient_name
+
+    output_prefix = f"pipeline_output/{patient_id}"
+    _save_record(record, output_prefix, merged)
 
     return {
         "status": "success",
         "validation": validation,
         "record": record.model_dump(exclude_none=True),
-        "session_id": session_id,
-        "output_dir": str(output_dir),
+        "patient_id": patient_id,
+        "output_prefix": output_prefix,
     }
 
 
@@ -146,12 +160,20 @@ def run_all_patients():
     """Run pipeline for all patient folders in parallel."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    patient_dirs = sorted(d for d in IPAD_PHOTOS_DIR.iterdir() if d.is_dir())
-    if not patient_dirs:
-        print(f"No patient folders found in {IPAD_PHOTOS_DIR}")
+    storage = get_storage()
+    blobs = storage.list_blobs("ipad_photos")
+
+    # Extract unique patient_id prefixes
+    patient_ids = sorted({
+        b.split("/")[1]
+        for b in blobs
+        if len(b.split("/")) >= 2 and b.split("/")[1]
+    })
+
+    if not patient_ids:
+        print(f"No patient folders found in ipad_photos/")
         return
 
-    patient_ids = [d.name for d in patient_dirs]
     print(f"\nFound {len(patient_ids)} patients: {patient_ids}")
     print(f"Running all in parallel...\n")
 

@@ -1,10 +1,9 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
-from pathlib import Path
 from typing import List
 
-router = APIRouter(prefix="/pipeline", tags=["pipeline"])
+from storage import get_storage
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent.parent.parent
+router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
 ALLOWED_TYPES = {"image/jpeg", "image/jpg", "image/png"}
 MAX_FILES = 20
@@ -69,7 +68,7 @@ async def extract_from_uploads(files: List[UploadFile] = File(...)):
 
     return {
         "status": "success",
-        "session_id": result["session_id"],
+        "patient_id": result["patient_id"],
         "validation": result["validation"],
         "patient": result["record"]["patient"],
         "sections_count": len(result["record"]["sections"]),
@@ -80,28 +79,30 @@ async def extract_from_uploads(files: List[UploadFile] = File(...)):
 
 @router.post("/run/{patient_id}")
 async def run_extraction_pipeline(patient_id: str = "p0001"):
-    """Trigger the AI extraction pipeline for a given patient's stored iPad photos."""
+    """Trigger the AI extraction pipeline for a given patient's stored photos."""
+    storage = get_storage()
+
+    # Check if patient images exist in storage
+    image_blobs = [
+        b for b in storage.list_blobs(f"ipad_photos/{patient_id}")
+        if b.lower().endswith((".jpeg", ".jpg", ".png"))
+    ]
+    if not image_blobs:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No images found for patient {patient_id}",
+        )
+
     try:
         from ai_pipeline.pipeline import run_pipeline
-
-        images_dir = BACKEND_DIR / "data" / "ipad_photos" / patient_id
-        if not images_dir.exists() or not list(images_dir.glob("*.jpeg")):
-            raise HTTPException(
-                status_code=404,
-                detail=f"No images found in {images_dir}",
-            )
-
-        record = run_pipeline(
-            images_dir=images_dir,
-            patient_id=patient_id,
-        )
+        record = run_pipeline(patient_id=patient_id)
 
         return {
             "status": "success",
             "patient": record.patient.model_dump(exclude_none=True),
             "sections_count": len(record.sections),
             "confidence": record.extraction_metadata.confidence,
-            "output_file": f"data/pipeline_output/{patient_id}/record.json",
+            "output_path": f"pipeline_output/{patient_id}/record.json",
         }
 
     except Exception as e:
@@ -110,15 +111,14 @@ async def run_extraction_pipeline(patient_id: str = "p0001"):
 
 @router.get("/result/{patient_id}")
 async def get_pipeline_result(patient_id: str = "p0001"):
-    """Retrieve the extracted patient record."""
-    import json
+    """Retrieve the extracted patient record from storage."""
+    storage = get_storage()
+    path = f"pipeline_output/{patient_id}/record.json"
 
-    output_path = BACKEND_DIR / "data" / "pipeline_output" / patient_id / "record.json"
-    if not output_path.exists():
+    if not storage.exists(path):
         raise HTTPException(
             status_code=404,
             detail=f"No extraction result found for {patient_id}. Run the pipeline first.",
         )
 
-    with open(output_path) as f:
-        return json.load(f)
+    return storage.read_json(path)
