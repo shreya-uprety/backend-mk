@@ -109,6 +109,8 @@ def validate_images(images: list[Image.Image]) -> dict:
         contents=[VALIDATION_PROMPT] + images,
         config=genai.types.GenerateContentConfig(
             response_mime_type="application/json",
+            thinking_config=genai.types.ThinkingConfig(thinking_budget=0),
+            max_output_tokens=500,
         ),
     )
     return json.loads(response.text)
@@ -121,6 +123,8 @@ def extract_and_merge_from_images(images: list[Image.Image]) -> dict:
         contents=[EXTRACTION_PROMPT] + images,
         config=genai.types.GenerateContentConfig(
             response_mime_type="application/json",
+            thinking_config=genai.types.ThinkingConfig(thinking_budget=1024),
+            max_output_tokens=8000,
         ),
     )
     return json.loads(response.text)
