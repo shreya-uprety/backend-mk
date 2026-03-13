@@ -20,6 +20,11 @@ CONFIDENCE_LEVELS = {"high": 3, "medium": 2, "low": 1}
 
 def _build_record(merged: dict, source_images: list[str]) -> PatientRecord:
     """Validate and build a PatientRecord from raw Gemini output."""
+    # Backfill missing titles from section type
+    for section in merged.get("sections", []):
+        if not section.get("title"):
+            section["title"] = section.get("type", "Unknown").replace("_", " ").title()
+
     return PatientRecord(
         patient=PatientIdentifiers(**(merged.get("patient", {}))),
         extraction_metadata=ExtractionMetadata(

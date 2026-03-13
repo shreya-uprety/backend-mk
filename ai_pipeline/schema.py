@@ -19,7 +19,7 @@ class Section(BaseModel):
     assessment_plan, procedure, biopsy — but any string is valid.
     """
     type: str
-    title: str
+    title: str = ""
     date: str | None = None
     data: dict[str, Any] | None = None
     items: list[Any] | None = None
