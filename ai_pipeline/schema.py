@@ -24,7 +24,7 @@ class Section(BaseModel):
     data: dict[str, Any] | None = None
     items: list[Any] | None = None
     tables: list[dict[str, Any]] | None = None
-    findings: dict[str, str] | None = None
+    findings: dict[str, Any] | None = None
     impression: list[str] | None = None
     diagnosis: str | None = None
     summary: str | None = None
