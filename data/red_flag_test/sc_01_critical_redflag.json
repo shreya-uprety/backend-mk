@@ -1,75 +1,105 @@
 {
-  "scenario_id": "sc_01_critical_redflag",
-  "patient_demographics": { "age": 68, "sex": "male" },
-  "referral_summary": {
-    "symptoms": ["painless jaundice", "unintentional weight loss (10kg over 2 months)", "pale stools", "dark urine"],
-    "urgency_requested": "immediate"
+  "patient": {
+    "name": "George Whitfield",
+    "dob": "15/04/1957",
+    "mrn": "MK-SC01",
+    "age": "68",
+    "sex": "Male"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 85,
-    "AST_IU_L": 70,
-    "ALP_IU_L": 650,
-    "Bilirubin_umol_L": 180,
-    "Albumin_g_L": 30,
-    "GGT_IU_L": 400
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg", "notes.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 5,
-    "bmi": 26.5,
-    "known_liver_disease": false,
-    "comorbidities": ["Type 2 Diabetes"]
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 5,
-      "level": "low",
-      "exceeds_guidelines": false
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Type 2 Diabetes Mellitus (diagnosed 2018)",
+        "Obstructive jaundice — under investigation"
+      ]
     },
-    "bmi_category": {
-      "value": 26.5,
-      "category": "overweight"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["Gliclazide", "80mg", "BID"],
+          ["Lisinopril", "5mg", "OD"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": true,
-      "type": "type_2"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 10, 2026",
+      "data": {
+        "BP": "138/82",
+        "HR": "88",
+        "Temp": "37.1 C",
+        "Weight": "78 kg",
+        "Height": "171 cm",
+        "BMI": "26.5"
+      }
     },
-    "cancer_history": {
-      "present": false,
-      "types": [],
-      "metastasis_risk": "none"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 10, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "85 U/L", "7-56 (HIGH)"],
+          ["AST", "70 U/L", "10-40 (HIGH)"],
+          ["ALP", "650 U/L", "44-147 (HIGH)"],
+          ["GGT", "400 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "180 µmol/L", "0-20 (CRITICAL)"],
+          ["Albumin", "30 g/L", "35-50 (LOW)"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": true,
-      "jaundice": true,
-      "weight_loss": true,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": true,
-      "pain_severity": "moderate",
-      "symptom_list": ["painless jaundice", "unintentional weight loss (10kg over 2 months)", "pale stools", "dark urine"]
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 10, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. R. Kapoor, Bletchley Medical Centre",
+        "urgency": "IMMEDIATE",
+        "reason_for_referral": "Painless progressive jaundice with significant weight loss (10kg over 2 months), pale stools, and dark urine. Urgent evaluation for possible biliary obstruction or pancreatic malignancy.",
+        "relevant_past_medical_history": [
+          "Type 2 Diabetes Mellitus (diagnosed 2018)"
+        ],
+        "alcohol_intake": "Social only, approximately 5 units per week."
+      }
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 10, 2026 09:15",
+      "data": {
+        "chief_complaint": "Noticed yellowing of skin and eyes over past 3 weeks. Wife noted it first. Reports 10kg unintentional weight loss over 2 months. Stools pale and greasy. Urine dark brown.",
+        "physical_examination": {
+          "general": "Cachectic male, visibly jaundiced.",
+          "abdomen": "Soft, non-tender. No palpable masses. Liver edge just palpable.",
+          "skin": "Marked jaundice of sclera and skin. No spider naevi."
+        },
+        "assessment": "Clinical picture concerning for obstructive jaundice — needs urgent imaging to exclude pancreatic head lesion."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "Yellow skin/eyes, weight loss, pale stools, dark urine. No pain."],
+        ["Alcohol intake", "About 5 units per week. Beer at weekends."],
+        ["Medications / Supplements", "Gliclazide, Lisinopril"],
+        ["Family History of Liver Disease", "No"],
+        ["Metabolic Risk Factors", "Type 2 diabetes. No high blood pressure."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 0.42,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (85/40) / (650/130) = 2.12 / 5.0",
-      "zone": "cholestatic"
-    },
-    "uln_multiples": {
-      "ALT": 2.12,
-      "AST": 1.75,
-      "ALP": 5.0,
-      "Bilirubin": 9.0,
-      "GGT": 8.0
-    },
-    "ast_alt_ratio": {
-      "value": 0.82,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "low",
-    "overall_lab_severity": "severely_elevated"
-  }
+  ]
 }

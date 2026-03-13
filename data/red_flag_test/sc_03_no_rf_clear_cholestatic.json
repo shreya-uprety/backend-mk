@@ -1,75 +1,104 @@
 {
-  "scenario_id": "sc_03_no_rf_clear_cholestatic",
-  "patient_demographics": { "age": 55, "sex": "female" },
-  "referral_summary": {
-    "symptoms": ["none - incidental finding on annual review"],
-    "urgency_requested": "routine"
+  "patient": {
+    "name": "Margaret Hillier",
+    "dob": "03/07/1970",
+    "mrn": "MK-SC03",
+    "age": "55",
+    "sex": "Female"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 35,
-    "AST_IU_L": 32,
-    "ALP_IU_L": 380,
-    "Bilirubin_umol_L": 21,
-    "Albumin_g_L": 43,
-    "GGT_IU_L": 250
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 4,
-    "bmi": 28.0,
-    "known_liver_disease": false,
-    "comorbidities": ["Hyperlipidemia"]
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 4,
-      "level": "low",
-      "exceeds_guidelines": false
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Hyperlipidemia (on statin)"
+      ]
     },
-    "bmi_category": {
-      "value": 28.0,
-      "category": "overweight"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["Simvastatin", "40mg", "ON"],
+          ["Calcium + Vitamin D", "1 tablet", "OD"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": false,
-      "type": "none"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "February 28, 2026",
+      "data": {
+        "BP": "132/76",
+        "HR": "68",
+        "Temp": "36.7 C",
+        "Weight": "72 kg",
+        "Height": "160 cm",
+        "BMI": "28.0"
+      }
     },
-    "cancer_history": {
-      "present": false,
-      "types": [],
-      "metastasis_risk": "none"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "February 28, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "35 U/L", "7-56"],
+          ["AST", "32 U/L", "10-40"],
+          ["ALP", "380 U/L", "44-147 (HIGH)"],
+          ["GGT", "250 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "21 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "43 g/L", "35-50"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": false,
-      "jaundice": false,
-      "weight_loss": false,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": false,
-      "pain_severity": "none",
-      "symptom_list": ["none - incidental finding on annual review"]
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 1, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. S. Patel, Wolverton Health Centre",
+        "urgency": "Routine",
+        "reason_for_referral": "Incidental finding of raised ALP and GGT on annual review bloods. Patient is completely asymptomatic. Normal transaminases.",
+        "relevant_past_medical_history": [
+          "Hyperlipidemia"
+        ],
+        "alcohol_intake": "Minimal — approximately 4 units per week."
+      }
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "February 28, 2026 10:00",
+      "data": {
+        "chief_complaint": "Annual review — no complaints. Bloods taken routinely.",
+        "physical_examination": {
+          "general": "Well-appearing, healthy female.",
+          "abdomen": "Soft, non-tender. No organomegaly.",
+          "skin": "No jaundice."
+        },
+        "assessment": "Incidental raised ALP 380 and GGT 250 with normal transaminases. Cholestatic pattern. Needs further investigation — refer hepatology."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "None. Feeling perfectly well. This was found on routine blood tests."],
+        ["Alcohol intake", "About 4 units per week. Glass of wine with dinner a few times a week."],
+        ["Medications / Supplements", "Simvastatin, Calcium + Vit D"],
+        ["Family History of Liver Disease", "No"],
+        ["Metabolic Risk Factors", "High cholesterol. No diabetes."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 0.3,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (35/40) / (380/130) = 0.88 / 2.92",
-      "zone": "cholestatic"
-    },
-    "uln_multiples": {
-      "ALT": 0.88,
-      "AST": 0.8,
-      "ALP": 2.92,
-      "Bilirubin": 1.05,
-      "GGT": 5.0
-    },
-    "ast_alt_ratio": {
-      "value": 0.91,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "normal",
-    "overall_lab_severity": "moderately_elevated"
-  }
+  ]
 }

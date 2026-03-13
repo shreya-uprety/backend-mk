@@ -1,75 +1,104 @@
 {
-  "scenario_id": "sc_02_soft_redflag_pain",
-  "patient_demographics": { "age": 42, "sex": "female" },
-  "referral_summary": {
-    "symptoms": ["intermittent severe right upper quadrant pain, worse after eating fatty foods", "nausea"],
-    "urgency_requested": "routine"
+  "patient": {
+    "name": "Lisa Brennan",
+    "dob": "22/09/1983",
+    "mrn": "MK-SC02",
+    "age": "42",
+    "sex": "Female"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 55,
-    "AST_IU_L": 45,
-    "ALP_IU_L": 190,
-    "Bilirubin_umol_L": 28,
-    "Albumin_g_L": 40,
-    "GGT_IU_L": 110
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 0,
-    "bmi": 32.1,
-    "known_liver_disease": false,
-    "comorbidities": []
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 0,
-      "level": "none",
-      "exceeds_guidelines": false
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Obesity (BMI 32.1)"
+      ]
     },
-    "bmi_category": {
-      "value": 32.1,
-      "category": "obese"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["Omeprazole", "20mg", "OD"],
+          ["Oral Contraceptive", "Combined", "OD"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": false,
-      "type": "none"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 5, 2026",
+      "data": {
+        "BP": "128/78",
+        "HR": "72",
+        "Temp": "36.6 C",
+        "Weight": "88 kg",
+        "Height": "166 cm",
+        "BMI": "32.1"
+      }
     },
-    "cancer_history": {
-      "present": false,
-      "types": [],
-      "metastasis_risk": "none"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 5, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "55 U/L", "7-56"],
+          ["AST", "45 U/L", "10-40 (HIGH)"],
+          ["ALP", "190 U/L", "44-147 (HIGH)"],
+          ["GGT", "110 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "28 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "40 g/L", "35-50"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": false,
-      "jaundice": false,
-      "weight_loss": false,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": false,
-      "pain_severity": "moderate",
-      "symptom_list": ["intermittent severe right upper quadrant pain, worse after eating fatty foods", "nausea"]
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 6, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. J. Okafor, Stony Stratford Practice",
+        "urgency": "Routine",
+        "reason_for_referral": "Intermittent severe right upper quadrant pain, worse after eating fatty foods, with nausea. Abnormal LFTs on investigation.",
+        "relevant_past_medical_history": [
+          "Obesity (BMI 32.1)"
+        ],
+        "alcohol_intake": "Non-drinker."
+      }
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 5, 2026 14:30",
+      "data": {
+        "chief_complaint": "Intermittent sharp pain in right upper abdomen after meals, especially fatty food. Associated nausea but no vomiting. No jaundice.",
+        "physical_examination": {
+          "general": "Well-appearing, obese female.",
+          "abdomen": "Soft, mild tenderness in RUQ on deep palpation. No guarding. Murphy's sign equivocal.",
+          "skin": "No jaundice. No stigmata of chronic liver disease."
+        },
+        "assessment": "Likely biliary colic. LFTs mildly deranged — cholestatic pattern. USS abdomen requested."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "Sharp pain under right ribs after eating, especially greasy food. Sometimes feel sick. Goes away after a few hours."],
+        ["Alcohol intake", "None. I don't drink alcohol."],
+        ["Medications / Supplements", "Omeprazole for reflux, contraceptive pill"],
+        ["Family History of Liver Disease", "Mother had gallstones"],
+        ["Metabolic Risk Factors", "Overweight. No diabetes or high blood pressure."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 0.95,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (55/40) / (190/130) = 1.38 / 1.46",
-      "zone": "cholestatic"
-    },
-    "uln_multiples": {
-      "ALT": 1.38,
-      "AST": 1.12,
-      "ALP": 1.46,
-      "Bilirubin": 1.4,
-      "GGT": 2.2
-    },
-    "ast_alt_ratio": {
-      "value": 0.82,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "normal",
-    "overall_lab_severity": "moderately_elevated"
-  }
+  ]
 }

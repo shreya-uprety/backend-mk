@@ -27,7 +27,6 @@ app.include_router(decisions.router)
 
 static_dir = Path(__file__).resolve().parent.parent / "static"
 data_dir = Path(__file__).resolve().parent.parent / "data"
-data_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/data", StaticFiles(directory=str(data_dir)), name="data")
 app.mount("/static", StaticFiles(directory=str(static_dir), html=True), name="static")
 

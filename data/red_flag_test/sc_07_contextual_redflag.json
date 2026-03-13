@@ -1,75 +1,111 @@
 {
-  "scenario_id": "sc_07_contextual_redflag",
-  "patient_demographics": { "age": 60, "sex": "female" },
-  "referral_summary": {
-    "symptoms": ["recent onset vague abdominal discomfort", "fatigue", "loss of appetite"],
-    "urgency_requested": "routine"
+  "patient": {
+    "name": "Patricia Okonkwo",
+    "dob": "09/01/1966",
+    "mrn": "MK-SC07",
+    "age": "60",
+    "sex": "Female"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 50,
-    "AST_IU_L": 48,
-    "ALP_IU_L": 160,
-    "Bilirubin_umol_L": 22,
-    "Albumin_g_L": 36,
-    "GGT_IU_L": 80
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg", "notes.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 1,
-    "bmi": 25.0,
-    "known_liver_disease": false,
-    "comorbidities": ["History of Breast Cancer (in remission 2 years)"]
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 1,
-      "level": "low",
-      "exceeds_guidelines": false
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "History of Breast Cancer (in remission 2 years)",
+        "Hypertension",
+        "Osteoporosis"
+      ]
     },
-    "bmi_category": {
-      "value": 25.0,
-      "category": "overweight"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency", "Indication"],
+        "rows": [
+          ["Anastrozole", "1mg", "OD", "Breast cancer (adjuvant)"],
+          ["Amlodipine", "10mg", "OD", "HTN"],
+          ["Alendronic Acid", "70mg", "Weekly", "Osteoporosis"],
+          ["Calcium + Vit D", "1 tablet", "OD", "Bone health"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": false,
-      "type": "none"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 3, 2026",
+      "data": {
+        "BP": "140/85",
+        "HR": "74",
+        "Temp": "36.9 C",
+        "Weight": "65 kg",
+        "Height": "161 cm",
+        "BMI": "25.0"
+      }
     },
-    "cancer_history": {
-      "present": true,
-      "types": ["Breast Cancer"],
-      "metastasis_risk": "moderate"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 3, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "50 U/L", "7-56"],
+          ["AST", "48 U/L", "10-40 (HIGH)"],
+          ["ALP", "160 U/L", "44-147 (HIGH)"],
+          ["GGT", "80 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "22 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "36 g/L", "35-50"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": false,
-      "jaundice": false,
-      "weight_loss": false,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": false,
-      "pain_severity": "moderate",
-      "symptom_list": ["recent onset vague abdominal discomfort", "fatigue", "loss of appetite"]
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 4, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. F. Adebayo, Woughton Surgery",
+        "urgency": "Routine",
+        "reason_for_referral": "New onset mildly deranged LFTs in a patient with history of breast cancer (in remission 2 years). Recent onset vague abdominal discomfort, fatigue, and loss of appetite. Concerned about possible hepatic metastasis.",
+        "relevant_past_medical_history": [
+          "Breast Cancer — Stage IIA, ER+/HER2-, treated with lumpectomy + radiotherapy + anastrozole. In remission 2 years.",
+          "Hypertension",
+          "Osteoporosis (likely aromatase inhibitor related)"
+        ],
+        "alcohol_intake": "Minimal — about 1 unit per week."
+      }
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 3, 2026 10:45",
+      "data": {
+        "chief_complaint": "Vague abdominal discomfort for past 3 weeks. Feeling more tired than usual. Reduced appetite. Has lost about 2kg but attributes to eating less.",
+        "hpi": "60F with history of breast cancer in remission. New onset non-specific abdominal symptoms. Concerned about cancer recurrence. No jaundice, no dark urine, no night sweats.",
+        "physical_examination": {
+          "general": "Slim female, appears mildly fatigued. No distress.",
+          "abdomen": "Soft, mild diffuse tenderness on deep palpation. No masses. No organomegaly.",
+          "skin": "No jaundice. Well-healed surgical scar left breast."
+        },
+        "assessment": "New LFT derangement in context of breast cancer history is concerning. ALP rise could indicate bone or hepatic metastasis. Needs further investigation — imaging + hepatology review."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "Vague tummy discomfort for a few weeks. Tired. Not eating as much. Lost a bit of weight but not trying to."],
+        ["Alcohol intake", "About 1 unit per week. Occasional glass of wine."],
+        ["Medications / Supplements", "Anastrozole, Amlodipine, Alendronic acid, Calcium + Vit D"],
+        ["Family History of Liver Disease", "No"],
+        ["Metabolic Risk Factors", "High blood pressure. No diabetes."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 1.02,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (50/40) / (160/130) = 1.25 / 1.23",
-      "zone": "cholestatic"
-    },
-    "uln_multiples": {
-      "ALT": 1.25,
-      "AST": 1.2,
-      "ALP": 1.23,
-      "Bilirubin": 1.1,
-      "GGT": 1.6
-    },
-    "ast_alt_ratio": {
-      "value": 0.96,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "low_normal",
-    "overall_lab_severity": "mildly_elevated"
-  }
+  ]
 }

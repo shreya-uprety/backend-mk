@@ -1,75 +1,123 @@
 {
-  "scenario_id": "sc_05_no_rf_mixed_debate",
-  "patient_demographics": { "age": 51, "sex": "male" },
-  "referral_summary": {
-    "symptoms": ["none", "routine diabetic checkup"],
-    "urgency_requested": "routine"
+  "patient": {
+    "name": "David Kowalski",
+    "dob": "28/02/1975",
+    "mrn": "MK-SC05",
+    "age": "51",
+    "sex": "Male"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 140,
-    "AST_IU_L": 110,
-    "ALP_IU_L": 210,
-    "Bilirubin_umol_L": 30,
-    "Albumin_g_L": 39,
-    "GGT_IU_L": 180
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg", "notes.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 18,
-    "bmi": 36.5,
-    "known_liver_disease": false,
-    "comorbidities": ["Type 2 Diabetes", "Hypertension"]
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 18,
-      "level": "moderate",
-      "exceeds_guidelines": true
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Type 2 Diabetes Mellitus (diagnosed 2020, HbA1c 7.8%)",
+        "Hypertension",
+        "Obesity (BMI 36.5)"
+      ]
     },
-    "bmi_category": {
-      "value": 36.5,
-      "category": "obese"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency", "Indication"],
+        "rows": [
+          ["Metformin", "1000mg", "BID", "T2DM"],
+          ["Amlodipine", "5mg", "OD", "HTN"],
+          ["Atorvastatin", "20mg", "OD", "Lipids"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": true,
-      "type": "type_2"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 1, 2026",
+      "data": {
+        "BP": "148/92",
+        "HR": "82",
+        "Temp": "36.7 C",
+        "Weight": "112 kg",
+        "Height": "175 cm",
+        "BMI": "36.5"
+      }
     },
-    "cancer_history": {
-      "present": false,
-      "types": [],
-      "metastasis_risk": "none"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 1, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "140 U/L", "7-56 (HIGH)"],
+          ["AST", "110 U/L", "10-40 (HIGH)"],
+          ["ALP", "210 U/L", "44-147 (HIGH)"],
+          ["GGT", "180 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "30 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "39 g/L", "35-50"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": false,
-      "jaundice": false,
-      "weight_loss": false,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": false,
-      "pain_severity": "none",
-      "symptom_list": ["routine diabetic checkup"]
+    {
+      "type": "lab_results",
+      "title": "HbA1c & Lipids",
+      "date": "March 1, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["HbA1c", "7.8%", "<6.5 (HIGH)"],
+          ["Total Cholesterol", "5.8 mmol/L", "<5.0 (HIGH)"],
+          ["Triglycerides", "3.2 mmol/L", "<1.7 (HIGH)"]
+        ]
+      }]
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 2, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. A. Shah, Eaglestone Health Centre",
+        "urgency": "Routine",
+        "reason_for_referral": "Abnormal LFTs identified during routine diabetic annual review. Patient is asymptomatic. Multiple metabolic risk factors present.",
+        "relevant_past_medical_history": [
+          "Type 2 Diabetes Mellitus (diagnosed 2020, poorly controlled HbA1c 7.8%)",
+          "Hypertension",
+          "Obesity (BMI 36.5)"
+        ],
+        "alcohol_intake": "Approximately 18 units per week. Beer and wine at weekends, occasional whisky."
+      }
+    },
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 1, 2026 09:30",
+      "data": {
+        "chief_complaint": "Routine diabetic annual review. No complaints. Feels well.",
+        "hpi": "51M with metabolic syndrome. Asymptomatic. LFTs found elevated on routine screening. Reports moderate alcohol use. Denies abdominal pain, jaundice, or weight change.",
+        "physical_examination": {
+          "general": "Well-appearing, centrally obese male.",
+          "abdomen": "Soft, obese, non-tender. Liver edge not palpable through adipose tissue.",
+          "skin": "No jaundice. No stigmata of chronic liver disease."
+        },
+        "assessment": "Elevated LFTs in context of metabolic syndrome and moderate alcohol. Mixed hepatocellular/cholestatic pattern. Needs hepatology evaluation to differentiate MASLD vs alcohol-related vs other causes."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "None. Came for my diabetic check. Feel fine."],
+        ["Alcohol intake", "About 18 units per week. Mostly beer at weekends, sometimes a whisky in the evening."],
+        ["Medications / Supplements", "Metformin, Amlodipine, Atorvastatin"],
+        ["Family History of Liver Disease", "No"],
+        ["Metabolic Risk Factors", "Yes. Type 2 diabetes, high blood pressure, overweight."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 2.16,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (140/40) / (210/130) = 3.5 / 1.62",
-      "zone": "mixed"
-    },
-    "uln_multiples": {
-      "ALT": 3.5,
-      "AST": 2.75,
-      "ALP": 1.62,
-      "Bilirubin": 1.5,
-      "GGT": 3.6
-    },
-    "ast_alt_ratio": {
-      "value": 0.79,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "low_normal",
-    "overall_lab_severity": "moderately_elevated"
-  }
+  ]
 }

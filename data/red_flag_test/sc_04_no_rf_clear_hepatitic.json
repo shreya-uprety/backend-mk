@@ -1,75 +1,102 @@
 {
-  "scenario_id": "sc_04_no_rf_clear_hepatitic",
-  "patient_demographics": { "age": 29, "sex": "male" },
-  "referral_summary": {
-    "symptoms": ["occasional fatigue", "otherwise generally well"],
-    "urgency_requested": "routine"
+  "patient": {
+    "name": "Ryan Doyle",
+    "dob": "11/11/1996",
+    "mrn": "MK-SC04",
+    "age": "29",
+    "sex": "Male"
   },
-  "lft_blood_results": {
-    "ALT_IU_L": 550,
-    "AST_IU_L": 480,
-    "ALP_IU_L": 95,
-    "Bilirubin_umol_L": 24,
-    "Albumin_g_L": 46,
-    "GGT_IU_L": 150
+  "extraction_metadata": {
+    "source_images": ["referral.jpeg", "results.jpeg", "notes.jpeg"],
+    "extraction_date": "2026-03-13T09:00:00Z",
+    "model_used": "gemini-2.5-flash",
+    "confidence": "high"
   },
-  "history_risk_factors": {
-    "alcohol_units_weekly": 50,
-    "bmi": 24.5,
-    "known_liver_disease": false,
-    "comorbidities": []
-  },
-  "risk_factors": {
-    "alcohol_risk": {
-      "units_weekly": 50,
-      "level": "very_high",
-      "exceeds_guidelines": true
+  "sections": [
+    {
+      "type": "problems",
+      "title": "Problems",
+      "items": [
+        "Alcohol misuse (self-reported heavy use)"
+      ]
     },
-    "bmi_category": {
-      "value": 24.5,
-      "category": "normal"
+    {
+      "type": "medications",
+      "title": "Current Medications",
+      "tables": [{
+        "headers": ["Medication", "Dose", "Frequency"],
+        "rows": [
+          ["Thiamine", "100mg", "OD"],
+          ["Multivitamin", "1 tablet", "OD"]
+        ]
+      }]
     },
-    "diabetes_status": {
-      "present": false,
-      "type": "none"
+    {
+      "type": "vitals",
+      "title": "Latest Vitals",
+      "date": "March 8, 2026",
+      "data": {
+        "BP": "122/74",
+        "HR": "76",
+        "Temp": "36.8 C",
+        "Weight": "74 kg",
+        "Height": "174 cm",
+        "BMI": "24.5"
+      }
     },
-    "cancer_history": {
-      "present": false,
-      "types": [],
-      "metastasis_risk": "none"
+    {
+      "type": "lab_results",
+      "title": "Liver Biochemistry",
+      "date": "March 8, 2026",
+      "tables": [{
+        "headers": ["Test", "Result", "Ref Range"],
+        "rows": [
+          ["ALT", "550 U/L", "7-56 (HIGH)"],
+          ["AST", "480 U/L", "10-40 (HIGH)"],
+          ["ALP", "95 U/L", "44-147"],
+          ["GGT", "150 U/L", "9-48 (HIGH)"],
+          ["Bilirubin Total", "24 µmol/L", "0-20 (HIGH)"],
+          ["Albumin", "46 g/L", "35-50"]
+        ]
+      }]
     },
-    "symptom_severity": {
-      "has_red_flag_symptoms": false,
-      "jaundice": false,
-      "weight_loss": false,
-      "abdominal_mass": false,
-      "dark_urine_pale_stools": false,
-      "pain_severity": "none",
-      "symptom_list": ["occasional fatigue", "otherwise generally well"]
+    {
+      "type": "referral",
+      "title": "Referral Letter",
+      "date": "March 8, 2026",
+      "data": {
+        "to": "Hepatology Department, Milton Keynes University Hospital",
+        "from": "Dr. C. Evans, Newport Pagnell Surgery",
+        "urgency": "Routine",
+        "reason_for_referral": "Significantly elevated transaminases found on screening bloods. Patient reports occasional fatigue but is otherwise generally well. High alcohol consumption reported.",
+        "relevant_past_medical_history": [],
+        "alcohol_intake": "Reports approximately 50 units per week. Mostly spirits. Drinking heavily since university."
+      }
     },
-    "liver_disease_history": {
-      "known_disease": false,
-      "details": "none"
+    {
+      "type": "consultation_notes",
+      "title": "GP Consultation Notes",
+      "date": "March 8, 2026 11:00",
+      "data": {
+        "chief_complaint": "Came in for routine health check requested by employer. Reports occasional tiredness but attributes to work stress. Otherwise well.",
+        "physical_examination": {
+          "general": "Well-appearing, slim male. No distress.",
+          "abdomen": "Soft, non-tender. No hepatomegaly.",
+          "skin": "No jaundice. No spider naevi. No palmar erythema."
+        },
+        "assessment": "Markedly elevated transaminases (ALT 550, AST 480) with normal ALP. Hepatocellular pattern. Very high alcohol intake is the likely aetiology. Needs hepatology input and alcohol reduction advice."
+      }
+    },
+    {
+      "type": "questionnaire",
+      "title": "Pre-Consultation Questionnaire",
+      "qa": [
+        ["Main Symptoms", "Occasional fatigue. Otherwise generally well."],
+        ["Alcohol intake", "About 50 units per week. Mostly vodka and whisky. Been drinking like this since uni (about 8 years)."],
+        ["Medications / Supplements", "Thiamine, multivitamin (started recently on GP advice)"],
+        ["Family History of Liver Disease", "Father has fatty liver"],
+        ["Metabolic Risk Factors", "None. Normal weight."]
+      ]
     }
-  },
-  "derived_metrics": {
-    "r_factor": {
-      "value": 18.84,
-      "formula": "(ALT/ULN) / (ALP/ULN) = (550/40) / (95/130) = 13.75 / 0.73",
-      "zone": "hepatitic"
-    },
-    "uln_multiples": {
-      "ALT": 13.75,
-      "AST": 12.0,
-      "ALP": 0.73,
-      "Bilirubin": 1.2,
-      "GGT": 3.0
-    },
-    "ast_alt_ratio": {
-      "value": 0.87,
-      "interpretation": "AST:ALT <1.0 — suggests NAFLD over alcoholic liver disease"
-    },
-    "albumin_status": "normal",
-    "overall_lab_severity": "critical"
-  }
+  ]
 }

@@ -377,6 +377,105 @@
         line-height: 1.5;
     }
 
+    /* Upload zone */
+    .upload-zone {
+        border: 2px dashed #b0c4de;
+        border-radius: 8px;
+        padding: 24px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+        border-color: #0066cc;
+        background: #e8f0fe;
+    }
+    .upload-zone.has-files {
+        border-color: #22aa44;
+        background: #f0faf0;
+    }
+    .upload-icon { font-size: 28px; margin-bottom: 6px; color: #888; }
+    .upload-text { font-size: 12px; color: #555; }
+    .upload-hint { font-size: 10px; color: #999; margin-top: 4px; }
+    .upload-file-input { display: none; }
+
+    .upload-previews {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .upload-preview {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 4px;
+        overflow: hidden;
+        border: 1px solid #ddd;
+    }
+    .upload-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .upload-preview .remove-preview {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 9px;
+        cursor: pointer;
+        line-height: 16px;
+        text-align: center;
+    }
+    .upload-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+    }
+    .btn-extract {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #003366, #0066cc);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-extract:hover { filter: brightness(1.1); }
+    .btn-extract:disabled { opacity: 0.5; cursor: not-allowed; }
+    .upload-file-count {
+        font-size: 11px;
+        color: #666;
+    }
+
+    .extract-result-banner {
+        margin-top: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        display: none;
+    }
+    .extract-result-banner.show { display: block; }
+    .extract-result-banner.success {
+        background: #e6f4ea;
+        border: 1px solid #66cc88;
+        color: #137333;
+    }
+    .extract-result-banner.error {
+        background: #fce8e6;
+        border: 1px solid #ff9999;
+        color: #c5221f;
+    }
+
     @media (max-width: 900px) {
         .panel-grid { grid-template-columns: 1fr; }
     }
@@ -387,7 +486,7 @@
 <div class="header">
     <div>
         <h1>MedForce Milton Key — AI Debate Loop Tester</h1>
-        <p>Multi-Agent Clinical Decision System — Module 0 (Risk Factors) + Module A (Red Flag) + Module B (Pattern Analysis)</p>
+        <p>Multi-Agent Clinical Decision System — Record Transform → Risk Extract → Red Flag Debate → Pattern Debate</p>
     </div>
     <span class="header-badge">v1.0 PROTOTYPE</span>
 </div>
@@ -399,22 +498,58 @@
         <div class="card-body">
             <div class="config-row">
                 <label>Base URL:</label>
-                <input type="text" id="base-url" value="">
+                <input type="text" id="base-url" value="http://localhost:8000">
             </div>
-            <div style="display:flex;gap:16px;">
-                <div class="config-row" style="flex:1;">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                <div class="config-row" style="flex:1;min-width:200px;">
+                    <label>Transform:</label>
+                    <input type="text" id="transform-endpoint" value="/api/v1/decisions/transform-record">
+                </div>
+                <div class="config-row" style="flex:1;min-width:200px;">
                     <label>Extract:</label>
                     <input type="text" id="m0-endpoint" value="/api/v1/decisions/extract-risk-factors">
                 </div>
-                <div class="config-row" style="flex:1;">
+                <div class="config-row" style="flex:1;min-width:200px;">
                     <label>Red Flag:</label>
                     <input type="text" id="rf-endpoint" value="/api/v1/decisions/red-flag-check">
                 </div>
-                <div class="config-row" style="flex:1;">
+                <div class="config-row" style="flex:1;min-width:200px;">
                     <label>Pattern:</label>
                     <input type="text" id="pa-endpoint" value="/api/v1/decisions/pattern-analysis">
                 </div>
+                <div class="config-row" style="flex:1;min-width:200px;">
+                    <label>Full Pipeline:</label>
+                    <input type="text" id="pipeline-endpoint" value="/api/v1/decisions/full-pipeline">
+                </div>
+                <div class="config-row" style="flex:1;min-width:200px;">
+                    <label>Extract:</label>
+                    <input type="text" id="extract-endpoint" value="/pipeline/extract">
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Photo Upload -->
+    <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header" style="background: linear-gradient(135deg, #003366, #0066cc); color: white;">
+            Upload Patient Photos — Extract & Analyze
+            <span style="font-weight:normal;font-size:10px;opacity:0.8;">Upload iPad photos → AI extracts data → Run debate pipeline</span>
+        </div>
+        <div class="card-body">
+            <div class="upload-zone" id="upload-zone">
+                <div class="upload-icon">+</div>
+                <div class="upload-text">Drop iPad photos here or click to browse</div>
+                <div class="upload-hint">JPEG, PNG — Max 20 files, 10MB each</div>
+            </div>
+            <input type="file" id="upload-file-input" class="upload-file-input" multiple accept="image/jpeg,image/png,image/jpg">
+            <div class="upload-previews" id="upload-previews"></div>
+            <div class="upload-actions" id="upload-actions" style="display:none;">
+                <button class="btn-extract" id="extract-photos-btn" onclick="extractFromPhotos()">Extract Patient Data</button>
+                <span class="upload-file-count" id="upload-file-count"></span>
+                <button class="btn btn-outline" style="padding:6px 12px;font-size:11px;flex:none;" onclick="clearUpload()">Clear</button>
+            </div>
+            <div class="status" id="upload-status"></div>
+            <div class="extract-result-banner" id="extract-result-banner"></div>
         </div>
     </div>
 
@@ -422,7 +557,7 @@
     <div class="card" style="margin-bottom: 16px;">
         <div class="card-header" style="background: #f8f8f8; color: #333;">
             Quick Load Scenario
-            <span style="font-weight:normal;font-size:10px;color:#999;">Click to populate input JSON</span>
+            <span style="font-weight:normal;font-size:10px;color:#999;">Click to populate input JSON — or upload photos above</span>
         </div>
         <div class="card-body">
             <div class="scenario-pills" id="scenario-pills"></div>
@@ -498,17 +633,19 @@
     <!-- Full Workflow Runner -->
     <div class="card" style="margin-top: 16px;">
         <div class="card-header" style="background: linear-gradient(135deg, #1a1a2e, #0f3460); color: white;">
-            Full Workflow: Extract Risk Factors -> Red Flag -> Pattern Analysis
+            Full Pipeline: Record -> Transform -> Extract -> Red Flag -> Pattern
             <button class="btn" style="padding:6px 14px;font-size:11px;background:rgba(255,255,255,0.2);color:white;" onclick="runFullWorkflow()">Run Full Pipeline</button>
         </div>
         <div class="card-body">
             <div id="workflow-progress" style="display:none;margin-bottom:10px;">
-                <div style="display:flex;gap:4px;align-items:center;font-size:11px;">
-                    <span class="wf-step" id="wf-step-0" style="padding:3px 10px;border-radius:10px;background:#eee;">Module 0: Extract</span>
+                <div style="display:flex;gap:4px;align-items:center;font-size:11px;flex-wrap:wrap;">
+                    <span class="wf-step" id="wf-step-0" style="padding:3px 10px;border-radius:10px;background:#eee;">Transform</span>
                     <span style="color:#ccc;">-></span>
-                    <span class="wf-step" id="wf-step-1" style="padding:3px 10px;border-radius:10px;background:#eee;">Module A: Red Flag</span>
+                    <span class="wf-step" id="wf-step-1" style="padding:3px 10px;border-radius:10px;background:#eee;">Extract Risk Factors</span>
                     <span style="color:#ccc;">-></span>
-                    <span class="wf-step" id="wf-step-2" style="padding:3px 10px;border-radius:10px;background:#eee;">Module B: Pattern</span>
+                    <span class="wf-step" id="wf-step-2" style="padding:3px 10px;border-radius:10px;background:#eee;">Red Flag Debate</span>
+                    <span style="color:#ccc;">-></span>
+                    <span class="wf-step" id="wf-step-3" style="padding:3px 10px;border-radius:10px;background:#eee;">Pattern Debate</span>
                 </div>
             </div>
             <div class="status" id="workflow-status"></div>
@@ -567,6 +704,126 @@ function loadScenario(key, pillEl) {
     }
 }
 
+// ── Photo Upload ──
+let uploadFiles = [];
+const uploadZone = document.getElementById('upload-zone');
+const uploadFileInput = document.getElementById('upload-file-input');
+const uploadPreviews = document.getElementById('upload-previews');
+const uploadActions = document.getElementById('upload-actions');
+const uploadFileCount = document.getElementById('upload-file-count');
+
+uploadZone.addEventListener('click', () => uploadFileInput.click());
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    addUploadFiles(e.dataTransfer.files);
+});
+uploadFileInput.addEventListener('change', () => {
+    addUploadFiles(uploadFileInput.files);
+    uploadFileInput.value = '';
+});
+
+function addUploadFiles(fileList) {
+    for (const f of fileList) {
+        if (uploadFiles.length >= 20) break;
+        if (!f.type.match(/^image\/(jpeg|jpg|png)$/)) continue;
+        uploadFiles.push(f);
+    }
+    renderUploadPreviews();
+}
+
+function removeUploadFile(index) {
+    uploadFiles.splice(index, 1);
+    renderUploadPreviews();
+}
+
+function clearUpload() {
+    uploadFiles = [];
+    renderUploadPreviews();
+    document.getElementById('upload-status').className = 'status';
+    const banner = document.getElementById('extract-result-banner');
+    banner.className = 'extract-result-banner';
+    uploadZone.classList.remove('has-files');
+}
+
+function renderUploadPreviews() {
+    uploadPreviews.innerHTML = '';
+    uploadFiles.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'upload-preview';
+        const url = URL.createObjectURL(f);
+        div.innerHTML = `
+            <img src="${url}" alt="${f.name}">
+            <button class="remove-preview" onclick="removeUploadFile(${i})">x</button>
+        `;
+        uploadPreviews.appendChild(div);
+    });
+    uploadFileCount.textContent = uploadFiles.length > 0 ? `${uploadFiles.length} file(s)` : '';
+    uploadActions.style.display = uploadFiles.length > 0 ? 'flex' : 'none';
+    uploadZone.classList.toggle('has-files', uploadFiles.length > 0);
+}
+
+async function extractFromPhotos() {
+    if (uploadFiles.length === 0) return;
+
+    const baseUrl = document.getElementById('base-url').value;
+    const statusEl = document.getElementById('upload-status');
+    const banner = document.getElementById('extract-result-banner');
+    const btn = document.getElementById('extract-photos-btn');
+
+    setStatus(statusEl, 'loading', `Uploading ${uploadFiles.length} photos and extracting data via Gemini Vision... This may take 1-3 minutes.`);
+    btn.disabled = true;
+    banner.className = 'extract-result-banner';
+
+    const formData = new FormData();
+    uploadFiles.forEach(f => formData.append('files', f));
+
+    try {
+        const extractEndpoint = document.getElementById('extract-endpoint').value;
+        const res = await fetch(`${baseUrl}${extractEndpoint}`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            const detail = data.detail;
+            const msg = typeof detail === 'object' ? detail.message : detail;
+            setStatus(statusEl, 'error', `Extraction failed: ${msg}`);
+            btn.disabled = false;
+            return;
+        }
+
+        // Success — populate textareas with the extracted record
+        const record = data.record;
+        const json = JSON.stringify(record, null, 2);
+        document.getElementById('rf-input').value = json;
+        document.getElementById('pa-input').value = json;
+
+        // Deselect any scenario pill
+        document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+
+        const patientName = record.patient?.name || 'Unknown';
+        const sectionsCount = record.sections?.length || 0;
+        const confidence = record.extraction_metadata?.confidence || '?';
+
+        setStatus(statusEl, 'success',
+            `Extracted ${sectionsCount} sections for ${patientName} (${confidence} confidence). Data loaded — click "Run Full Pipeline" below.`
+        );
+
+        banner.className = 'extract-result-banner show success';
+        banner.innerHTML = `<b>${patientName}</b> — ${sectionsCount} sections extracted | Confidence: ${confidence} | ${data.validation?.valid_image_count || '?'}/${data.validation?.total_image_count || '?'} valid images | Session: ${data.session_id || '?'}`;
+
+    } catch (err) {
+        setStatus(statusEl, 'error', `Network error: ${err.message}. Is the FastAPI server running?`);
+    }
+
+    btn.disabled = false;
+}
+
 // ── Tab switching ──
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -578,6 +835,27 @@ function switchTab(tab) {
         document.querySelectorAll('.tab')[1].classList.add('active');
         document.getElementById('tab-pa').classList.add('active');
     }
+}
+
+// ── Detect if input is pipeline_output format (has "sections" array) ──
+function isPipelineRecord(payload) {
+    return Array.isArray(payload.sections);
+}
+
+// ── Transform pipeline record to PatientPayload ──
+async function transformRecord(record) {
+    const baseUrl = document.getElementById('base-url').value;
+    const endpoint = document.getElementById('transform-endpoint').value;
+    const res = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Transform failed');
+    }
+    return await res.json();
 }
 
 // ── Send request ──
@@ -599,10 +877,31 @@ async function sendRequest(module) {
         return;
     }
 
-    setStatus(statusEl, 'loading', 'Sending to debate engine... Agents are analyzing...');
     btnEl.disabled = true;
 
     try {
+        // Auto-detect pipeline_output format and transform first
+        if (isPipelineRecord(payload)) {
+            setStatus(statusEl, 'loading', 'Transforming pipeline record to PatientPayload...');
+            payload = await transformRecord(payload);
+
+            // Also run risk factor extraction for enrichment
+            const m0Endpoint = document.getElementById('m0-endpoint').value;
+            setStatus(statusEl, 'loading', 'Extracting risk factors...');
+            const m0Res = await fetch(`${baseUrl}${m0Endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (m0Res.ok) {
+                const m0Data = await m0Res.json();
+                payload.risk_factors = m0Data.risk_factors;
+                payload.derived_metrics = m0Data.derived_metrics;
+            }
+        }
+
+        setStatus(statusEl, 'loading', 'Sending to debate engine... Agents are analyzing...');
+
         const res = await fetch(`${baseUrl}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -827,144 +1126,276 @@ async function runFullWorkflow() {
 
     resultsEl.innerHTML = '';
     progressEl.style.display = 'block';
-    setWfStep(0, 'pending'); setWfStep(1, 'pending'); setWfStep(2, 'pending');
+    setWfStep(0, 'pending'); setWfStep(1, 'pending'); setWfStep(2, 'pending'); setWfStep(3, 'pending');
 
     const startTime = Date.now();
 
+    // Detect format: pipeline_output (has sections) or PatientPayload
+    const isRecord = isPipelineRecord(payload);
+
     try {
-        // ── Step 1: Module 0 — Extract Risk Factors ──
-        setWfStep(0, 'active');
-        setStatus(statusEl, 'loading', 'Step 1/3: Extracting risk factors (deterministic, <1s)...');
+        if (isRecord) {
+            // ── Use /full-pipeline endpoint (single call does everything) ──
+            setWfStep(0, 'active');
+            setStatus(statusEl, 'loading', 'Running full pipeline: Transform → Extract → Red Flag → Pattern...');
 
-        const m0Endpoint = document.getElementById('m0-endpoint').value;
-        const m0Res = await fetch(`${baseUrl}${m0Endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-        const m0Data = await m0Res.json();
+            const pipelineEndpoint = document.getElementById('pipeline-endpoint').value;
+            const res = await fetch(`${baseUrl}${pipelineEndpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
 
-        if (!m0Res.ok) {
-            setWfStep(0, 'error');
-            setStatus(statusEl, 'error', `Risk factor extraction failed: ${m0Data.detail || 'Unknown error'}`);
-            return;
-        }
+            if (!res.ok) {
+                setWfStep(0, 'error');
+                setStatus(statusEl, 'error', `Pipeline failed: ${data.detail || 'Unknown error'}`);
+                resultsEl.innerHTML = `<pre style="color:#cc0000;font-size:11px;white-space:pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
+                return;
+            }
 
-        setWfStep(0, 'done');
+            setWfStep(0, 'done');
+            setWfStep(1, 'done');
 
-        // Enrich payload with risk factors and derived metrics for downstream modules
-        const enrichedPayload = {
-            ...payload,
-            risk_factors: m0Data.risk_factors,
-            derived_metrics: m0Data.derived_metrics,
-        };
+            const patientName = data.patient?.name || 'Unknown';
+            const transformed = data.transformed_payload || {};
+            const riskData = data.risk_factors || {};
+            const rfData = data.red_flag || {};
+            const paData = data.pattern_analysis;
 
-        // Show Module 0 result
-        const completeness = m0Data.completeness || {};
-        const rfactors = m0Data.risk_factors || {};
-        const derivedM = m0Data.derived_metrics || {};
-        const m0Time = m0Data.processing_metadata?.processing_time_ms || 0;
-
-        resultsEl.innerHTML = `<div class="card" style="margin-bottom:12px;">
-            <div class="card-header green">Step 1: Risk Factor Extraction (${m0Time}ms)</div>
-            <div class="card-body" style="font-size:11px;">
-                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Completeness: <b>${((completeness.score || 0) * 100).toFixed(0)}%</b></span>
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Alcohol: <b>${rfactors.alcohol_risk?.level || '?'}</b></span>
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">BMI: <b>${rfactors.bmi_category?.category || '?'}</b></span>
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Diabetes: <b>${rfactors.diabetes_status?.present ? rfactors.diabetes_status.type : 'none'}</b></span>
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Cancer: <b>${rfactors.cancer_history?.present ? 'YES' : 'none'}</b></span>
-                    <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Red Flag Symptoms: <b>${rfactors.symptom_severity?.has_red_flag_symptoms ? 'YES' : 'none'}</b></span>
+            // ── Render: Transform result ──
+            const labs = transformed.lft_blood_results || {};
+            resultsEl.innerHTML = `<div class="card" style="margin-bottom:12px;">
+                <div class="card-header" style="background:#f0f4ff;color:#0044cc;">Step 1: Record Transformed — ${patientName}</div>
+                <div class="card-body" style="font-size:11px;">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Age: <b>${transformed.patient_demographics?.age || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Sex: <b>${transformed.patient_demographics?.sex || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">BMI: <b>${transformed.history_risk_factors?.bmi || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Alcohol: <b>${transformed.history_risk_factors?.alcohol_units_weekly || 0} u/wk</b></span>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">ALT: <b>${labs.ALT_IU_L || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">AST: <b>${labs.AST_IU_L || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">ALP: <b>${labs.ALP_IU_L || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">GGT: <b>${labs.GGT_IU_L || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">Bili: <b>${labs.Bilirubin_umol_L || '?'} µmol/L</b></span>
+                        <span style="padding:3px 8px;background:#fff5f5;border-radius:4px;">Alb: <b>${labs.Albumin_g_L || '?'} g/L</b></span>
+                    </div>
+                    <div style="font-size:10px;color:#666;">Symptoms: ${(transformed.referral_summary?.symptoms || ['none']).join('; ')}</div>
                 </div>
-                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
-                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">R-factor: <b>${derivedM.r_factor?.value || '?'}</b> (${derivedM.r_factor?.zone || '?'})</span>
-                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Lab Severity: <b>${derivedM.overall_lab_severity || '?'}</b></span>
-                    <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Albumin: <b>${derivedM.albumin_status || '?'}</b></span>
+            </div>`;
+
+            // ── Render: Risk Factor Extraction ──
+            const rfactors = riskData.risk_factors || {};
+            const derivedM = riskData.derived_metrics || {};
+            const completeness = riskData.completeness || {};
+            const m0Time = riskData.processing_metadata?.processing_time_ms || 0;
+
+            resultsEl.innerHTML += `<div class="card" style="margin-bottom:12px;">
+                <div class="card-header green">Step 2: Risk Factor Extraction (${m0Time}ms)</div>
+                <div class="card-body" style="font-size:11px;">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Completeness: <b>${((completeness.score || 0) * 100).toFixed(0)}%</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Alcohol: <b>${rfactors.alcohol_risk?.level || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">BMI: <b>${rfactors.bmi_category?.category || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Diabetes: <b>${rfactors.diabetes_status?.present ? rfactors.diabetes_status.type : 'none'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Cancer: <b>${rfactors.cancer_history?.present ? 'YES' : 'none'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Red Flag Symptoms: <b>${rfactors.symptom_severity?.has_red_flag_symptoms ? 'YES' : 'none'}</b></span>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">R-factor: <b>${derivedM.r_factor?.value || '?'}</b> (${derivedM.r_factor?.zone || '?'})</span>
+                        <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Lab Severity: <b>${derivedM.overall_lab_severity || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">Albumin: <b>${derivedM.albumin_status || '?'}</b></span>
+                    </div>
+                    ${(completeness.warnings || []).length > 0 ? '<div style="color:#e37400;margin-top:4px;">' + completeness.warnings.map(w => '&#9888; ' + w).join('<br>') + '</div>' : ''}
                 </div>
-                ${(completeness.warnings || []).length > 0 ? '<div style="color:#e37400;margin-top:4px;">' + completeness.warnings.map(w => '&#9888; ' + w).join('<br>') + '</div>' : ''}
-            </div>
-        </div>`;
+            </div>`;
 
-        // Update input fields with enriched payload
-        const enrichedJson = JSON.stringify(enrichedPayload, null, 2);
-        document.getElementById('rf-input').value = enrichedJson;
-        document.getElementById('pa-input').value = enrichedJson;
+            // ── Render: Red Flag Result ──
+            setWfStep(2, 'done');
+            const isRedFlag = rfData.final_decision === 'RED_FLAG_PRESENT';
+            const rfTime = rfData.processing_metadata?.processing_time_ms || 0;
+            const rfShortCircuit = rfData.processing_metadata?.short_circuited ? ' (unanimous)' : '';
+            const rfConf = ((rfData.confidence_score || 0) * 100).toFixed(0);
 
-        // ── Step 2: Module A — Red Flag Check ──
-        setWfStep(1, 'active');
-        setStatus(statusEl, 'loading', 'Step 2/3: Running Red Flag debate (3 agents analyzing)...');
-
-        const rfEndpoint = document.getElementById('rf-endpoint').value;
-        const rfRes = await fetch(`${baseUrl}${rfEndpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(enrichedPayload),
-        });
-        const rfData = await rfRes.json();
-
-        if (!rfRes.ok) {
-            setWfStep(1, 'error');
-            setStatus(statusEl, 'error', `Red Flag check failed: ${rfData.detail || 'Unknown error'}`);
-            return;
-        }
-
-        setWfStep(1, 'done');
-        const isRedFlag = rfData.final_decision === 'RED_FLAG_PRESENT';
-        const rfTime = rfData.processing_metadata?.processing_time_ms || 0;
-        const rfShortCircuit = rfData.processing_metadata?.short_circuited ? ' (unanimous — synthesizer skipped)' : '';
-
-        resultsEl.innerHTML += `<div class="card" style="margin-bottom:12px;">
-            <div class="card-header red">Step 2: Red Flag Result (${(rfTime/1000).toFixed(1)}s${rfShortCircuit})</div>
-            <div class="card-body">
-                <div class="decision-banner show ${isRedFlag ? 'red-flag' : 'no-flag'}">
-                    <div class="decision-title">${rfData.final_decision}</div>
-                    <div class="decision-sub">Confidence: ${(rfData.confidence_score * 100).toFixed(0)}% | ${rfData.recommended_action}</div>
+            resultsEl.innerHTML += `<div class="card" style="margin-bottom:12px;">
+                <div class="card-header red">Step 3: Red Flag Debate (${(rfTime/1000).toFixed(1)}s${rfShortCircuit})</div>
+                <div class="card-body">
+                    <div class="decision-banner show ${isRedFlag ? 'red-flag' : 'no-flag'}">
+                        <div class="decision-title">${rfData.final_decision}</div>
+                        <div class="decision-sub">Confidence: ${rfConf}% | ${rfData.recommended_action || ''}</div>
+                    </div>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
 
-        if (isRedFlag) {
-            setWfStep(2, 'skipped');
+            // ── Render: Pattern Analysis ──
+            if (isRedFlag) {
+                setWfStep(3, 'skipped');
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                setStatus(statusEl, 'success', `Red flag detected — urgent pathway. Pattern analysis skipped. Total: ${totalTime}s`);
+            } else if (paData) {
+                setWfStep(3, 'done');
+                const cls = (paData.final_classification || '').toLowerCase();
+                const paTime = paData.processing_metadata?.processing_time_ms || 0;
+                const paShortCircuit = paData.processing_metadata?.short_circuited ? ' (unanimous)' : '';
+                const paConf = ((paData.confidence_score || 0) * 100).toFixed(0);
+
+                resultsEl.innerHTML += `<div class="card">
+                    <div class="card-header blue">Step 4: Pattern Analysis Debate (${(paTime/1000).toFixed(1)}s${paShortCircuit})</div>
+                    <div class="card-body">
+                        <div class="decision-banner show ${cls}">
+                            <div class="decision-title">${paData.final_classification} Pattern</div>
+                            <div class="decision-sub">Confidence: ${paConf}% | R-factor: ${paData.r_factor?.value || 'N/A'} (${paData.r_factor?.zone || ''}) | ${paData.recommended_action || ''}</div>
+                        </div>
+                    </div>
+                </div>`;
+
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                setStatus(statusEl, 'success', `Full pipeline complete in ${totalTime}s: ${patientName} → ${rfData.final_decision} → ${paData.final_classification}`);
+            }
+
+            // Update tab inputs with the transformed + enriched payload
+            const enrichedPayload = {
+                ...transformed,
+                risk_factors: riskData.risk_factors,
+                derived_metrics: riskData.derived_metrics,
+            };
+            const enrichedJson = JSON.stringify(enrichedPayload, null, 2);
+            document.getElementById('rf-input').value = enrichedJson;
+            document.getElementById('pa-input').value = enrichedJson;
+
+            // Add raw JSON toggle for full response
+            resultsEl.innerHTML += `
+                <div class="raw-toggle" onclick="document.getElementById('raw-pipeline').classList.toggle('show')" style="margin-top:12px;">
+                    Toggle Raw Pipeline JSON
+                </div>
+                <div class="raw-json" id="raw-pipeline">${JSON.stringify(data, null, 2)}</div>`;
+
+        } else {
+            // ── Legacy PatientPayload format: step-by-step workflow ──
+            // Step 1: Module 0 — Extract Risk Factors
+            setWfStep(0, 'done'); // No transform needed
+            setWfStep(1, 'active');
+            setStatus(statusEl, 'loading', 'Step 1/3: Extracting risk factors (deterministic, <1s)...');
+
+            const m0Endpoint = document.getElementById('m0-endpoint').value;
+            const m0Res = await fetch(`${baseUrl}${m0Endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const m0Data = await m0Res.json();
+
+            if (!m0Res.ok) {
+                setWfStep(1, 'error');
+                setStatus(statusEl, 'error', `Risk factor extraction failed: ${m0Data.detail || 'Unknown error'}`);
+                return;
+            }
+
+            setWfStep(1, 'done');
+
+            const enrichedPayload = {
+                ...payload,
+                risk_factors: m0Data.risk_factors,
+                derived_metrics: m0Data.derived_metrics,
+            };
+
+            const rfactors = m0Data.risk_factors || {};
+            const derivedM = m0Data.derived_metrics || {};
+            const completeness = m0Data.completeness || {};
+            const m0Time = m0Data.processing_metadata?.processing_time_ms || 0;
+
+            resultsEl.innerHTML = `<div class="card" style="margin-bottom:12px;">
+                <div class="card-header green">Step 1: Risk Factor Extraction (${m0Time}ms)</div>
+                <div class="card-body" style="font-size:11px;">
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">Alcohol: <b>${rfactors.alcohol_risk?.level || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f0f0f0;border-radius:4px;">BMI: <b>${rfactors.bmi_category?.category || '?'}</b></span>
+                        <span style="padding:3px 8px;background:#f8f0ff;border-radius:4px;">R-factor: <b>${derivedM.r_factor?.value || '?'}</b> (${derivedM.r_factor?.zone || '?'})</span>
+                    </div>
+                </div>
+            </div>`;
+
+            document.getElementById('rf-input').value = JSON.stringify(enrichedPayload, null, 2);
+            document.getElementById('pa-input').value = JSON.stringify(enrichedPayload, null, 2);
+
+            // Step 2: Module A — Red Flag Check
+            setWfStep(2, 'active');
+            setStatus(statusEl, 'loading', 'Step 2/3: Running Red Flag debate...');
+
+            const rfEndpoint = document.getElementById('rf-endpoint').value;
+            const rfRes = await fetch(`${baseUrl}${rfEndpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(enrichedPayload),
+            });
+            const rfData = await rfRes.json();
+
+            if (!rfRes.ok) {
+                setWfStep(2, 'error');
+                setStatus(statusEl, 'error', `Red Flag check failed: ${rfData.detail || 'Unknown error'}`);
+                return;
+            }
+
+            setWfStep(2, 'done');
+            const isRedFlag = rfData.final_decision === 'RED_FLAG_PRESENT';
+            const rfTime = rfData.processing_metadata?.processing_time_ms || 0;
+            const rfShortCircuit = rfData.processing_metadata?.short_circuited ? ' (unanimous)' : '';
+
+            resultsEl.innerHTML += `<div class="card" style="margin-bottom:12px;">
+                <div class="card-header red">Step 2: Red Flag Result (${(rfTime/1000).toFixed(1)}s${rfShortCircuit})</div>
+                <div class="card-body">
+                    <div class="decision-banner show ${isRedFlag ? 'red-flag' : 'no-flag'}">
+                        <div class="decision-title">${rfData.final_decision}</div>
+                        <div class="decision-sub">Confidence: ${(rfData.confidence_score * 100).toFixed(0)}% | ${rfData.recommended_action}</div>
+                    </div>
+                </div>
+            </div>`;
+
+            if (isRedFlag) {
+                setWfStep(3, 'skipped');
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                setStatus(statusEl, 'success', `Red flag detected — urgent pathway. Pattern analysis skipped. Total: ${totalTime}s`);
+                return;
+            }
+
+            // Step 3: Module B — Pattern Analysis
+            setWfStep(3, 'active');
+            setStatus(statusEl, 'loading', 'Step 3/3: Running LFT Pattern debate...');
+
+            const paEndpoint = document.getElementById('pa-endpoint').value;
+            const paRes = await fetch(`${baseUrl}${paEndpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(enrichedPayload),
+            });
+            const paData = await paRes.json();
+
+            if (!paRes.ok) {
+                setWfStep(3, 'error');
+                setStatus(statusEl, 'error', `Pattern analysis failed: ${paData.detail || 'Unknown error'}`);
+                return;
+            }
+
+            setWfStep(3, 'done');
+            const cls = (paData.final_classification || '').toLowerCase();
+            const paTime = paData.processing_metadata?.processing_time_ms || 0;
+            const paShortCircuit = paData.processing_metadata?.short_circuited ? ' (unanimous)' : '';
+
+            resultsEl.innerHTML += `<div class="card">
+                <div class="card-header blue">Step 3: Pattern Analysis Result (${(paTime/1000).toFixed(1)}s${paShortCircuit})</div>
+                <div class="card-body">
+                    <div class="decision-banner show ${cls}">
+                        <div class="decision-title">${paData.final_classification} Pattern</div>
+                        <div class="decision-sub">Confidence: ${(paData.confidence_score * 100).toFixed(0)}% | R-factor: ${paData.r_factor?.value || 'N/A'} (${paData.r_factor?.zone || ''}) | ${paData.recommended_action}</div>
+                    </div>
+                </div>
+            </div>`;
+
             const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-            setStatus(statusEl, 'success', `Red flag detected — urgent pathway. Pattern analysis skipped. Total: ${totalTime}s`);
-            return;
+            setStatus(statusEl, 'success', `Full pipeline complete in ${totalTime}s: Extract → ${rfData.final_decision} → ${paData.final_classification}`);
         }
-
-        // ── Step 3: Module B — Pattern Analysis ──
-        setWfStep(2, 'active');
-        setStatus(statusEl, 'loading', 'Step 3/3: Running LFT Pattern debate (3 agents analyzing)...');
-
-        const paEndpoint = document.getElementById('pa-endpoint').value;
-        const paRes = await fetch(`${baseUrl}${paEndpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(enrichedPayload),
-        });
-        const paData = await paRes.json();
-
-        if (!paRes.ok) {
-            setWfStep(2, 'error');
-            setStatus(statusEl, 'error', `Pattern analysis failed: ${paData.detail || 'Unknown error'}`);
-            return;
-        }
-
-        setWfStep(2, 'done');
-        const cls = (paData.final_classification || '').toLowerCase();
-        const paTime = paData.processing_metadata?.processing_time_ms || 0;
-        const paShortCircuit = paData.processing_metadata?.short_circuited ? ' (unanimous — synthesizer skipped)' : '';
-
-        resultsEl.innerHTML += `<div class="card">
-            <div class="card-header blue">Step 3: Pattern Analysis Result (${(paTime/1000).toFixed(1)}s${paShortCircuit})</div>
-            <div class="card-body">
-                <div class="decision-banner show ${cls}">
-                    <div class="decision-title">${paData.final_classification} Pattern</div>
-                    <div class="decision-sub">Confidence: ${(paData.confidence_score * 100).toFixed(0)}% | R-factor: ${paData.r_factor?.value || 'N/A'} (${paData.r_factor?.zone || ''}) | ${paData.recommended_action}</div>
-                </div>
-            </div>
-        </div>`;
-
-        const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-        setStatus(statusEl, 'success', `Full pipeline complete in ${totalTime}s: Extract -> ${rfData.final_decision} -> ${paData.final_classification}`);
 
     } catch (err) {
         setStatus(statusEl, 'error', `Network error: ${err.message}`);
