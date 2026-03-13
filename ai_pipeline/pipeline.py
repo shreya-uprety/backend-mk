@@ -88,21 +88,27 @@ def run_pipeline_from_uploads(
     Returns:
         dict with keys: record, validation, session_id
     """
+    from concurrent.futures import ThreadPoolExecutor
+
     # Load images
     images, filenames = load_images_from_bytes(file_bytes_list)
 
-    # Step 1: Validate
-    validation = validate_images(images)
-    if not validation.get("is_medical", False):
-        return {
-            "status": "rejected",
-            "validation": validation,
-            "record": None,
-            "session_id": None,
-        }
+    # Run validation and extraction in PARALLEL (saves 30-60s)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        val_future = executor.submit(validate_images, images)
+        ext_future = executor.submit(extract_and_merge_from_images, images)
 
-    # Step 2: Extract and merge
-    merged = extract_and_merge_from_images(images)
+        validation = val_future.result()
+        if not validation.get("is_medical", False):
+            ext_future.cancel()
+            return {
+                "status": "rejected",
+                "validation": validation,
+                "record": None,
+                "session_id": None,
+            }
+
+        merged = ext_future.result()
 
     # Step 3: Check confidence
     confidence = merged.get("confidence", "medium")

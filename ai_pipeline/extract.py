@@ -10,7 +10,7 @@ from .config import GOOGLE_API_KEY, GEMINI_MODEL
 
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
-MAX_IMAGE_DIMENSION = 2000  # px — cap longest side to reduce payload
+MAX_IMAGE_DIMENSION = 1500  # px — cap longest side to reduce payload
 
 
 def _resize_image(img: Image.Image) -> Image.Image:
