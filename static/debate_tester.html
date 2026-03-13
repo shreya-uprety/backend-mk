@@ -498,7 +498,7 @@
         <div class="card-body">
             <div class="config-row">
                 <label>Base URL:</label>
-                <input type="text" id="base-url" value="http://localhost:8000">
+                <input type="text" id="base-url" value="">
             </div>
             <div style="display:flex;gap:16px;flex-wrap:wrap;">
                 <div class="config-row" style="flex:1;min-width:200px;">
@@ -1419,6 +1419,8 @@ function clearPanel(module) {
 }
 
 // ── Boot ──
+// Auto-detect base URL from current page origin (works for localhost and deployed)
+document.getElementById('base-url').value = window.location.origin;
 loadScenarios();
 </script>
 </body>
