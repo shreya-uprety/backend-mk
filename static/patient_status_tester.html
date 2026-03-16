@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Status Tester</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; color: #1a1a2e; }
+        h2 { font-size: 1.1rem; margin-bottom: 10px; color: #16213e; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .panel { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        /* Controls panel */
+        .controls { display: flex; flex-direction: column; gap: 16px; }
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+        input, select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+        input:focus, select:focus { outline: none; border-color: #4361ee; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.85; }
+        .btn-primary { background: #4361ee; color: #fff; }
+        .btn-success { background: #2ec4b6; color: #fff; }
+        .btn-warning { background: #ff9f1c; color: #fff; }
+        .btn-danger { background: #e63946; color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Status display */
+        .status-card { margin-bottom: 16px; }
+        .status-card .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-in-progress { background: #dbeafe; color: #1e40af; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-escalated { background: #fee2e2; color: #991b1b; }
+        .badge-skipped { background: #e5e7eb; color: #374151; }
+
+        .pathway-standard { border-left: 4px solid #4361ee; padding-left: 12px; }
+        .pathway-urgent { border-left: 4px solid #e63946; padding-left: 12px; }
+
+        .current-step { font-size: 1.2rem; font-weight: 700; color: #1a1a2e; margin: 8px 0; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+        .meta-item { background: #f8f9fa; padding: 8px 10px; border-radius: 6px; font-size: 0.8rem; }
+        .meta-item .label { color: #888; font-size: 0.7rem; text-transform: uppercase; }
+        .meta-item .value { font-weight: 600; margin-top: 2px; }
+
+        /* Decision panel */
+        .decision-panel { background: #fffbeb; border: 2px solid #fbbf24; border-radius: 8px; padding: 16px; margin-top: 12px; }
+        .decision-panel h3 { font-size: 0.95rem; color: #92400e; margin-bottom: 10px; }
+        .decision-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .decision-btn { padding: 8px 20px; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .decision-btn:hover { border-color: #4361ee; background: #eef2ff; }
+        .decision-btn.yes { border-color: #e63946; color: #e63946; }
+        .decision-btn.yes:hover { background: #fee2e2; }
+        .decision-btn.no { border-color: #2ec4b6; color: #065f46; }
+        .decision-btn.no:hover { background: #d1fae5; }
+
+        /* Timeline */
+        .timeline { margin-top: 16px; }
+        .timeline-item { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+        .timeline-dot.completed { background: #2ec4b6; }
+        .timeline-dot.escalated { background: #e63946; }
+        .timeline-dot.skipped { background: #9ca3af; }
+        .timeline-content { flex: 1; }
+        .timeline-step { font-weight: 600; font-size: 0.85rem; }
+        .timeline-time { font-size: 0.75rem; color: #888; }
+        .timeline-meta { font-size: 0.75rem; color: #666; margin-top: 2px; }
+
+        /* Flowchart visualization */
+        .flowchart { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .flow-node { padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; background: #f3f4f6; color: #6b7280; border: 2px solid transparent; }
+        .flow-node.active { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
+        .flow-node.completed { background: #d1fae5; color: #065f46; }
+        .flow-node.escalated { background: #fee2e2; color: #991b1b; }
+        .flow-node.terminal { border-radius: 20px; }
+        .flow-arrow { display: flex; align-items: center; color: #ccc; font-size: 0.8rem; }
+
+        /* Patient list */
+        .patient-list { margin-top: 12px; }
+        .patient-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 6px; margin-bottom: 4px; cursor: pointer; transition: 0.2s; }
+        .patient-row:hover { background: #f0f2f5; }
+        .patient-row.selected { background: #eef2ff; border: 1px solid #4361ee; }
+        .patient-row .id { font-weight: 600; font-size: 0.9rem; }
+        .patient-row .step { font-size: 0.75rem; color: #888; }
+
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Patient Status Tester</h1>
+    <div class="container">
+        <!-- Left panel: Controls -->
+        <div>
+            <div class="panel controls">
+                <h2>Create Patient</h2>
+                <div class="control-group">
+                    <label>Patient ID</label>
+                    <input type="text" id="newPatientId" placeholder="e.g. MK-0001" value="MK-0001">
+                </div>
+                <button class="btn-primary" onclick="createPatient()">Create Patient Status</button>
+
+                <hr style="border: none; border-top: 1px solid #eee;">
+
+                <h2>Tracked Patients</h2>
+                <div id="patientList" class="patient-list">
+                    <div class="empty-state">No patients tracked yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right panel: Status display -->
+        <div>
+            <div class="panel" id="statusPanel">
+                <div class="empty-state" id="emptyState">
+                    Create a patient or select one from the list to begin
+                </div>
+
+                <div id="statusContent" style="display: none;">
+                    <!-- Current Status Card -->
+                    <div class="status-card">
+                        <div id="pathwayBadge"></div>
+                        <div class="current-step" id="currentStep"></div>
+                        <span class="badge" id="stepStatusBadge"></span>
+                        <span style="font-size: 0.8rem; color: #888; margin-left: 8px;" id="patientIdDisplay"></span>
+                    </div>
+
+                    <!-- Flowchart mini-map -->
+                    <h2>Pathway Progress</h2>
+                    <div class="flowchart" id="flowchart"></div>
+
+                    <!-- Action buttons -->
+                    <div style="margin-top: 16px;" id="actionArea">
+                        <!-- Non-decision: simple advance button -->
+                        <div id="simpleAdvance" style="display: none;">
+                            <button class="btn-success" onclick="advanceStep()">Advance to Next Step</button>
+                            <span style="font-size: 0.8rem; color: #888; margin-left: 8px;" id="nextStepHint"></span>
+                        </div>
+
+                        <!-- Decision: show options -->
+                        <div id="decisionArea" style="display: none;"></div>
+
+                        <!-- Terminal -->
+                        <div id="terminalArea" style="display: none;">
+                            <div style="background: #d1fae5; padding: 12px; border-radius: 8px; text-align: center;">
+                                <strong>Process Complete</strong>
+                                <div style="font-size: 0.85rem; color: #065f46; margin-top: 4px;" id="dispositionText"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <h2 style="margin-top: 20px;">Clinical Metadata</h2>
+                    <div class="meta-grid" id="metadataGrid"></div>
+
+                    <!-- Step History Timeline -->
+                    <h2 style="margin-top: 20px;">Step History</h2>
+                    <div class="timeline" id="timeline"></div>
+
+                    <!-- Danger zone -->
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;">
+                        <button class="btn-danger btn-sm" onclick="deletePatient()">Delete Patient</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE = `${window.location.origin}/api/v1/patient-status`;
+        let selectedPatientId = null;
+
+        // All process steps in order for the flowchart
+        const ALL_STEPS = [
+            "GP_REFERRAL_RECEIVED",
+            "INTAKE_DIGITIZATION",
+            "DASHBOARD_CONFIRMATION",
+            "EXTRACT_RISK_FACTORS",
+            "RED_FLAG_ASSESSMENT",
+            "URGENT_CONSULTANT_PATHWAY",
+            "PRESENT_TRIAGE_OPTIONS",
+            "GENERATE_GP_LETTER",
+            "ANALYZE_LFT_PATTERN",
+            "LFT_PATTERN_CLASSIFICATION",
+            "CHOLESTATIC_PATTERN",
+            "HEPATITIC_PATTERN",
+            "DIAGNOSTIC_DILEMMA_ASSESSMENT",
+            "RECOMMEND_MRI_BIOPSY_ESCALATE",
+            "CONSULTANT_MDT_REVIEW",
+            "CONSULTANT_REVIEW_SIGNOFF",
+            "CONDUCT_CONSULTATION",
+            "CONFIRM_DIAGNOSIS_EDUCATION",
+            "ONGOING_MONITORING_ASSESSMENT",
+            "AI_SURVEILLANCE_LOOP",
+            "DISCHARGE_TO_GP",
+        ];
+
+        const TERMINAL_STEPS = ["AI_SURVEILLANCE_LOOP", "DISCHARGE_TO_GP"];
+
+        const STEP_LABELS = {
+            GP_REFERRAL_RECEIVED: "GP Referral Received",
+            INTAKE_DIGITIZATION: "Intake & Digitize",
+            DASHBOARD_CONFIRMATION: "Confirm on Dashboard",
+            EXTRACT_RISK_FACTORS: "Extract Risk Factors",
+            RED_FLAG_ASSESSMENT: "Red Flag Symptoms?",
+            URGENT_CONSULTANT_PATHWAY: "Urgent Consultant",
+            PRESENT_TRIAGE_OPTIONS: "Triage Options (70%)",
+            GENERATE_GP_LETTER: "Generate GP Letter",
+            ANALYZE_LFT_PATTERN: "Analyze LFT Pattern",
+            LFT_PATTERN_CLASSIFICATION: "LFT Pattern?",
+            CHOLESTATIC_PATTERN: "Cholestatic Pattern",
+            HEPATITIC_PATTERN: "Hepatitic Pattern",
+            DIAGNOSTIC_DILEMMA_ASSESSMENT: "Diagnostic Dilemma?",
+            RECOMMEND_MRI_BIOPSY_ESCALATE: "MRI/Biopsy & Escalate",
+            CONSULTANT_MDT_REVIEW: "Consultant MDT Review",
+            CONSULTANT_REVIEW_SIGNOFF: "Consultant Signs Off",
+            CONDUCT_CONSULTATION: "Conduct Consultation",
+            CONFIRM_DIAGNOSIS_EDUCATION: "Diagnosis & Education",
+            ONGOING_MONITORING_ASSESSMENT: "Monitoring Required?",
+            AI_SURVEILLANCE_LOOP: "AI Surveillance Loop",
+            DISCHARGE_TO_GP: "Discharge to GP",
+        };
+
+        async function api(method, path, body = null) {
+            const opts = { method, headers: { "Content-Type": "application/json" } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(`${BASE}${path}`, opts);
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Request failed");
+            }
+            return res.json();
+        }
+
+        async function createPatient() {
+            const id = document.getElementById("newPatientId").value.trim();
+            if (!id) return alert("Enter a patient ID");
+            try {
+                await api("POST", "/create", { patient_id: id });
+                selectedPatientId = id;
+                await refreshAll();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function selectPatient(id) {
+            selectedPatientId = id;
+            await refreshAll();
+        }
+
+        async function deletePatient() {
+            if (!selectedPatientId) return;
+            if (!confirm(`Delete patient ${selectedPatientId}?`)) return;
+            try {
+                await api("DELETE", `/${selectedPatientId}`);
+                selectedPatientId = null;
+                await refreshAll();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function advanceStep(decision = null) {
+            if (!selectedPatientId) return;
+            try {
+                await api("POST", `/${selectedPatientId}/advance`, { decision });
+                await refreshAll();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function refreshAll() {
+            await refreshPatientList();
+            if (selectedPatientId) {
+                await refreshStatus();
+            } else {
+                document.getElementById("emptyState").style.display = "block";
+                document.getElementById("statusContent").style.display = "none";
+            }
+        }
+
+        async function refreshPatientList() {
+            try {
+                const data = await api("GET", "/");
+                const list = document.getElementById("patientList");
+
+                if (data.patients.length === 0) {
+                    list.innerHTML = '<div class="empty-state">No patients tracked yet</div>';
+                    return;
+                }
+
+                list.innerHTML = data.patients.map(p => `
+                    <div class="patient-row ${p.patient_id === selectedPatientId ? 'selected' : ''}"
+                         onclick="selectPatient('${p.patient_id}')">
+                        <div>
+                            <div class="id">${p.patient_id}</div>
+                            <div class="step">${STEP_LABELS[p.current_step] || p.current_step}</div>
+                        </div>
+                        <span class="badge badge-${p.step_status.replace('_', '-')}">${p.step_status}</span>
+                    </div>
+                `).join("");
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function refreshStatus() {
+            try {
+                const status = await api("GET", `/${selectedPatientId}`);
+                const options = await api("GET", `/${selectedPatientId}/next-options`);
+
+                document.getElementById("emptyState").style.display = "none";
+                document.getElementById("statusContent").style.display = "block";
+
+                // Patient ID
+                document.getElementById("patientIdDisplay").textContent = status.patient_id;
+
+                // Current step
+                document.getElementById("currentStep").textContent =
+                    STEP_LABELS[status.current_step] || status.current_step;
+
+                // Pathway badge
+                const pathwayDiv = document.getElementById("pathwayBadge");
+                if (status.pathway === "urgent_consultant") {
+                    pathwayDiv.className = "pathway-urgent";
+                    pathwayDiv.innerHTML = '<span style="color: #e63946; font-weight: 600; font-size: 0.85rem;">URGENT CONSULTANT PATHWAY</span>';
+                } else {
+                    pathwayDiv.className = "pathway-standard";
+                    pathwayDiv.innerHTML = '<span style="color: #4361ee; font-weight: 600; font-size: 0.85rem;">STANDARD TRIAGE PATHWAY</span>';
+                }
+
+                // Status badge
+                const badge = document.getElementById("stepStatusBadge");
+                badge.textContent = status.step_status;
+                badge.className = `badge badge-${status.step_status.replace("_", "-")}`;
+
+                // Flowchart
+                renderFlowchart(status);
+
+                // Actions
+                renderActions(status, options);
+
+                // Metadata
+                renderMetadata(status.metadata);
+
+                // Timeline
+                renderTimeline(status.step_history);
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderFlowchart(status) {
+            const completedSteps = new Set(status.step_history.map(h => h.step));
+            const container = document.getElementById("flowchart");
+
+            container.innerHTML = ALL_STEPS.map(step => {
+                let cls = "flow-node";
+                if (step === status.current_step) cls += " active";
+                else if (completedSteps.has(step)) cls += " completed";
+
+                const hist = status.step_history.find(h => h.step === step);
+                if (hist && hist.status === "escalated") cls += " escalated";
+                if (TERMINAL_STEPS.includes(step)) cls += " terminal";
+
+                return `<div class="${cls}">${STEP_LABELS[step] || step}</div>`;
+            }).join('<div class="flow-arrow">&rarr;</div>');
+        }
+
+        function renderActions(status, options) {
+            const simple = document.getElementById("simpleAdvance");
+            const decision = document.getElementById("decisionArea");
+            const terminal = document.getElementById("terminalArea");
+
+            simple.style.display = "none";
+            decision.style.display = "none";
+            terminal.style.display = "none";
+
+            if (options.is_terminal) {
+                terminal.style.display = "block";
+                document.getElementById("dispositionText").textContent =
+                    status.final_disposition === "surveillance"
+                        ? "Patient entered AI Surveillance Loop"
+                        : "Patient discharged to GP";
+                return;
+            }
+
+            if (options.is_decision) {
+                decision.style.display = "block";
+                const stepLabel = STEP_LABELS[status.current_step] || status.current_step;
+                decision.innerHTML = `
+                    <div class="decision-panel">
+                        <h3>${stepLabel}</h3>
+                        <div class="decision-options">
+                            ${options.options.map(o => {
+                                const label = o.decision.charAt(0).toUpperCase() + o.decision.slice(1);
+                                const cls = o.decision === "yes" ? "yes" : (o.decision === "no" ? "no" : "");
+                                return `<button class="decision-btn ${cls}" onclick="advanceStep('${o.decision}')">
+                                    ${label}
+                                    <div style="font-size:0.7rem;color:#888;margin-top:2px;">&rarr; ${STEP_LABELS[o.next_step] || o.next_step}</div>
+                                </button>`;
+                            }).join("")}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            simple.style.display = "block";
+            document.getElementById("nextStepHint").textContent =
+                `Next: ${STEP_LABELS[options.next_step] || options.next_step}`;
+        }
+
+        function renderMetadata(meta) {
+            const grid = document.getElementById("metadataGrid");
+            const items = [
+                { label: "Red Flag Detected", value: meta.red_flag_detected },
+                { label: "Red Flag Confidence", value: meta.red_flag_confidence != null ? `${(meta.red_flag_confidence * 100).toFixed(0)}%` : null },
+                { label: "Triage Probability", value: meta.triage_probability != null ? `${(meta.triage_probability * 100).toFixed(0)}%` : null },
+                { label: "LFT Pattern", value: meta.lft_pattern },
+                { label: "LFT Pattern Confidence", value: meta.lft_pattern_confidence != null ? `${(meta.lft_pattern_confidence * 100).toFixed(0)}%` : null },
+                { label: "Diagnostic Dilemma", value: meta.diagnostic_dilemma },
+                { label: "Monitoring Required", value: meta.monitoring_required },
+            ];
+
+            grid.innerHTML = items.map(item => `
+                <div class="meta-item">
+                    <div class="label">${item.label}</div>
+                    <div class="value">${item.value != null ? item.value : '—'}</div>
+                </div>
+            `).join("");
+        }
+
+        function renderTimeline(history) {
+            const container = document.getElementById("timeline");
+            if (history.length === 0) {
+                container.innerHTML = '<div style="color: #999; font-size: 0.85rem;">No steps completed yet</div>';
+                return;
+            }
+
+            container.innerHTML = history.map(h => {
+                const dotClass = h.status === "escalated" ? "escalated" : "completed";
+                const time = h.completed_at ? new Date(h.completed_at).toLocaleTimeString() : "";
+                const metaStr = h.metadata && Object.keys(h.metadata).length > 0
+                    ? Object.entries(h.metadata).map(([k, v]) => `${k}: ${v}`).join(", ")
+                    : "";
+
+                return `
+                    <div class="timeline-item">
+                        <div class="timeline-dot ${dotClass}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-step">${STEP_LABELS[h.step] || h.step}</div>
+                            <div class="timeline-time">${time}</div>
+                            ${metaStr ? `<div class="timeline-meta">${metaStr}</div>` : ""}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // Initial load
+        refreshAll();
+    </script>
+</body>
+</html>

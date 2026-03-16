@@ -12,10 +12,9 @@ client = genai.Client(api_key=GOOGLE_API_KEY)
 class BaseAgent:
     """Base class for debate agents. Each agent has a persona and a prompt file."""
 
-    agent_id: str = "base_agent"
-    agent_persona: str = "Base Agent"
-
-    def __init__(self, prompt_path: Path):
+    def __init__(self, agent_id: str, agent_persona: str, prompt_path: Path):
+        self.agent_id = agent_id
+        self.agent_persona = agent_persona
         self.system_prompt = prompt_path.read_text(encoding="utf-8")
 
     def analyze(self, patient_data: dict, module_context: str) -> dict:

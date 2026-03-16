@@ -5,9 +5,7 @@ Runs a 3-agent debate loop to classify the LFT pattern.
 from __future__ import annotations
 from datetime import datetime, timezone
 
-from debate_engine.agents.safety_net import SafetyNetPattern
-from debate_engine.agents.guideline import GuidelinePattern
-from debate_engine.agents.statistician import StatisticianPattern
+from debate_engine.agents.registry import create_agents, get_module_config
 from debate_engine.orchestrator import run_debate
 from debate_engine.schemas import (
     PatientPayload, PatternAnalysisResponse, PatternDebateSummary,
@@ -19,14 +17,16 @@ from debate_engine.config import ULN
 
 def analyze_pattern(payload: PatientPayload) -> PatternAnalysisResponse:
     """Run the LFT pattern debate loop."""
-    agents = [SafetyNetPattern(), GuidelinePattern(), StatisticianPattern()]
+    module_context = "pattern"
+    module_cfg = get_module_config(module_context)
+    agents = create_agents(module_context)
     patient_data = payload.model_dump()
 
     result = run_debate(
         agents=agents,
         patient_data=patient_data,
-        module_context="pattern",
-        synthesizer_prompt_file="pattern_synthesizer.md",
+        module_context=module_context,
+        synthesizer_prompt_file=module_cfg["synthesizer_prompt"],
     )
 
     synthesis = result["synthesis"]

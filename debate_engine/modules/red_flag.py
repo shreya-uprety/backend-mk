@@ -5,9 +5,7 @@ Runs a 3-agent debate loop to determine if red flag symptoms are present.
 from __future__ import annotations
 from datetime import datetime, timezone
 
-from debate_engine.agents.safety_net import SafetyNetRedFlag
-from debate_engine.agents.guideline import GuidelineRedFlag
-from debate_engine.agents.statistician import StatisticianRedFlag
+from debate_engine.agents.registry import create_agents, get_module_config
 from debate_engine.orchestrator import run_debate
 from debate_engine.schemas import (
     PatientPayload, RedFlagResponse, RedFlagDebateSummary,
@@ -17,14 +15,16 @@ from debate_engine.schemas import (
 
 def analyze_red_flags(payload: PatientPayload) -> RedFlagResponse:
     """Run the red flag debate loop."""
-    agents = [SafetyNetRedFlag(), GuidelineRedFlag(), StatisticianRedFlag()]
+    module_context = "red_flag"
+    module_cfg = get_module_config(module_context)
+    agents = create_agents(module_context)
     patient_data = payload.model_dump()
 
     result = run_debate(
         agents=agents,
         patient_data=patient_data,
-        module_context="red_flag",
-        synthesizer_prompt_file="red_flag_synthesizer.md",
+        module_context=module_context,
+        synthesizer_prompt_file=module_cfg["synthesizer_prompt"],
     )
 
     synthesis = result["synthesis"]

@@ -45,6 +45,10 @@ class StorageBackend(ABC):
     def exists(self, path: str) -> bool:
         """Check if a file/blob exists."""
 
+    @abstractmethod
+    def delete(self, path: str) -> None:
+        """Delete a file/blob."""
+
 
 class LocalBackend(StorageBackend):
     """Local filesystem storage — for development."""
@@ -86,6 +90,11 @@ class LocalBackend(StorageBackend):
     def exists(self, path: str) -> bool:
         return self._resolve(path).exists()
 
+    def delete(self, path: str) -> None:
+        full = self._resolve(path)
+        if full.exists():
+            full.unlink()
+
 
 class GCSBackend(StorageBackend):
     """Google Cloud Storage backend — for production."""
@@ -122,6 +131,11 @@ class GCSBackend(StorageBackend):
 
     def exists(self, path: str) -> bool:
         return self._bucket.blob(path).exists()
+
+    def delete(self, path: str) -> None:
+        blob = self._bucket.blob(path)
+        if blob.exists():
+            blob.delete()
 
 
 # ── Singleton ──────────────────────────────────────────────────────────

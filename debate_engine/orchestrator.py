@@ -1,13 +1,16 @@
 from __future__ import annotations
 import json
+import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from google import genai
 
+logger = logging.getLogger(__name__)
+
 from debate_engine.config import (
     GOOGLE_API_KEY, GEMINI_MODEL, PROMPTS_DIR, MAX_OUTPUT_TOKENS_SYNTHESIZER,
-    THINKING_BUDGET_SYNTHESIZER, UNANIMOUS_CONFIDENCE_THRESHOLD,
+    THINKING_BUDGET_SYNTHESIZER, UNANIMOUS_CONFIDENCE_THRESHOLD, MODULES,
 )
 from debate_engine.agents.base import BaseAgent
 from debate_engine.utils import parse_llm_json
@@ -18,58 +21,61 @@ client = genai.Client(api_key=GOOGLE_API_KEY)
 def _check_unanimous(perspectives: list[dict], module_context: str) -> dict | None:
     """Check if all agents agree unanimously with high confidence.
 
+    Uses module config from MODULES to determine the decision field and output keys,
+    so new modules work automatically without changes here.
+
     Returns a lightweight consensus synthesis dict if unanimous, else None.
     """
-    if len(perspectives) < 3:
+    if len(perspectives) < 2:
         return None
+
+    module_cfg = MODULES.get(module_context)
+    if module_cfg is None:
+        return None
+
+    field = module_cfg["decision_field"]
+    decision_key = module_cfg["output_decision_key"]
+    args_for_key = module_cfg["output_args_for_key"]
+    args_against_key = module_cfg["output_args_against_key"]
+    consensus_actions = module_cfg.get("consensus_actions", {})
 
     threshold = UNANIMOUS_CONFIDENCE_THRESHOLD
 
-    if module_context == "red_flag":
-        verdicts = [p.get("verdict") for p in perspectives]
-        confidences = [p.get("confidence", 0) for p in perspectives]
-        if len(set(verdicts)) == 1 and all(c >= threshold for c in confidences):
-            verdict = verdicts[0]
-            avg_conf = round(sum(confidences) / len(confidences), 2)
-            return {
-                "final_decision": verdict,
-                "confidence_score": avg_conf,
-                "consensus_reached": True,
-                "recommended_action": (
-                    "Urgent specialist review required"
-                    if verdict == "RED_FLAG_PRESENT"
-                    else "Proceed to pattern analysis"
-                ),
-                "key_arguments_for_red_flag": [
-                    f.get("reasoning", "") for f in perspectives if f.get("verdict") == "RED_FLAG_PRESENT"
-                ],
-                "key_arguments_against_red_flag": [
-                    f.get("reasoning", "") for f in perspectives if f.get("verdict") != "RED_FLAG_PRESENT"
-                ],
-                "key_contention_points": [],
-                "synthesis_rationale": f"All {len(perspectives)} agents unanimously agreed on {verdict} with average confidence {avg_conf}. Synthesizer skipped.",
-                "_short_circuited": True,
-            }
+    decisions = [p.get(field, "").upper() for p in perspectives]
+    confidences = [p.get("confidence", 0) for p in perspectives]
 
-    elif module_context == "pattern":
-        classifications = [p.get("classification", "").upper() for p in perspectives]
-        confidences = [p.get("confidence", 0) for p in perspectives]
-        if len(set(classifications)) == 1 and all(c >= threshold for c in confidences):
-            cls = classifications[0]
-            avg_conf = round(sum(confidences) / len(confidences), 2)
-            return {
-                "final_classification": cls,
-                "confidence_score": avg_conf,
-                "consensus_reached": True,
-                "recommended_action": f"Follow {cls.lower()} pathway guidelines",
-                "key_arguments_for_primary": [p.get("reasoning", "") for p in perspectives],
-                "key_arguments_against_primary": [],
-                "key_contention_points": [],
-                "synthesis_rationale": f"All {len(perspectives)} agents unanimously classified as {cls} with average confidence {avg_conf}. Synthesizer skipped.",
-                "_short_circuited": True,
-            }
+    if len(set(decisions)) != 1 or not all(c >= threshold for c in confidences):
+        return None
 
-    return None
+    decision = decisions[0]
+    avg_conf = round(sum(confidences) / len(confidences), 2)
+
+    # Resolve recommended action from config
+    action = consensus_actions.get(
+        decision,
+        consensus_actions.get("_default", ""),
+    ).format(decision=decision.lower())
+
+    return {
+        decision_key: decision,
+        "confidence_score": avg_conf,
+        "consensus_reached": True,
+        "recommended_action": action,
+        args_for_key: [
+            p.get("reasoning", "") for p in perspectives
+            if p.get(field, "").upper() == decision
+        ],
+        args_against_key: [
+            p.get("reasoning", "") for p in perspectives
+            if p.get(field, "").upper() != decision
+        ],
+        "key_contention_points": [],
+        "synthesis_rationale": (
+            f"All {len(perspectives)} agents unanimously agreed on {decision} "
+            f"with average confidence {avg_conf}. Synthesizer skipped."
+        ),
+        "_short_circuited": True,
+    }
 
 
 def run_debate(
@@ -116,10 +122,16 @@ def run_debate(
                 agent_token_breakdown[agent.agent_id] = usage
                 perspectives.append(result)
             except Exception as e:
+                logger.error("Agent %s failed: %s", agent.agent_id, e, exc_info=True)
                 errors.append({"agent_id": agent.agent_id, "error": str(e)})
 
     # Sort perspectives by agent_id for consistency
     perspectives.sort(key=lambda p: p.get("agent_id", ""))
+    logger.info(
+        "Debate [%s]: %d/%d agents succeeded%s",
+        module_context, len(perspectives), len(agents),
+        f", {len(errors)} failed: {[e['agent_id'] for e in errors]}" if errors else "",
+    )
 
     # ── Phase 1.5: Check for unanimous agreement ─────────────────────────
     unanimous = _check_unanimous(perspectives, module_context)
