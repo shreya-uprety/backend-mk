@@ -24,7 +24,7 @@ ULN = {
 }
 
 # Agent output token caps
-MAX_OUTPUT_TOKENS_AGENT = 2000
+MAX_OUTPUT_TOKENS_AGENT = 4000
 MAX_OUTPUT_TOKENS_SYNTHESIZER = 4000
 MAX_OUTPUT_TOKENS_EXTRACTOR = 4000
 
@@ -37,3 +37,43 @@ THINKING_BUDGET_EXTRACTOR = 0
 
 # Short-circuit: skip synthesizer if all agents agree unanimously
 UNANIMOUS_CONFIDENCE_THRESHOLD = 0.85
+
+
+# ── Module configurations ─────────────────────────────────────────────
+# Each entry defines the agents, prompts, and output shape for a debate module.
+# To add a new module, add an entry here and create the prompt files.
+# No orchestrator or agent code changes needed.
+
+MODULES = {
+    "red_flag": {
+        "agents": [
+            {"id": "agent_safety_net", "persona": "The Cautious Safety-Net", "prompt": "red_flag_safety_net.md"},
+            {"id": "agent_guideline", "persona": "The Guideline Adherent", "prompt": "red_flag_guideline.md"},
+            {"id": "agent_statistician", "persona": "The Statistical Analyst", "prompt": "red_flag_statistician.md"},
+        ],
+        "synthesizer_prompt": "red_flag_synthesizer.md",
+        "decision_field": "verdict",
+        "output_decision_key": "final_decision",
+        "output_args_for_key": "key_arguments_for_red_flag",
+        "output_args_against_key": "key_arguments_against_red_flag",
+        "consensus_actions": {
+            "RED_FLAG_PRESENT": "Urgent specialist review required",
+            "_default": "Proceed to pattern analysis",
+        },
+    },
+    "pattern": {
+        "agents": [
+            {"id": "agent_safety_net", "persona": "The Cautious Safety-Net", "prompt": "pattern_safety_net.md"},
+            {"id": "agent_guideline", "persona": "The Guideline Adherent", "prompt": "pattern_guideline.md"},
+            {"id": "agent_statistician", "persona": "The Statistical Analyst", "prompt": "pattern_statistician.md"},
+        ],
+        "synthesizer_prompt": "pattern_synthesizer.md",
+        "decision_field": "classification",
+        "output_decision_key": "final_classification",
+        "output_args_for_key": "key_arguments_for_primary",
+        "output_args_against_key": "key_arguments_against_primary",
+        "consensus_actions": {
+            "_default": "Follow {decision} pathway guidelines",
+        },
+    },
+}
