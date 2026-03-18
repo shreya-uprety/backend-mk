@@ -49,6 +49,7 @@ def call_gemini(
         user_message += f"\n\n## Additional Context\n\n```json\n{json.dumps(extra_context, indent=2)}\n```"
 
     config = {
+        "temperature": 0,
         "max_output_tokens": max_output_tokens,
         "response_mime_type": "application/json",
     }

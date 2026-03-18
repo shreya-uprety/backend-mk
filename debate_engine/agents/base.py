@@ -32,6 +32,7 @@ class BaseAgent:
         )
 
         config = {
+            "temperature": 0,
             "max_output_tokens": MAX_OUTPUT_TOKENS_AGENT,
             "response_mime_type": "application/json",
         }

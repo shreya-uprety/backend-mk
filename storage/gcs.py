@@ -101,7 +101,8 @@ class GCSBackend(StorageBackend):
 
     def __init__(self, bucket_name: str):
         from google.cloud import storage as gcs_lib
-        self._client = gcs_lib.Client()
+        project = os.getenv("GCP_PROJECT", os.getenv("GOOGLE_CLOUD_PROJECT", "medforce-milton-key-pilot-dev"))
+        self._client = gcs_lib.Client(project=project)
         self._bucket = self._client.bucket(bucket_name)
 
     def read_json(self, path: str) -> dict:

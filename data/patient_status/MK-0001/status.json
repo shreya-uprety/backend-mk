@@ -1,0 +1,35 @@
+{
+  "patient_id": "MK-0001",
+  "current_step": "DASHBOARD_CONFIRMATION",
+  "step_status": "in_progress",
+  "pathway": "standard_triage",
+  "started_at": "2026-03-16T20:23:44.457202+00:00",
+  "updated_at": "2026-03-16T20:26:30.236502+00:00",
+  "metadata": {
+    "red_flag_detected": null,
+    "red_flag_confidence": null,
+    "triage_probability": null,
+    "lft_pattern": null,
+    "lft_pattern_confidence": null,
+    "diagnostic_dilemma": null,
+    "monitoring_required": null
+  },
+  "step_history": [
+    {
+      "step": "GP_REFERRAL_RECEIVED",
+      "status": "completed",
+      "entered_at": "2026-03-16T20:23:44.457219+00:00",
+      "completed_at": "2026-03-16T20:26:25.776095+00:00",
+      "metadata": {}
+    },
+    {
+      "step": "INTAKE_DIGITIZATION",
+      "status": "completed",
+      "entered_at": "2026-03-16T20:26:25.776095+00:00",
+      "completed_at": "2026-03-16T20:26:30.236502+00:00",
+      "metadata": {}
+    }
+  ],
+  "is_archived": false,
+  "final_disposition": null
+}

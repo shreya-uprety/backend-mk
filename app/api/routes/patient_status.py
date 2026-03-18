@@ -111,7 +111,7 @@ async def advance_patient_step(patient_id: str, req: AdvanceStepRequest):
 
     For manual decision steps (diagnostic_dilemma, monitoring), provide `decision`.
     """
-    from app.services.step_handlers import run_step_handler, _AUTO_ADVANCE
+    from app.services.step_handlers import run_step_handler
 
     status = _load(patient_id)
     if status is None:
@@ -123,41 +123,52 @@ async def advance_patient_step(patient_id: str, req: AdvanceStepRequest):
         raise HTTPException(400, str(e))
     _save(status)
 
-    # Run handlers — if a handler auto-decides, run the next step's handler too
+    # Run handler for the step we landed on
     from app.services.step_handlers import STEP_HANDLERS as _all_handlers
 
     handler_results = []
     while True:
         current_step = status.current_step.value
         try:
-            result = run_step_handler(patient_id, status)
+            outcome = run_step_handler(patient_id, status)
         except Exception as e:
             handler_results.append({"step": current_step, "error": str(e)})
             _save(status)
             break
 
-        if result is None:
-            # No handler, or terminal step handler completed
-            if status.current_step in _all_handlers:
-                handler_results.append({"step": current_step, "action": "completed"})
+        if outcome is None:
+            # No handler for this step
+            break
+
+        entry = {
+            "step": current_step,
+            "pathway_decision": outcome.pathway_decision,
+        }
+
+        if outcome.action == "stay":
+            # Terminal step or handler wants to stay
+            entry["action"] = "completed"
+            handler_results.append(entry)
+            _save(status)
+            break
+
+        if outcome.action == "auto_advance":
+            entry["action"] = "completed"
+            handler_results.append(entry)
+            _save(status)
+            break
+
+        if outcome.action == "decide":
+            entry["auto_decision"] = outcome.decision
+            handler_results.append(entry)
+            try:
+                advance_step(status, decision=outcome.decision)
+            except ValueError as e:
+                entry["error"] = str(e)
                 _save(status)
-            break
-
-        if result == _AUTO_ADVANCE:
-            handler_results.append({"step": current_step, "action": "completed"})
+                break
             _save(status)
-            break
-
-        # Decision step — handler auto-decided, advance and check next handler
-        handler_results.append({"step": current_step, "auto_decision": result})
-        try:
-            advance_step(status, decision=result)
-        except ValueError as e:
-            handler_results[-1]["error"] = str(e)
-            _save(status)
-            break
-        _save(status)
-        continue
+            continue  # run handler on the new step
 
     resp = status.model_dump()
     if handler_results:
@@ -305,6 +316,21 @@ async def get_pathway_map(patient_id: str):
         "final_disposition": status.final_disposition.value if status.final_disposition else None,
         "nodes": nodes,
     }
+
+
+@router.get("/{patient_id}/pathway-decisions")
+async def get_pathway_decisions(patient_id: str):
+    """Get all pathway decisions with reasoning for this patient.
+
+    Returns a chronological list of every AI decision made during triage,
+    with human-readable explanations of why each path was chosen.
+    """
+    storage = get_storage()
+    path = f"patient_status/{patient_id}/pathway_decisions.json"
+    if not storage.exists(path):
+        return {"patient_id": patient_id, "decisions": []}
+    decisions = storage.read_json(path)
+    return {"patient_id": patient_id, "decisions": decisions}
 
 
 @router.get("/{patient_id}/step-result/{step_name}")

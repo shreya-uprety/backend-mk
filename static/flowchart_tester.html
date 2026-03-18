@@ -42,6 +42,7 @@
         .step-dot.future { background: #e5e7eb; color: #aaa; }
         .step-name { font-weight: 600; }
         .step-meta { font-size: 0.68rem; color: #888; }
+        .step-reasoning { font-size: 0.72rem; color: #4361ee; line-height: 1.3; margin-top: 3px; padding: 4px 8px; background: #f0f4ff; border-radius: 4px; border-left: 2px solid #4361ee; }
         .step-view { font-size: 0.68rem; color: #4361ee; cursor: pointer; margin-left: auto; }
         .step-view:hover { text-decoration: underline; }
 
@@ -294,10 +295,12 @@
                 const sec = ((Date.now() - start) / 1000).toFixed(1);
                 log(`${LABELS[status.current_step]} (${sec}s)`, 'success');
 
-                if (status.handler_result) {
-                    const hr = status.handler_result;
-                    if (hr.error) log(`Error: ${hr.error}`, 'error');
-                    if (hr.auto_decision) log(`Auto-decided: ${hr.auto_decision}`, 'info');
+                if (status.handler_results) {
+                    for (const hr of status.handler_results) {
+                        if (hr.error) log(`Error: ${hr.error}`, 'error');
+                        if (hr.auto_decision) log(`Auto-decided: ${hr.auto_decision}`, 'info');
+                        if (hr.pathway_decision) log(`  ${hr.pathway_decision.substring(0, 120)}...`, 'info');
+                    }
                 }
 
                 render();
@@ -506,6 +509,7 @@
             badge.textContent = status.step_status;
             badge.className = `badge badge-${status.step_status.replace('_','-')}`;
 
+            await loadPathwayDecisions();
             renderSteps();
             renderMeta();
 
@@ -537,6 +541,22 @@
             return s;
         }
 
+        let pathwayDecisions = {};
+
+        async function loadPathwayDecisions() {
+            if (!patientId) return;
+            try {
+                const res = await fetch(`${BASE}/${patientId}/pathway-decisions`);
+                if (res.ok) {
+                    const data = await res.json();
+                    pathwayDecisions = {};
+                    for (const d of (data.decisions || [])) {
+                        pathwayDecisions[d.step] = d.reasoning;
+                    }
+                }
+            } catch (e) {}
+        }
+
         function renderSteps() {
             const done = new Set(status.step_history.map(h => h.step));
             const steps = buildPath();
@@ -554,10 +574,15 @@
                     if (hist.metadata.confidence) parts.push(`${(hist.metadata.confidence*100).toFixed(0)}%`);
                     if (parts.length) meta = parts.join(' | ');
                 }
+                const pd = pathwayDecisions[s];
                 const hasResult = (isDone || active) && RESULT_MAP[s];
                 return `<div class="step ${cls}">
                     <div class="step-dot ${dot}">${isDone?'&#10003;':''}</div>
-                    <div><div class="step-name">${LABELS[s]||s}</div>${meta?`<div class="step-meta">${meta}</div>`:''}</div>
+                    <div>
+                        <div class="step-name">${LABELS[s]||s}</div>
+                        ${meta?`<div class="step-meta">${meta}</div>`:''}
+                        ${pd?`<div class="step-reasoning">${pd}</div>`:''}
+                    </div>
                     ${hasResult?`<span class="step-view" onclick="viewResult('${s}')">View</span>`:''}
                 </div>`;
             }).join('');

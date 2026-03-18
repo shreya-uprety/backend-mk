@@ -169,6 +169,7 @@ def run_debate(
         model=GEMINI_MODEL,
         contents=[{"role": "user", "parts": [{"text": synth_input}]}],
         config={
+            "temperature": 0,
             "max_output_tokens": MAX_OUTPUT_TOKENS_SYNTHESIZER,
             "response_mime_type": "application/json",
             "thinking_config": {"thinking_budget": THINKING_BUDGET_SYNTHESIZER},
