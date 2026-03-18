@@ -42,7 +42,7 @@
         .step-dot.future { background: #e5e7eb; color: #aaa; }
         .step-name { font-weight: 600; }
         .step-meta { font-size: 0.68rem; color: #888; }
-        .step-reasoning { font-size: 0.72rem; color: #4361ee; line-height: 1.3; margin-top: 3px; padding: 4px 8px; background: #f0f4ff; border-radius: 4px; border-left: 2px solid #4361ee; }
+        .pathway-decision-box { font-size: 0.85rem; color: #1e40af; line-height: 1.5; padding: 10px 14px; background: #eff6ff; border-radius: 6px; border-left: 3px solid #3b82f6; margin-top: 4px; }
         .step-view { font-size: 0.68rem; color: #4361ee; cursor: pointer; margin-left: auto; }
         .step-view:hover { text-decoration: underline; }
 
@@ -311,19 +311,26 @@
                     const resultType = RESULT_MAP[hr.step];
                     if (resultType) {
                         log(`  Showing popup: ${hr.step}`, 'info');
-                        await showPopup(resultType);
+                        await showPopup(resultType, hr.pathway_decision);
                     }
                 }
             } catch (e) { log(e.message, 'error'); }
             finally { btn.disabled = false; btn.textContent = 'Advance'; }
         }
 
-        async function showPopup(resultType) {
+        async function showPopup(resultType, pathwayDecision = null) {
             try {
                 const res = await fetch(`${BASE}/${patientId}/step-result/${resultType}`);
                 if (!res.ok) return;
                 const data = await res.json();
-                const html = buildPopup(resultType, data);
+
+                // If no pathway decision passed, try to load from GCS
+                if (!pathwayDecision && patientId) {
+                    const stepForType = Object.entries(RESULT_MAP).find(([k, v]) => v === resultType);
+                    if (stepForType) pathwayDecision = pathwayDecisions[stepForType[0]];
+                }
+
+                const html = buildPopup(resultType, data, pathwayDecision);
                 if (html) {
                     document.getElementById('modalContent').innerHTML = html;
                     document.getElementById('modal').classList.add('show');
@@ -333,11 +340,13 @@
 
         async function viewResult(step) {
             const type = RESULT_MAP[step];
-            if (type) await showPopup(type);
+            const pd = pathwayDecisions[step] || null;
+            if (type) await showPopup(type, pd);
         }
 
-        function buildPopup(type, data) {
+        function buildPopup(type, data, pathwayDecision = null) {
             const close = '<button class="modal-close" onclick="closeModal()">x</button>';
+            const pd = pathwayDecision ? `<div class="modal-section"><h3>Pathway Decision</h3><div class="pathway-decision-box">${pathwayDecision}</div></div>` : '';
             const cont = '<button class="btn-primary btn-sm" onclick="closeModal()" style="margin-top:14px;width:100%;">Continue</button>';
 
             if (type === 'risk_factors') {
@@ -353,7 +362,7 @@
                         ).join('')}</div></div>
                     <div class="modal-section"><h3>Risk Profile</h3>
                         <div class="modal-text">Alcohol: ${rf.alcohol_risk?.units_weekly || 0} u/wk (${rf.alcohol_risk?.level}) | BMI: ${rf.bmi_category?.value} (${rf.bmi_category?.category}) | Diabetes: ${rf.diabetes_status?.present ? 'Yes' : 'No'}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'red_flag') {
@@ -364,7 +373,7 @@
                     <p style="font-size:0.85rem;color:#666;">Confidence: ${(data.confidence_score*100).toFixed(0)}%</p>
                     <div class="modal-section"><h3>Rationale</h3><div class="modal-text">${s.synthesis_rationale||''}</div></div>
                     ${(s.agent_perspectives||[]).map(p => `<div class="modal-agent"><span class="modal-agent-name">${p.agent_persona}</span> <span style="color:${p.verdict==='RED_FLAG_PRESENT'?'#e63946':'#059669'};font-weight:600;">${p.verdict} (${(p.confidence*100).toFixed(0)}%)</span><div class="modal-agent-reasoning">${p.reasoning}</div></div>`).join('')}
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'pattern') {
@@ -374,7 +383,7 @@
                     <p style="font-size:0.85rem;color:#666;">Confidence: ${(data.confidence_score*100).toFixed(0)}% | R-Factor: ${data.r_factor?.value} (${data.r_factor?.zone})</p>
                     <div class="modal-section"><h3>Rationale</h3><div class="modal-text">${s.synthesis_rationale||''}</div></div>
                     ${(s.agent_perspectives||[]).map(p => `<div class="modal-agent"><span class="modal-agent-name">${p.agent_persona}</span> <span style="color:#2563eb;font-weight:600;">${p.classification} (${(p.confidence*100).toFixed(0)}%)</span><div class="modal-agent-reasoning">${p.reasoning}</div></div>`).join('')}
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'investigation') {
@@ -386,7 +395,7 @@
                         ${invs.map(i => `<div class="modal-evidence"><strong>${i.test_name}</strong> (${i.category}, ${i.urgency})<br>${i.clinical_justification}</div>`).join('')}</div>
                     <div class="modal-section"><h3>Differential Diagnoses</h3><ul class="modal-list">${diffs.map(d => `<li>${d}</li>`).join('')}</ul></div>
                     <div class="modal-section"><h3>Reasoning</h3><div class="modal-text">${data.reasoning||''}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'dilemma') {
@@ -398,7 +407,7 @@
                     ${data.complexity_factors?.length ? `<div class="modal-section"><h3>Complexity Factors</h3><ul class="modal-list">${data.complexity_factors.map(f=>`<li>${f}</li>`).join('')}</ul></div>` : ''}
                     <div class="modal-section"><h3>Rationale</h3><div class="modal-text">${s.synthesis_rationale||''}</div></div>
                     ${(s.agent_perspectives||[]).map(p => `<div class="modal-agent"><span class="modal-agent-name">${p.agent_persona}</span> <span style="font-weight:600;">${p.verdict} (${(p.confidence*100).toFixed(0)}%)</span><div class="modal-agent-reasoning">${p.reasoning}</div></div>`).join('')}
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'complex_case') {
@@ -407,7 +416,7 @@
                     ${data.mri_protocol ? `<div class="modal-section"><h3>MRI Protocol</h3><div class="modal-text">${data.mri_protocol}</div></div>` : ''}
                     ${data.biopsy_indication ? `<div class="modal-section"><h3>Biopsy Indication</h3><div class="modal-text">${data.biopsy_indication}</div></div>` : ''}
                     <div class="modal-section"><h3>Reasoning</h3><div class="modal-text">${data.reasoning||''}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'consultant_summary') {
@@ -418,7 +427,7 @@
                     <div class="modal-section"><h3>Suggested Differential</h3><ul class="modal-list">${(data.suggested_differential||[]).map(d=>`<li>${d}</li>`).join('')}</ul></div>
                     ${data.questions_for_mdt?.length ? `<div class="modal-section"><h3>Questions for MDT</h3><ul class="modal-list">${data.questions_for_mdt.map(q=>`<li>${q}</li>`).join('')}</ul></div>` : ''}
                     <div class="modal-section"><h3>Recommended Plan</h3><div class="modal-text">${data.recommended_plan||''}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'diagnosis') {
@@ -429,7 +438,7 @@
                         ${diags.map(d => `<div class="modal-evidence"><strong>${d.diagnosis}</strong> (${(d.confidence*100).toFixed(0)}%)<br>${(d.supporting_evidence||[]).join('; ')}</div>`).join('')}</div>
                     ${data.recommended_confirmatory_tests?.length ? `<div class="modal-section"><h3>Confirmatory Tests</h3><ul class="modal-list">${data.recommended_confirmatory_tests.map(t=>`<li>${t}</li>`).join('')}</ul></div>` : ''}
                     <div class="modal-section"><h3>Reasoning</h3><div class="modal-text">${data.reasoning||''}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'education') {
@@ -439,7 +448,7 @@
                     ${data.dietary_advice ? `<div class="modal-section"><h3>Dietary Advice</h3><div class="modal-text">${data.dietary_advice}</div></div>` : ''}
                     <div class="modal-section"><h3>Warning Signs</h3><ul class="modal-list">${(data.warning_signs||[]).map(w=>`<li style="color:#e63946;">${w}</li>`).join('')}</ul></div>
                     <div class="modal-section"><h3>Follow-up</h3><div class="modal-text">${data.follow_up_schedule||''}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'monitoring') {
@@ -450,7 +459,7 @@
                     ${req ? `<div class="modal-section"><h3>Schedule</h3><div class="modal-text">${(data.monitoring_schedule||'').replace(/_/g,' ')} for ${(data.surveillance_duration||'').replace(/_/g,' ')}</div></div>
                     <div class="modal-section"><h3>Tests Per Visit</h3><ul class="modal-list">${(data.monitoring_tests||[]).map(t=>`<li>${t}</li>`).join('')}</ul></div>
                     <div class="modal-section"><h3>Escalation Criteria</h3><ul class="modal-list">${(data.escalation_criteria||[]).map(c=>`<li style="color:#e63946;">${c}</li>`).join('')}</ul></div>` : ''}
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'surveillance') {
@@ -460,7 +469,7 @@
                     <div class="modal-section"><h3>Alert Thresholds</h3><ul class="modal-list">${(data.threshold_alerts||[]).map(a=>`<li style="color:#e63946;">${a}</li>`).join('')}</ul></div>
                     <div class="modal-section"><h3>Discharge Criteria</h3><ul class="modal-list">${(data.auto_discharge_criteria||[]).map(c=>`<li>${c}</li>`).join('')}</ul></div>
                     <div class="modal-section"><h3>Duration</h3><div class="modal-text">${data.total_duration||'N/A'} — next review: ${data.next_review_date||'N/A'}</div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             if (type === 'final_signoff') {
@@ -488,7 +497,7 @@
                     ${items.length ? `<div class="modal-section"><h3>Items Needing Consultant Attention</h3><ul class="modal-list">${items.map(i=>`<li style="color:#f59e0b; font-weight:600;">${i}</li>`).join('')}</ul></div>` : ''}
                     <div class="modal-section"><h3>Recommendation</h3><div class="modal-text">${data.recommendation||''}</div></div>
                     <div class="modal-section"><h3>Sign-Off Statement</h3><div class="modal-evidence" style="border-left-color:#059669;"><strong>${data.sign_off_statement||''}</strong></div></div>
-                    ${cont}`;
+                    ${pd}${cont}`;
             }
 
             return null;
@@ -574,14 +583,12 @@
                     if (hist.metadata.confidence) parts.push(`${(hist.metadata.confidence*100).toFixed(0)}%`);
                     if (parts.length) meta = parts.join(' | ');
                 }
-                const pd = pathwayDecisions[s];
                 const hasResult = (isDone || active) && RESULT_MAP[s];
                 return `<div class="step ${cls}">
                     <div class="step-dot ${dot}">${isDone?'&#10003;':''}</div>
                     <div>
                         <div class="step-name">${LABELS[s]||s}</div>
                         ${meta?`<div class="step-meta">${meta}</div>`:''}
-                        ${pd?`<div class="step-reasoning">${pd}</div>`:''}
                     </div>
                     ${hasResult?`<span class="step-view" onclick="viewResult('${s}')">View</span>`:''}
                 </div>`;
