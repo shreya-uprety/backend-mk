@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Pathway Tracker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 4px; color: #1a1a2e; }
+        h2 { font-size: 1rem; margin-bottom: 8px; color: #16213e; }
+        .subtitle { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .panel { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+        .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+        button { padding: 10px 16px; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.85; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary { background: #4361ee; color: #fff; }
+        .btn-outline { background: #fff; color: #4361ee; border: 2px solid #4361ee; }
+        .btn-danger { background: #e63946; color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+        .badge-in-progress { background: #dbeafe; color: #1e40af; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+
+        .pathway-bar { padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; margin-bottom: 14px; }
+        .pathway-standard { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .pathway-urgent { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+
+        .step { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; margin-bottom: 4px; }
+        .step.active { background: #eef2ff; border: 2px solid #4361ee; }
+        .step.done { background: #f0fdf4; }
+        .step.future { color: #aaa; }
+        .step-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
+        .step-dot.done { background: #2ec4b6; color: #fff; }
+        .step-dot.active { background: #4361ee; color: #fff; }
+        .step-dot.future { background: #e5e7eb; color: #aaa; }
+        .step-label { font-weight: 600; font-size: 0.85rem; }
+        .step-meta { font-size: 0.7rem; color: #888; }
+        .step-view { font-size: 0.7rem; color: #4361ee; cursor: pointer; margin-left: auto; }
+        .step-view:hover { text-decoration: underline; }
+
+        .decision-box { background: #fffbeb; border: 2px solid #fbbf24; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+        .decision-box h3 { font-size: 0.9rem; color: #92400e; margin-bottom: 8px; }
+        .decision-btn { padding: 8px 20px; border: 2px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-weight: 600; transition: 0.2s; margin-right: 8px; }
+        .decision-btn:hover { border-color: #4361ee; background: #eef2ff; }
+
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 4px; background: #f3f4f6; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 12px; padding: 28px; max-width: 650px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .modal-close { float: right; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #888; padding: 0; }
+        .modal-close:hover { color: #333; }
+        .modal-verdict { font-size: 1.4rem; font-weight: 700; margin: 10px 0; }
+        .modal-verdict.red { color: #e63946; }
+        .modal-verdict.green { color: #059669; }
+        .modal-verdict.blue { color: #2563eb; }
+        .modal-section { margin-top: 16px; }
+        .modal-section h3 { font-size: 0.85rem; color: #888; text-transform: uppercase; margin-bottom: 6px; }
+        .modal-text { font-size: 0.9rem; line-height: 1.5; color: #444; }
+        .modal-evidence { background: #f8fafc; border-left: 3px solid #4361ee; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 8px; font-size: 0.85rem; color: #555; }
+        .modal-agent { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 8px; }
+        .modal-agent-name { font-weight: 600; font-size: 0.85rem; }
+        .modal-agent-verdict { font-size: 0.8rem; font-weight: 600; margin-left: 8px; }
+        .modal-agent-reasoning { font-size: 0.82rem; color: #555; margin-top: 4px; line-height: 1.4; }
+
+        .log { background: #1a1a2e; color: #a3e635; border-radius: 8px; padding: 14px; font-family: 'Fira Code', monospace; font-size: 0.78rem; max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+        .log .info { color: #60a5fa; }
+        .log .success { color: #34d399; }
+        .log .error { color: #f87171; }
+        .log .dim { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clinical Pathway Tracker</h1>
+        <p class="subtitle">Step through the MedForce MK triage pathway</p>
+
+        <div class="panel">
+            <div class="row">
+                <input type="text" id="patientId" placeholder="Patient ID" value="MK-0002" style="width: 180px;">
+                <button class="btn-primary" onclick="createPatient()">Create</button>
+                <button class="btn-outline" onclick="loadPatient()">Load</button>
+                <button class="btn-danger btn-sm" onclick="resetPatient()" style="margin-left: auto;">Reset</button>
+            </div>
+        </div>
+
+        <div class="panel" id="statusPanel" style="display: none;">
+            <div id="pathwayBar" class="pathway-bar pathway-standard">STANDARD TRIAGE PATHWAY</div>
+
+            <div class="row" style="margin-bottom: 14px; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 1.2rem; font-weight: 700;" id="currentStepLabel"></div>
+                    <span class="badge" id="statusBadge"></span>
+                </div>
+                <button class="btn-primary" onclick="advance()" id="advanceBtn">Advance</button>
+            </div>
+
+            <div id="decisionArea" style="display: none;"></div>
+
+            <h2>Steps</h2>
+            <div id="stepList"></div>
+
+            <div id="metaArea" style="display: none; margin-top: 14px;">
+                <h2>Clinical Findings</h2>
+                <div id="metaGrid" class="row" style="gap: 6px; flex-wrap: wrap;"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Log</h2>
+            <div class="log" id="log"><span class="dim">Ready</span></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <script>
+        const BASE = `${window.location.origin}/api/v1/patient-status`;
+        let patientId = null;
+        let status = null;
+
+        const LABELS = {
+            GP_REFERRAL_RECEIVED: "GP Referral & LFT Received",
+            INTAKE_DIGITIZATION: "Intake & Digitize Info",
+            DASHBOARD_CONFIRMATION: "Confirm Info on Dashboard",
+            EXTRACT_RISK_FACTORS: "Extract Risk Factors",
+            RED_FLAG_ASSESSMENT: "Red Flag Symptoms?",
+            URGENT_CONSULTANT_PATHWAY: "Urgent Consultant Pathway",
+            PRESENT_TRIAGE_OPTIONS: "Present Triage Options",
+            GENERATE_GP_LETTER: "Generate GP Letter",
+            ANALYZE_LFT_PATTERN: "Analyze LFT Pattern",
+            LFT_PATTERN_CLASSIFICATION: "LFT Pattern?",
+            CHOLESTATIC_PATTERN: "Cholestatic Pattern",
+            HEPATITIC_PATTERN: "Hepatitic Pattern",
+            DIAGNOSTIC_DILEMMA_ASSESSMENT: "Diagnostic Dilemma?",
+            RECOMMEND_MRI_BIOPSY_ESCALATE: "Recommend MRI/Biopsy & Escalate",
+            CONSULTANT_MDT_REVIEW: "Consultant MDT Review",
+            CONSULTANT_REVIEW_SIGNOFF: "Consultant Reviews & Signs Off",
+            CONDUCT_CONSULTATION: "Conduct Consultation",
+            CONFIRM_DIAGNOSIS_EDUCATION: "Confirm Diagnosis & Education",
+            ONGOING_MONITORING_ASSESSMENT: "Ongoing Monitoring Required?",
+            AI_SURVEILLANCE_LOOP: "Set up AI Surveillance Loop",
+            DISCHARGE_TO_GP: "Discharge to GP",
+        };
+
+        // Steps that have viewable AI results
+        const RESULT_STEPS = {
+            RED_FLAG_ASSESSMENT: "red_flag",
+            ANALYZE_LFT_PATTERN: "pattern",
+            EXTRACT_RISK_FACTORS: "risk_factors",
+        };
+
+        function log(msg, cls = '') {
+            const el = document.getElementById('log');
+            const t = new Date().toLocaleTimeString();
+            el.innerHTML += `\n<span class="dim">[${t}]</span> <span class="${cls}">${msg}</span>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function api(method, path, body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(`${BASE}${path}`, opts);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Failed');
+            return data;
+        }
+
+        async function createPatient() {
+            patientId = document.getElementById('patientId').value.trim();
+            if (!patientId) return;
+            document.getElementById('log').innerHTML = '';
+            try {
+                status = await api('POST', '/create', { patient_id: patientId });
+                log(`Created ${patientId}`, 'success');
+                render();
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function loadPatient() {
+            patientId = document.getElementById('patientId').value.trim();
+            if (!patientId) return;
+            document.getElementById('log').innerHTML = '';
+            try {
+                status = await api('GET', `/${patientId}`);
+                log(`Loaded ${patientId} at ${LABELS[status.current_step]}`, 'success');
+                render();
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function resetPatient() {
+            if (!patientId || !confirm(`Reset ${patientId}?`)) return;
+            try {
+                await api('DELETE', `/${patientId}`);
+                log(`Reset ${patientId}`, 'info');
+                status = null;
+                document.getElementById('statusPanel').style.display = 'none';
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function advance(decision = null) {
+            if (!patientId) return;
+            const btn = document.getElementById('advanceBtn');
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+
+            try {
+                const start = Date.now();
+                status = await api('POST', `/${patientId}/advance`, { decision });
+                const sec = ((Date.now() - start) / 1000).toFixed(1);
+                log(`${LABELS[status.current_step]} (${sec}s)`, 'success');
+
+                render();
+
+                // Show popup if handler produced an AI result
+                if (status.handler_result) {
+                    const hr = status.handler_result;
+                    if (hr.auto_decision || hr.action === 'completed') {
+                        const stepKey = hr.step;
+                        const resultType = RESULT_STEPS[stepKey];
+                        if (resultType) {
+                            await showResultPopup(resultType);
+                        }
+                    }
+                    if (hr.error) log(`Error: ${hr.error}`, 'error');
+                }
+            } catch (e) {
+                log(e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Advance';
+            }
+        }
+
+        async function showResultPopup(resultType) {
+            try {
+                const data = await api('GET', `/${patientId}/step-result/${resultType}`);
+                let html = '';
+
+                if (resultType === 'risk_factors') {
+                    html = buildRiskFactorsPopup(data);
+                } else if (resultType === 'red_flag') {
+                    html = buildRedFlagPopup(data);
+                } else if (resultType === 'pattern') {
+                    html = buildPatternPopup(data);
+                }
+
+                if (html) {
+                    document.getElementById('modalContent').innerHTML = html;
+                    document.getElementById('modal').classList.add('show');
+                }
+            } catch (e) {
+                console.error('Popup error:', e);
+            }
+        }
+
+        async function viewStepResult(stepKey) {
+            const resultType = RESULT_STEPS[stepKey];
+            if (resultType) await showResultPopup(resultType);
+        }
+
+        function buildRiskFactorsPopup(data) {
+            const rf = data.risk_factors || {};
+            const dm = data.derived_metrics || {};
+            const comp = data.completeness || {};
+            const rFactor = dm.r_factor || {};
+            const uln = dm.uln_multiples || {};
+            const alcohol = rf.alcohol_risk || {};
+            const bmi = rf.bmi_category || {};
+            const diabetes = rf.diabetes_status || {};
+            const symptoms = rf.symptom_severity || {};
+            const liver = rf.liver_disease_history || {};
+            const astAlt = dm.ast_alt_ratio || {};
+
+            const rZoneColors = { cholestatic: '#2563eb', hepatitic: '#e63946', mixed: '#f59e0b' };
+            const rColor = rZoneColors[rFactor.zone] || '#333';
+
+            return `
+                <button class="modal-close" onclick="closeModal()">x</button>
+                <h2>Risk Factor Extraction</h2>
+                <p style="font-size:0.85rem; color:#666; margin-bottom: 12px;">
+                    Completeness: <strong>${((comp.score || 0) * 100).toFixed(0)}%</strong>
+                    ${comp.warnings?.length ? ' | <span style="color:#f59e0b;">' + comp.warnings.join('; ') + '</span>' : ''}
+                </p>
+
+                <div class="modal-section">
+                    <h3>R-Factor Analysis</h3>
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-top:4px;">
+                        <span style="font-size:2rem; font-weight:700; color:${rColor};">${rFactor.value || 'N/A'}</span>
+                        <span style="font-size:0.9rem; color:${rColor}; font-weight:600; text-transform:uppercase;">${rFactor.zone || ''} zone</span>
+                    </div>
+                    <div class="modal-text" style="margin-top:6px;">
+                        R = (ALT/ULN) / (ALP/ULN) = ${rFactor.formula || 'N/A'}<br>
+                        <span style="color:#888;">&lt;2 = cholestatic | 2-5 = mixed | &gt;5 = hepatitic</span>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>LFT Multiples of Upper Limit of Normal</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+                        ${Object.entries(uln).map(([k, v]) => {
+                            const elevated = v > 1;
+                            return `<div style="background:${elevated ? '#fef2f2' : '#f0fdf4'}; border:1px solid ${elevated ? '#fca5a5' : '#86efac'}; padding:6px 10px; border-radius:6px; text-align:center; min-width:70px;">
+                                <div style="font-size:0.7rem; color:#888;">${k}</div>
+                                <div style="font-size:1rem; font-weight:700; color:${elevated ? '#dc2626' : '#059669'};">${v}x</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>Patient Risk Profile</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                        <div class="modal-evidence">
+                            <strong>Alcohol:</strong> ${alcohol.units_weekly || 0} units/week
+                            (${alcohol.level || 'N/A'})
+                            ${alcohol.exceeds_guidelines ? '<br><span style="color:#e63946;">Exceeds UK guidelines</span>' : ''}
+                        </div>
+                        <div class="modal-evidence">
+                            <strong>BMI:</strong> ${bmi.value || 'N/A'}
+                            (${bmi.category || 'N/A'})
+                        </div>
+                        <div class="modal-evidence">
+                            <strong>Diabetes:</strong> ${diabetes.present ? diabetes.type?.replace('_', ' ') || 'Yes' : 'No'}
+                        </div>
+                        <div class="modal-evidence">
+                            <strong>Known Liver Disease:</strong> ${liver.known_disease ? liver.details || 'Yes' : 'No'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>Symptom Assessment</h3>
+                    <div class="modal-text">
+                        ${symptoms.has_red_flag_symptoms
+                            ? '<span style="color:#e63946; font-weight:600;">Red flag symptoms detected</span>'
+                            : '<span style="color:#059669;">No red flag symptoms</span>'}
+                        ${symptoms.jaundice ? ' | <span class="tag" style="background:#fef3c7;">Jaundice</span>' : ''}
+                        ${symptoms.weight_loss ? ' | <span class="tag" style="background:#fef3c7;">Weight Loss</span>' : ''}
+                        ${symptoms.abdominal_mass ? ' | <span class="tag" style="background:#fef3c7;">Abdominal Mass</span>' : ''}
+                        ${symptoms.dark_urine_pale_stools ? ' | <span class="tag" style="background:#fef3c7;">Dark Urine/Pale Stools</span>' : ''}
+                    </div>
+                    ${symptoms.symptom_list?.length ? `
+                        <div style="margin-top:6px;">
+                            ${symptoms.symptom_list.map(s => `<span class="tag">${s}</span>`).join(' ')}
+                        </div>` : ''}
+                </div>
+
+                ${astAlt.value ? `
+                <div class="modal-section">
+                    <h3>AST:ALT Ratio</h3>
+                    <div class="modal-text">
+                        <strong>${astAlt.value}</strong> — ${astAlt.interpretation || ''}
+                    </div>
+                </div>` : ''}
+
+                <div class="modal-section">
+                    <h3>Overall Lab Severity</h3>
+                    <div class="modal-text" style="font-weight:600; text-transform:capitalize;">
+                        ${(dm.overall_lab_severity || 'N/A').replace(/_/g, ' ')}
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="closeModal()" style="margin-top:16px; width:100%;">Continue</button>
+            `;
+        }
+
+        function buildRedFlagPopup(data) {
+            const isRF = data.final_decision === 'RED_FLAG_PRESENT';
+            const conf = (data.confidence_score * 100).toFixed(0);
+            const summary = data.debate_summary || {};
+            const perspectives = summary.agent_perspectives || [];
+            const argsFor = summary.key_arguments_for_red_flag || [];
+            const argsAgainst = summary.key_arguments_against_red_flag || [];
+            const rationale = summary.synthesis_rationale || '';
+
+            return `
+                <button class="modal-close" onclick="closeModal()">x</button>
+                <h2>Red Flag Assessment</h2>
+                <div class="modal-verdict ${isRF ? 'red' : 'green'}">
+                    ${isRF ? 'RED FLAG PRESENT' : 'NO RED FLAGS IDENTIFIED'}
+                </div>
+                <p style="font-size:0.9rem; color:#666;">Confidence: <strong>${conf}%</strong></p>
+
+                <div class="modal-section">
+                    <h3>Clinical Rationale</h3>
+                    <div class="modal-text">${rationale}</div>
+                </div>
+
+                ${argsFor.length ? `
+                <div class="modal-section">
+                    <h3>Evidence Supporting Red Flag</h3>
+                    ${argsFor.map(a => `<div class="modal-evidence">${a}</div>`).join('')}
+                </div>` : ''}
+
+                ${argsAgainst.length ? `
+                <div class="modal-section">
+                    <h3>Evidence Against Red Flag</h3>
+                    ${argsAgainst.map(a => `<div class="modal-evidence">${a}</div>`).join('')}
+                </div>` : ''}
+
+                <div class="modal-section">
+                    <h3>Pathway Decision</h3>
+                    <div class="modal-text">
+                        ${isRF
+                            ? 'Based on the clinical findings, this patient requires <strong>immediate escalation</strong> to the urgent consultant pathway. Red flag symptoms indicate potential serious hepatic pathology requiring urgent specialist review.'
+                            : 'No red flag symptoms were identified. The patient continues on the <strong>standard triage pathway</strong> for LFT pattern analysis and appropriate outpatient management.'}
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>Individual Agent Assessments</h3>
+                    ${perspectives.map(p => `
+                        <div class="modal-agent">
+                            <span class="modal-agent-name">${p.agent_persona}</span>
+                            <span class="modal-agent-verdict" style="color: ${p.verdict === 'RED_FLAG_PRESENT' ? '#e63946' : '#059669'}">
+                                ${p.verdict || p.classification || ''} (${(p.confidence * 100).toFixed(0)}%)
+                            </span>
+                            <div class="modal-agent-reasoning">${p.reasoning}</div>
+                            ${p.key_factors_cited?.length ? `
+                                <div style="margin-top:4px;">
+                                    ${p.key_factors_cited.map(f => `<span class="tag">${f}</span>`).join('')}
+                                </div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button class="btn-primary" onclick="closeModal()" style="margin-top:16px; width:100%;">Continue</button>
+            `;
+        }
+
+        function buildPatternPopup(data) {
+            const pattern = data.final_classification || 'UNKNOWN';
+            const conf = (data.confidence_score * 100).toFixed(0);
+            const rFactor = data.r_factor || {};
+            const summary = data.debate_summary || {};
+            const perspectives = summary.agent_perspectives || [];
+            const argsFor = summary.key_arguments_for_primary || [];
+            const rationale = summary.synthesis_rationale || '';
+            const action = data.recommended_action || '';
+
+            const patternDescriptions = {
+                CHOLESTATIC: 'The liver function tests show a <strong>cholestatic pattern</strong>, indicating bile flow obstruction or impairment. ALP and GGT are disproportionately elevated relative to transaminases. This pattern warrants investigation for biliary obstruction, primary biliary cholangitis, or drug-induced cholestasis.',
+                HEPATITIC: 'The liver function tests show a <strong>hepatitic pattern</strong>, indicating predominant hepatocyte damage. ALT and AST are disproportionately elevated. This pattern warrants investigation for viral hepatitis, autoimmune hepatitis, drug-induced liver injury, or metabolic liver disease (NAFLD/NASH).',
+                MIXED: 'The liver function tests show a <strong>mixed pattern</strong> with both hepatocellular and cholestatic features. This requires a broader differential diagnosis and may indicate overlapping pathologies.',
+            };
+
+            return `
+                <button class="modal-close" onclick="closeModal()">x</button>
+                <h2>LFT Pattern Analysis</h2>
+                <div class="modal-verdict blue">${pattern}</div>
+                <p style="font-size:0.9rem; color:#666;">Confidence: <strong>${conf}%</strong> | R-Factor: <strong>${rFactor.value || 'N/A'}</strong> (${rFactor.zone || 'N/A'} zone)</p>
+
+                <div class="modal-section">
+                    <h3>Clinical Significance</h3>
+                    <div class="modal-text">${patternDescriptions[pattern] || 'Pattern classification completed.'}</div>
+                </div>
+
+                ${rationale ? `
+                <div class="modal-section">
+                    <h3>Analysis Rationale</h3>
+                    <div class="modal-text">${rationale}</div>
+                </div>` : ''}
+
+                ${action ? `
+                <div class="modal-section">
+                    <h3>Recommended Next Steps</h3>
+                    <div class="modal-evidence">${action}</div>
+                </div>` : ''}
+
+                ${argsFor.length ? `
+                <div class="modal-section">
+                    <h3>Supporting Evidence</h3>
+                    ${argsFor.map(a => `<div class="modal-evidence">${a}</div>`).join('')}
+                </div>` : ''}
+
+                <div class="modal-section">
+                    <h3>Pathway Decision</h3>
+                    <div class="modal-text">
+                        Based on the ${pattern.toLowerCase()} classification, the patient proceeds to
+                        <strong>diagnostic assessment</strong> to determine if further investigation
+                        (MRI/biopsy) is needed or if the diagnosis can be confirmed through standard consultation.
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <h3>Individual Agent Assessments</h3>
+                    ${perspectives.map(p => `
+                        <div class="modal-agent">
+                            <span class="modal-agent-name">${p.agent_persona}</span>
+                            <span class="modal-agent-verdict" style="color: #2563eb;">
+                                ${p.classification || ''} (${(p.confidence * 100).toFixed(0)}%)
+                            </span>
+                            <div class="modal-agent-reasoning">${p.reasoning}</div>
+                            ${p.key_factors_cited?.length ? `
+                                <div style="margin-top:4px;">
+                                    ${p.key_factors_cited.map(f => `<span class="tag">${f}</span>`).join('')}
+                                </div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button class="btn-primary" onclick="closeModal()" style="margin-top:16px; width:100%;">Continue</button>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        async function render() {
+            if (!status) return;
+            document.getElementById('statusPanel').style.display = 'block';
+
+            const bar = document.getElementById('pathwayBar');
+            if (status.pathway === 'urgent_consultant') {
+                bar.className = 'pathway-bar pathway-urgent';
+                bar.textContent = 'URGENT CONSULTANT PATHWAY';
+            } else {
+                bar.className = 'pathway-bar pathway-standard';
+                bar.textContent = 'STANDARD TRIAGE PATHWAY';
+            }
+
+            document.getElementById('currentStepLabel').textContent =
+                LABELS[status.current_step] || status.current_step;
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = status.step_status;
+            badge.className = `badge badge-${status.step_status.replace('_', '-')}`;
+
+            renderSteps();
+            renderMeta();
+
+            const options = await api('GET', `/${patientId}/next-options`).catch(() => null);
+            renderDecisions(options);
+
+            const btn = document.getElementById('advanceBtn');
+            btn.disabled = options?.is_terminal || false;
+            btn.style.display = (options?.is_decision && !options?.is_terminal) ? 'none' : '';
+            if (options?.is_terminal) btn.textContent = 'Complete';
+            else btn.textContent = 'Advance';
+        }
+
+        function buildPatientPath() {
+            const steps = [
+                "GP_REFERRAL_RECEIVED", "INTAKE_DIGITIZATION", "DASHBOARD_CONFIRMATION",
+                "EXTRACT_RISK_FACTORS", "RED_FLAG_ASSESSMENT",
+            ];
+
+            if (status.metadata.red_flag_detected === true) {
+                steps.push("URGENT_CONSULTANT_PATHWAY");
+            } else if (status.metadata.red_flag_detected === false) {
+                steps.push("PRESENT_TRIAGE_OPTIONS", "GENERATE_GP_LETTER",
+                    "ANALYZE_LFT_PATTERN", "LFT_PATTERN_CLASSIFICATION");
+                steps.push("DIAGNOSTIC_DILEMMA_ASSESSMENT");
+                if (status.metadata.diagnostic_dilemma === true)
+                    steps.push("RECOMMEND_MRI_BIOPSY_ESCALATE", "CONSULTANT_MDT_REVIEW", "CONSULTANT_REVIEW_SIGNOFF");
+                else if (status.metadata.diagnostic_dilemma === false)
+                    steps.push("CONDUCT_CONSULTATION", "CONFIRM_DIAGNOSIS_EDUCATION");
+            }
+
+            steps.push("ONGOING_MONITORING_ASSESSMENT");
+            if (status.final_disposition === "surveillance") steps.push("AI_SURVEILLANCE_LOOP");
+            if (status.final_disposition === "discharged") steps.push("DISCHARGE_TO_GP");
+
+            return steps;
+        }
+
+        function renderSteps() {
+            const done = new Set(status.step_history.map(h => h.step));
+            const steps = buildPatientPath();
+
+            document.getElementById('stepList').innerHTML = steps.map(s => {
+                const isActive = s === status.current_step;
+                const isDone = done.has(s);
+                let cls = 'future', dot = 'future';
+                if (isActive) { cls = 'active'; dot = 'active'; }
+                else if (isDone) { cls = 'done'; dot = 'done'; }
+
+                const hist = status.step_history.find(h => h.step === s);
+                let meta = '';
+                if (hist?.metadata) {
+                    const parts = [];
+                    if (hist.metadata.decision) parts.push(hist.metadata.decision);
+                    if (hist.metadata.confidence) parts.push(`${(hist.metadata.confidence * 100).toFixed(0)}% confidence`);
+                    if (parts.length) meta = parts.join(' | ');
+                }
+
+                const hasResult = isDone && RESULT_STEPS[s];
+                const viewBtn = hasResult
+                    ? `<span class="step-view" onclick="viewStepResult('${s}')">View Result</span>`
+                    : '';
+
+                return `<div class="step ${cls}">
+                    <div class="step-dot ${dot}">${isDone ? '&#10003;' : ''}</div>
+                    <div>
+                        <div class="step-label">${LABELS[s] || s}</div>
+                        ${meta ? `<div class="step-meta">${meta}</div>` : ''}
+                    </div>
+                    ${viewBtn}
+                </div>`;
+            }).join('');
+        }
+
+        function renderMeta() {
+            const m = status.metadata;
+            const has = m.red_flag_detected !== null || m.lft_pattern !== null;
+            const area = document.getElementById('metaArea');
+            if (!has) { area.style.display = 'none'; return; }
+            area.style.display = 'block';
+            const items = [];
+            if (m.red_flag_detected !== null)
+                items.push(`<span class="tag" style="background:${m.red_flag_detected ? '#fee2e2;color:#991b1b' : '#d1fae5;color:#065f46'}">Red Flag: ${m.red_flag_detected ? 'YES' : 'NO'}</span>`);
+            if (m.red_flag_confidence !== null)
+                items.push(`<span class="tag">Confidence: ${(m.red_flag_confidence*100).toFixed(0)}%</span>`);
+            if (m.lft_pattern !== null)
+                items.push(`<span class="tag" style="background:#dbeafe;color:#1e40af;">Pattern: ${m.lft_pattern.toUpperCase()}</span>`);
+            if (m.lft_pattern_confidence !== null)
+                items.push(`<span class="tag">Confidence: ${(m.lft_pattern_confidence*100).toFixed(0)}%</span>`);
+            if (m.diagnostic_dilemma !== null)
+                items.push(`<span class="tag">Dilemma: ${m.diagnostic_dilemma ? 'YES' : 'NO'}</span>`);
+            if (m.monitoring_required !== null)
+                items.push(`<span class="tag">Monitoring: ${m.monitoring_required ? 'YES' : 'NO'}</span>`);
+            document.getElementById('metaGrid').innerHTML = items.join('');
+        }
+
+        function renderDecisions(options) {
+            const area = document.getElementById('decisionArea');
+            if (!options || !options.is_decision || options.is_terminal) {
+                area.style.display = 'none';
+                return;
+            }
+            area.style.display = 'block';
+            area.innerHTML = `
+                <div class="decision-box">
+                    <h3>${LABELS[status.current_step]}</h3>
+                    ${options.options.map(o =>
+                        `<button class="decision-btn" onclick="advance('${o.decision}')">
+                            ${o.decision.toUpperCase()}
+                            <div style="font-size:0.7rem;color:#888;">${LABELS[o.next_step] || o.next_step}</div>
+                        </button>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

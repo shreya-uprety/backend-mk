@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathway Map Tester</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding: 16px; }
+        h1 { font-size: 1.4rem; color: #1a1a2e; }
+        h2 { font-size: 1rem; margin-bottom: 8px; color: #16213e; }
+        .subtitle { color: #888; font-size: 0.82rem; margin-bottom: 16px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .top-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+        .panel { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 14px; }
+        input { padding: 7px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.85rem; }
+        button { padding: 8px 14px; border: none; border-radius: 5px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        button:hover { opacity: 0.85; }
+        button:disabled { opacity: 0.35; cursor: not-allowed; }
+        .btn-primary { background: #4361ee; color: #fff; }
+        .btn-outline { background: #fff; color: #4361ee; border: 2px solid #4361ee; }
+        .btn-danger { background: #e63946; color: #fff; }
+        .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+
+        .badge { display: inline-block; padding: 2px 7px; border-radius: 8px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; }
+        .badge-standard { background: #dbeafe; color: #1e40af; }
+        .badge-urgent { background: #fee2e2; color: #991b1b; }
+
+        /* Flowchart */
+        .flowchart { display: flex; flex-direction: column; gap: 4px; }
+        .flow-row { display: flex; align-items: center; gap: 6px; }
+        .flow-arrow { color: #ccc; font-size: 0.8rem; padding-left: 28px; }
+        .flow-branch { display: flex; gap: 12px; padding-left: 28px; margin: 4px 0; }
+        .flow-branch-label { font-size: 0.7rem; color: #888; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+
+        .flow-node { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px; border: 2px solid transparent; min-width: 220px; transition: all 0.3s; }
+        .flow-node .dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; }
+        .flow-node .label { font-weight: 600; font-size: 0.82rem; }
+        .flow-node .state-tag { font-size: 0.65rem; margin-left: auto; font-weight: 600; text-transform: uppercase; }
+
+        /* Node states */
+        .flow-node.traversed { background: #f0fdf4; border-color: #86efac; }
+        .flow-node.traversed .dot { background: #2ec4b6; color: #fff; }
+        .flow-node.traversed .state-tag { color: #059669; }
+
+        .flow-node.current { background: #eef2ff; border-color: #4361ee; animation: pulse 2s infinite; }
+        .flow-node.current .dot { background: #4361ee; color: #fff; }
+        .flow-node.current .state-tag { color: #4361ee; }
+
+        .flow-node.upcoming { background: #fff; border-color: #e5e7eb; }
+        .flow-node.upcoming .dot { background: #e5e7eb; color: #9ca3af; }
+        .flow-node.upcoming .state-tag { color: #9ca3af; }
+
+        .flow-node.ruled_out { background: #f9fafb; border-color: #f3f4f6; opacity: 0.5; text-decoration: line-through; }
+        .flow-node.ruled_out .dot { background: #e5e7eb; color: #d1d5db; }
+        .flow-node.ruled_out .state-tag { color: #d1d5db; }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(67, 97, 238, 0); }
+        }
+
+        /* Decision diamond */
+        .flow-node.decision { border-style: dashed; }
+        .flow-node.decision .label::before { content: "◆ "; color: #3b82f6; }
+
+        /* Terminal */
+        .flow-node.terminal { border-radius: 20px; }
+
+        /* Legend */
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; }
+
+        /* Controls */
+        .decision-box { background: #fffbeb; border: 2px solid #fbbf24; border-radius: 6px; padding: 10px; margin-bottom: 10px; }
+        .decision-box h3 { font-size: 0.85rem; color: #92400e; margin-bottom: 6px; }
+        .decision-btn { padding: 6px 16px; border: 2px solid #ddd; border-radius: 5px; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.82rem; margin-right: 6px; }
+        .decision-btn:hover { border-color: #4361ee; background: #eef2ff; }
+
+        .log { background: #1a1a2e; color: #a3e635; border-radius: 6px; padding: 10px; font-family: monospace; font-size: 0.75rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; }
+        .log .info { color: #60a5fa; }
+        .log .success { color: #34d399; }
+        .log .error { color: #f87171; }
+        .log .dim { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pathway Map Tester</h1>
+        <p class="subtitle">Visualize which flowchart nodes are traversed, active, upcoming, or ruled out</p>
+
+        <div class="panel">
+            <div class="top-bar">
+                <input type="text" id="patientId" placeholder="Patient ID" value="p0001" style="width:160px;">
+                <button class="btn-primary btn-sm" onclick="createPatient()">Create</button>
+                <button class="btn-outline btn-sm" onclick="loadPatient()">Load</button>
+                <button class="btn-primary" onclick="advance()" id="advanceBtn">Advance</button>
+                <span id="pathwayBadge" class="badge badge-standard" style="display:none;"></span>
+                <button class="btn-danger btn-sm" onclick="resetPatient()" style="margin-left:auto;">Reset</button>
+            </div>
+            <div id="decisionArea" style="display:none;"></div>
+        </div>
+
+        <div class="panel">
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#2ec4b6;"></div> Traversed</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#4361ee;"></div> Current</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb;"></div> Upcoming</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb; opacity:0.4;"></div> Ruled Out</div>
+            </div>
+            <div id="flowchart" class="flowchart"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Log</h2>
+            <div class="log" id="log"><span class="dim">Ready</span></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE = `${window.location.origin}/api/v1/patient-status`;
+        let patientId = null;
+
+        const LABELS = {
+            GP_REFERRAL_RECEIVED: "GP Referral & LFT Received",
+            INTAKE_DIGITIZATION: "Intake & Digitize Info",
+            DASHBOARD_CONFIRMATION: "Confirm Info on Dashboard",
+            EXTRACT_RISK_FACTORS: "Extract Risk Factors",
+            RED_FLAG_ASSESSMENT: "Red Flag Symptoms?",
+            URGENT_CONSULTANT_PATHWAY: "Urgent Consultant Pathway",
+            PRESENT_TRIAGE_OPTIONS: "Present Triage Options",
+            GENERATE_GP_LETTER: "Generate GP Letter",
+            ANALYZE_LFT_PATTERN: "Analyze LFT Pattern",
+            LFT_PATTERN_CLASSIFICATION: "LFT Pattern?",
+            CHOLESTATIC_PATTERN: "Cholestatic Pattern",
+            HEPATITIC_PATTERN: "Hepatitic Pattern",
+            DIAGNOSTIC_DILEMMA_ASSESSMENT: "Diagnostic Dilemma?",
+            RECOMMEND_MRI_BIOPSY_ESCALATE: "MRI/Liver Biopsy & Escalate",
+            CONSULTANT_MDT_REVIEW: "Consultant MDT Review",
+            CONSULTANT_REVIEW_SIGNOFF: "Consultant Reviews & Signs Off",
+            CONDUCT_CONSULTATION: "Conduct Consultation",
+            CONFIRM_DIAGNOSIS_EDUCATION: "Confirm Diagnosis & Education",
+            ONGOING_MONITORING_ASSESSMENT: "Ongoing Monitoring Required?",
+            AI_SURVEILLANCE_LOOP: "Set up AI Surveillance Loop",
+            DISCHARGE_TO_GP: "Discharge to GP",
+        };
+
+        const DECISION_STEPS = new Set([
+            "RED_FLAG_ASSESSMENT", "LFT_PATTERN_CLASSIFICATION",
+            "DIAGNOSTIC_DILEMMA_ASSESSMENT", "ONGOING_MONITORING_ASSESSMENT"
+        ]);
+        const TERMINAL_STEPS = new Set(["AI_SURVEILLANCE_LOOP", "DISCHARGE_TO_GP"]);
+
+        // Flowchart structure — defines the visual layout
+        const FLOWCHART_STRUCTURE = [
+            { type: "node", step: "GP_REFERRAL_RECEIVED" },
+            { type: "arrow" },
+            { type: "node", step: "INTAKE_DIGITIZATION" },
+            { type: "arrow" },
+            { type: "node", step: "DASHBOARD_CONFIRMATION" },
+            { type: "arrow" },
+            { type: "node", step: "EXTRACT_RISK_FACTORS" },
+            { type: "arrow" },
+            { type: "node", step: "RED_FLAG_ASSESSMENT" },
+            { type: "branch", branches: [
+                { label: "Yes", steps: ["URGENT_CONSULTANT_PATHWAY"] },
+                { label: "No", steps: ["PRESENT_TRIAGE_OPTIONS"] },
+            ]},
+            { type: "arrow" },
+            { type: "node", step: "GENERATE_GP_LETTER" },
+            { type: "arrow" },
+            { type: "node", step: "ANALYZE_LFT_PATTERN" },
+            { type: "arrow" },
+            { type: "node", step: "LFT_PATTERN_CLASSIFICATION" },
+            { type: "branch", branches: [
+                { label: "Cholestatic", steps: ["CHOLESTATIC_PATTERN"] },
+                { label: "Hepatitic", steps: ["HEPATITIC_PATTERN"] },
+            ]},
+            { type: "arrow" },
+            { type: "node", step: "DIAGNOSTIC_DILEMMA_ASSESSMENT" },
+            { type: "branch", branches: [
+                { label: "Yes (Complex)", steps: ["RECOMMEND_MRI_BIOPSY_ESCALATE", "CONSULTANT_MDT_REVIEW", "CONSULTANT_REVIEW_SIGNOFF"] },
+                { label: "No (Straightforward)", steps: ["CONDUCT_CONSULTATION", "CONFIRM_DIAGNOSIS_EDUCATION"] },
+            ]},
+            { type: "arrow" },
+            { type: "node", step: "ONGOING_MONITORING_ASSESSMENT" },
+            { type: "branch", branches: [
+                { label: "Yes", steps: ["AI_SURVEILLANCE_LOOP"] },
+                { label: "No", steps: ["DISCHARGE_TO_GP"] },
+            ]},
+        ];
+
+        function log(msg, cls = '') {
+            const el = document.getElementById('log');
+            const t = new Date().toLocaleTimeString();
+            el.innerHTML += `\n<span class="dim">[${t}]</span> <span class="${cls}">${msg}</span>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function api(method, path, body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(`${BASE}${path}`, opts);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Failed');
+            return data;
+        }
+
+        async function createPatient() {
+            patientId = document.getElementById('patientId').value.trim();
+            if (!patientId) return;
+            document.getElementById('log').innerHTML = '';
+            try {
+                await api('POST', '/create', { patient_id: patientId });
+                log(`Created ${patientId}`, 'success');
+                await refresh();
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function loadPatient() {
+            patientId = document.getElementById('patientId').value.trim();
+            if (!patientId) return;
+            document.getElementById('log').innerHTML = '';
+            try {
+                await api('GET', `/${patientId}`);
+                log(`Loaded ${patientId}`, 'success');
+                await refresh();
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function resetPatient() {
+            if (!patientId || !confirm(`Reset ${patientId}?`)) return;
+            try { await api('DELETE', `/${patientId}`); } catch (e) {}
+            log(`Reset`, 'info');
+            document.getElementById('flowchart').innerHTML = '';
+            document.getElementById('pathwayBadge').style.display = 'none';
+            document.getElementById('decisionArea').style.display = 'none';
+        }
+
+        async function advance(decision = null) {
+            if (!patientId) return;
+            const btn = document.getElementById('advanceBtn');
+            btn.disabled = true; btn.textContent = 'Running...';
+            try {
+                const start = Date.now();
+                const result = await api('POST', `/${patientId}/advance`, { decision });
+                const sec = ((Date.now() - start) / 1000).toFixed(1);
+                log(`→ ${LABELS[result.current_step] || result.current_step} (${sec}s)`, 'success');
+                if (result.handler_result?.auto_decision)
+                    log(`  Auto-decided: ${result.handler_result.auto_decision}`, 'info');
+                if (result.handler_result?.error)
+                    log(`  Error: ${result.handler_result.error}`, 'error');
+                await refresh();
+            } catch (e) { log(e.message, 'error'); }
+            finally { btn.disabled = false; btn.textContent = 'Advance'; }
+        }
+
+        async function refresh() {
+            if (!patientId) return;
+            try {
+                const [map, opts] = await Promise.all([
+                    api('GET', `/${patientId}/pathway-map`),
+                    api('GET', `/${patientId}/next-options`),
+                ]);
+                renderFlowchart(map);
+                renderDecisions(opts, map);
+
+                const badge = document.getElementById('pathwayBadge');
+                badge.style.display = '';
+                badge.textContent = map.pathway === 'urgent_consultant' ? 'URGENT' : 'STANDARD';
+                badge.className = `badge badge-${map.pathway === 'urgent_consultant' ? 'urgent' : 'standard'}`;
+
+                const btn = document.getElementById('advanceBtn');
+                btn.disabled = opts.is_terminal;
+                btn.style.display = opts.is_decision && !opts.is_terminal ? 'none' : '';
+                btn.textContent = opts.is_terminal ? 'Complete' : 'Advance';
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        function renderFlowchart(map) {
+            const stateMap = {};
+            for (const n of map.nodes) stateMap[n.step] = n.state;
+
+            const container = document.getElementById('flowchart');
+            let html = '';
+
+            for (const item of FLOWCHART_STRUCTURE) {
+                if (item.type === 'node') {
+                    html += renderNode(item.step, stateMap[item.step] || 'upcoming');
+                } else if (item.type === 'arrow') {
+                    html += '<div class="flow-arrow">↓</div>';
+                } else if (item.type === 'branch') {
+                    html += '<div class="flow-branch">';
+                    for (const branch of item.branches) {
+                        html += '<div>';
+                        html += `<div class="flow-branch-label">${branch.label}</div>`;
+                        for (let i = 0; i < branch.steps.length; i++) {
+                            html += renderNode(branch.steps[i], stateMap[branch.steps[i]] || 'upcoming');
+                            if (i < branch.steps.length - 1) html += '<div class="flow-arrow">↓</div>';
+                        }
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderNode(step, state) {
+            const isDecision = DECISION_STEPS.has(step);
+            const isTerminal = TERMINAL_STEPS.has(step);
+            let extra = '';
+            if (isDecision) extra += ' decision';
+            if (isTerminal) extra += ' terminal';
+
+            const dotContent = state === 'traversed' ? '✓' : (state === 'current' ? '●' : '');
+            const stateLabel = state === 'ruled_out' ? 'ruled out' : state;
+
+            return `<div class="flow-node ${state}${extra}" id="node-${step}">
+                <div class="dot">${dotContent}</div>
+                <div class="label">${LABELS[step] || step}</div>
+                <div class="state-tag">${stateLabel}</div>
+            </div>`;
+        }
+
+        function renderDecisions(opts, map) {
+            const area = document.getElementById('decisionArea');
+            if (!opts || !opts.is_decision || opts.is_terminal) {
+                area.style.display = 'none';
+                return;
+            }
+
+            // Find current step label from map
+            const currentStep = map.nodes.find(n => n.state === 'current')?.step || '';
+
+            area.style.display = '';
+            area.innerHTML = `<div class="decision-box">
+                <h3>${LABELS[currentStep] || currentStep}</h3>
+                ${opts.options.map(o =>
+                    `<button class="decision-btn" onclick="advance('${o.decision}')">
+                        ${o.decision.toUpperCase()}
+                        <div style="font-size:0.65rem;color:#888;">${LABELS[o.next_step] || o.next_step}</div>
+                    </button>`
+                ).join('')}
+            </div>`;
+        }
+    </script>
+</body>
+</html>

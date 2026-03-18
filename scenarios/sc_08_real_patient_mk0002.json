@@ -1,0 +1,37 @@
+{
+  "_description": "Real patient MK-0002 (Sarah Jenkins). 42F, heavy drinker, presenting with jaundice, ascites, confusion — classic red flag case. Tense ascites, coagulopathy, suspected SBP. AST>ALT ratio >2 suggests alcoholic hepatitis. Expected: RED FLAG YES → urgent consultant pathway → monitoring.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(yes) → URGENT_CONSULTANT → MONITORING(yes) → SURVEILLANCE",
+  "_source": "pipeline_output/MK-0002/record.json",
+  "scenario_id": "sc_08_mk0002",
+  "patient_demographics": {
+    "age": 42,
+    "sex": "female"
+  },
+  "referral_summary": {
+    "symptoms": [
+      "Jaundice",
+      "Ascites with respiratory compromise",
+      "Confusion suggestive of hepatic encephalopathy",
+      "Suspected spontaneous bacterial peritonitis"
+    ],
+    "urgency_requested": "immediate"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 85.0,
+    "AST_IU_L": 210.0,
+    "ALP_IU_L": 145.0,
+    "Bilirubin_umol_L": 145.4,
+    "Albumin_g_L": 24.0,
+    "GGT_IU_L": 320.0
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 40.0,
+    "bmi": 25.0,
+    "known_liver_disease": false,
+    "comorbidities": [
+      "Tense ascites with respiratory compromise",
+      "Coagulopathy",
+      "Suspected spontaneous bacterial peritonitis"
+    ]
+  }
+}

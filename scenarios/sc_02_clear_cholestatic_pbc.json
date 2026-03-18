@@ -1,0 +1,27 @@
+{
+  "_description": "Clear cholestatic pattern — suspected PBC. Middle-aged female, pruritus, high ALP/GGT. No red flags. Straightforward. Expected: no dilemma, PBC diagnosis, monitoring required.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(no) → TRIAGE → GP_LETTER → LFT_PATTERN(cholestatic) → CHOLESTATIC_INVESTIGATIONS → DILEMMA(no) → CONSULTATION → EDUCATION → MONITORING(yes) → SURVEILLANCE",
+  "scenario_id": "sc_02_pbc",
+  "patient_demographics": {
+    "age": 58,
+    "sex": "female"
+  },
+  "referral_summary": {
+    "symptoms": ["itching", "fatigue", "elevated ALP on routine bloods"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 52,
+    "AST_IU_L": 48,
+    "ALP_IU_L": 320,
+    "Bilirubin_umol_L": 22,
+    "Albumin_g_L": 38,
+    "GGT_IU_L": 280
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 2,
+    "bmi": 26.1,
+    "known_liver_disease": false,
+    "comorbidities": ["Hypothyroidism"]
+  }
+}

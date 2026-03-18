@@ -1,0 +1,27 @@
+{
+  "_description": "Hepatitic pattern — alcoholic liver disease. Heavy drinker, AST>ALT ratio >1, high GGT. Straightforward diagnosis. Expected: no dilemma, ALD diagnosis, monitoring required.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(no) → TRIAGE → GP_LETTER → LFT_PATTERN(hepatitic) → HEPATITIC_INVESTIGATIONS → DILEMMA(no) → CONSULTATION → EDUCATION → MONITORING(yes) → SURVEILLANCE",
+  "scenario_id": "sc_05_ald",
+  "patient_demographics": {
+    "age": 48,
+    "sex": "male"
+  },
+  "referral_summary": {
+    "symptoms": ["fatigue", "nausea", "mild right upper quadrant tenderness"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 95,
+    "AST_IU_L": 155,
+    "ALP_IU_L": 55,
+    "Bilirubin_umol_L": 25,
+    "Albumin_g_L": 35,
+    "GGT_IU_L": 420
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 42,
+    "bmi": 29.5,
+    "known_liver_disease": false,
+    "comorbidities": ["Depression"]
+  }
+}

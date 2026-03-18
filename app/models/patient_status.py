@@ -40,17 +40,22 @@ class ProcessStep(str, Enum):
     CHOLESTATIC_PATTERN = "CHOLESTATIC_PATTERN"
     HEPATITIC_PATTERN = "HEPATITIC_PATTERN"
 
+    # Investigation recommendations (after pattern classification)
+    CHOLESTATIC_INVESTIGATIONS = "CHOLESTATIC_INVESTIGATIONS"
+    HEPATITIC_INVESTIGATIONS = "HEPATITIC_INVESTIGATIONS"
+
     # Diagnostic dilemma decision
     DIAGNOSTIC_DILEMMA_ASSESSMENT = "DIAGNOSTIC_DILEMMA_ASSESSMENT"
 
-    # Dilemma = YES path
+    # Dilemma = YES path (complex case)
     RECOMMEND_MRI_BIOPSY_ESCALATE = "RECOMMEND_MRI_BIOPSY_ESCALATE"
     CONSULTANT_MDT_REVIEW = "CONSULTANT_MDT_REVIEW"
     CONSULTANT_REVIEW_SIGNOFF = "CONSULTANT_REVIEW_SIGNOFF"
 
-    # Dilemma = NO path
+    # Dilemma = NO path (straightforward)
     CONDUCT_CONSULTATION = "CONDUCT_CONSULTATION"
     CONFIRM_DIAGNOSIS_EDUCATION = "CONFIRM_DIAGNOSIS_EDUCATION"
+    PATIENT_EDUCATION = "PATIENT_EDUCATION"
 
     # Monitoring decision
     ONGOING_MONITORING_ASSESSMENT = "ONGOING_MONITORING_ASSESSMENT"
@@ -161,10 +166,15 @@ TRANSITIONS: dict[ProcessStep, ProcessStep | dict[str, ProcessStep]] = {
     ProcessStep.LFT_PATTERN_CLASSIFICATION: {
         "cholestatic": ProcessStep.CHOLESTATIC_PATTERN,
         "hepatitic": ProcessStep.HEPATITIC_PATTERN,
+        "mixed": ProcessStep.HEPATITIC_PATTERN,  # mixed follows hepatitic path (wider workup)
     },
 
-    ProcessStep.CHOLESTATIC_PATTERN: ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
-    ProcessStep.HEPATITIC_PATTERN: ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
+    ProcessStep.CHOLESTATIC_PATTERN: ProcessStep.CHOLESTATIC_INVESTIGATIONS,
+    ProcessStep.HEPATITIC_PATTERN: ProcessStep.HEPATITIC_INVESTIGATIONS,
+
+    # Investigations → diagnostic dilemma
+    ProcessStep.CHOLESTATIC_INVESTIGATIONS: ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
+    ProcessStep.HEPATITIC_INVESTIGATIONS: ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
 
     # Decision: Diagnostic dilemma
     ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT: {
@@ -172,14 +182,15 @@ TRANSITIONS: dict[ProcessStep, ProcessStep | dict[str, ProcessStep]] = {
         "no": ProcessStep.CONDUCT_CONSULTATION,
     },
 
-    # Dilemma YES path
+    # Dilemma YES path (complex case)
     ProcessStep.RECOMMEND_MRI_BIOPSY_ESCALATE: ProcessStep.CONSULTANT_MDT_REVIEW,
     ProcessStep.CONSULTANT_MDT_REVIEW: ProcessStep.CONSULTANT_REVIEW_SIGNOFF,
     ProcessStep.CONSULTANT_REVIEW_SIGNOFF: ProcessStep.ONGOING_MONITORING_ASSESSMENT,
 
-    # Dilemma NO path
+    # Dilemma NO path (straightforward)
     ProcessStep.CONDUCT_CONSULTATION: ProcessStep.CONFIRM_DIAGNOSIS_EDUCATION,
-    ProcessStep.CONFIRM_DIAGNOSIS_EDUCATION: ProcessStep.ONGOING_MONITORING_ASSESSMENT,
+    ProcessStep.CONFIRM_DIAGNOSIS_EDUCATION: ProcessStep.PATIENT_EDUCATION,
+    ProcessStep.PATIENT_EDUCATION: ProcessStep.ONGOING_MONITORING_ASSESSMENT,
 
     # Decision: Ongoing monitoring
     ProcessStep.ONGOING_MONITORING_ASSESSMENT: {

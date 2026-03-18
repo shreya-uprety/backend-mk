@@ -28,7 +28,10 @@ app.include_router(scenarios.router)
 app.include_router(patient_status.router)
 
 static_dir = Path(__file__).resolve().parent.parent / "static"
+scenarios_dir = Path(__file__).resolve().parent.parent / "scenarios"
 app.mount("/static", StaticFiles(directory=str(static_dir), html=True), name="static")
+if scenarios_dir.exists():
+    app.mount("/scenarios", StaticFiles(directory=str(scenarios_dir)), name="test-scenarios")
 
 
 @app.get("/")

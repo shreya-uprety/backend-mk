@@ -25,6 +25,10 @@ Red flags are **SYMPTOMS and CLINICAL SIGNS**, not lab values alone:
 - Metabolic risk factors (obesity, diabetes, alcohol) without acute symptoms
 - Asymptomatic patients with incidental LFT abnormalities
 - Chronic risk factors like BMI >35 or moderate alcohol use
+- Pruritus (itching) — this is a cholestatic symptom, NOT a red flag. It suggests PBC/PSC and warrants routine investigation, not urgent pathway
+- Fatigue alone — non-specific, not a red flag
+- Nausea, mild abdominal discomfort — non-specific, not red flags
+- Elevated ALP/GGT without jaundice or mass — cholestatic biochemistry alone is not a red flag
 
 **Key rule:** An asymptomatic patient referred for routine investigation does NOT have red flags, regardless of how abnormal the labs are. Abnormal labs warrant investigation, not urgent red-flag pathway.
 

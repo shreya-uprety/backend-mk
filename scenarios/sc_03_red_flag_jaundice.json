@@ -1,0 +1,27 @@
+{
+  "_description": "Red flag — painless jaundice with weight loss. Suspected malignancy. Expected: red flag YES, urgent consultant pathway, monitoring required.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(yes) → URGENT_CONSULTANT → MONITORING(yes) → SURVEILLANCE",
+  "scenario_id": "sc_03_red_flag",
+  "patient_demographics": {
+    "age": 71,
+    "sex": "male"
+  },
+  "referral_summary": {
+    "symptoms": ["painless jaundice", "unexplained weight loss of 8kg over 3 months", "dark urine", "pale stools"],
+    "urgency_requested": "urgent"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 65,
+    "AST_IU_L": 72,
+    "ALP_IU_L": 450,
+    "Bilirubin_umol_L": 85,
+    "Albumin_g_L": 30,
+    "GGT_IU_L": 380
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 8,
+    "bmi": 22.5,
+    "known_liver_disease": false,
+    "comorbidities": ["Previous smoker"]
+  }
+}

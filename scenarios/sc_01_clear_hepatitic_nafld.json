@@ -1,0 +1,27 @@
+{
+  "_description": "Clear hepatitic pattern — classic NAFLD. Obese, diabetic, asymptomatic. No red flags. Straightforward diagnosis path. Expected: no dilemma, NAFLD diagnosis, monitoring required.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(no) → TRIAGE → GP_LETTER → LFT_PATTERN(hepatitic) → HEPATITIC_INVESTIGATIONS → DILEMMA(no) → CONSULTATION → EDUCATION → MONITORING(yes) → SURVEILLANCE",
+  "scenario_id": "sc_01_nafld",
+  "patient_demographics": {
+    "age": 52,
+    "sex": "male"
+  },
+  "referral_summary": {
+    "symptoms": ["asymptomatic - elevated liver enzymes found on routine screening"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 185,
+    "AST_IU_L": 120,
+    "ALP_IU_L": 95,
+    "Bilirubin_umol_L": 14,
+    "Albumin_g_L": 42,
+    "GGT_IU_L": 110
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 6,
+    "bmi": 33.8,
+    "known_liver_disease": false,
+    "comorbidities": ["Type 2 Diabetes", "Hypertension", "Hyperlipidaemia"]
+  }
+}

@@ -24,9 +24,9 @@ ULN = {
 }
 
 # Agent output token caps
-MAX_OUTPUT_TOKENS_AGENT = 4000
-MAX_OUTPUT_TOKENS_SYNTHESIZER = 4000
-MAX_OUTPUT_TOKENS_EXTRACTOR = 4000
+MAX_OUTPUT_TOKENS_AGENT = 10000
+MAX_OUTPUT_TOKENS_SYNTHESIZER = 10000
+MAX_OUTPUT_TOKENS_EXTRACTOR = 10000
 
 # Thinking budgets — 0 disables internal reasoning (faster, cheaper)
 # Agents don't need thinking: their prompts are specific enough
@@ -74,6 +74,22 @@ MODULES = {
         "output_args_against_key": "key_arguments_against_primary",
         "consensus_actions": {
             "_default": "Follow {decision} pathway guidelines",
+        },
+    },
+    "dilemma": {
+        "agents": [
+            {"id": "agent_safety_net", "persona": "The Cautious Safety-Net", "prompt": "dilemma_safety_net.md"},
+            {"id": "agent_guideline", "persona": "The Guideline Adherent", "prompt": "dilemma_guideline.md"},
+            {"id": "agent_statistician", "persona": "The Statistical Analyst", "prompt": "dilemma_statistician.md"},
+        ],
+        "synthesizer_prompt": "dilemma_synthesizer.md",
+        "decision_field": "verdict",
+        "output_decision_key": "final_decision",
+        "output_args_for_key": "key_arguments_for_dilemma",
+        "output_args_against_key": "key_arguments_against_dilemma",
+        "consensus_actions": {
+            "DIAGNOSTIC_DILEMMA": "Escalate to MDT for complex case review",
+            "_default": "Proceed with standard diagnosis pathway",
         },
     },
 }

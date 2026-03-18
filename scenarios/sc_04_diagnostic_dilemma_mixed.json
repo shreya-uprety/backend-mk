@@ -1,0 +1,27 @@
+{
+  "_description": "Mixed pattern with diagnostic dilemma. R-factor ~3.5 (mixed zone). Young female with autoimmune markers and possible overlap syndrome. Expected: hepatitic path (mixed defaults), dilemma YES, complex case, MDT review.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(no) → TRIAGE → GP_LETTER → LFT_PATTERN(mixed→hepatitic) → HEPATITIC_INVESTIGATIONS → DILEMMA(yes) → MRI_BIOPSY → MDT_REVIEW → CONSULTANT_SIGNOFF → MONITORING(yes) → SURVEILLANCE",
+  "scenario_id": "sc_04_dilemma",
+  "patient_demographics": {
+    "age": 34,
+    "sex": "female"
+  },
+  "referral_summary": {
+    "symptoms": ["fatigue", "intermittent right upper quadrant discomfort", "joint pain"],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 180,
+    "AST_IU_L": 145,
+    "ALP_IU_L": 210,
+    "Bilirubin_umol_L": 28,
+    "Albumin_g_L": 36,
+    "GGT_IU_L": 165
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 3,
+    "bmi": 24.2,
+    "known_liver_disease": false,
+    "comorbidities": ["Autoimmune thyroiditis", "Raynaud's phenomenon"]
+  }
+}

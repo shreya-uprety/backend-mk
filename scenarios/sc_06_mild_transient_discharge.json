@@ -1,0 +1,32 @@
+{
+  "_description": "Mild transient elevation — resolving. Repeat LFTs improved. Originally found during viral illness, now recovering. No risk factors. Expected: no dilemma, straightforward, monitoring NOT required → discharge to GP.",
+  "_expected_path": "GP_REFERRAL → EXTRACT → RED_FLAG(no) → TRIAGE → GP_LETTER → LFT_PATTERN(hepatitic) → HEPATITIC_INVESTIGATIONS → DILEMMA(no) → CONSULTATION → EDUCATION → MONITORING(no) → DISCHARGE_TO_GP",
+  "scenario_id": "sc_06_transient",
+  "patient_demographics": {
+    "age": 35,
+    "sex": "male"
+  },
+  "referral_summary": {
+    "symptoms": [
+      "Mildly elevated ALT found incidentally during routine bloods 3 months ago following a viral illness (gastroenteritis)",
+      "Repeat LFTs show significant improvement — ALT has fallen from 85 to 48 IU/L over 3 months",
+      "Patient is well, asymptomatic, no ongoing symptoms",
+      "GP requesting confirmation that no further hepatology follow-up is needed"
+    ],
+    "urgency_requested": "routine"
+  },
+  "lft_blood_results": {
+    "ALT_IU_L": 48,
+    "AST_IU_L": 35,
+    "ALP_IU_L": 90,
+    "Bilirubin_umol_L": 10,
+    "Albumin_g_L": 45,
+    "GGT_IU_L": 30
+  },
+  "history_risk_factors": {
+    "alcohol_units_weekly": 6,
+    "bmi": 24.5,
+    "known_liver_disease": false,
+    "comorbidities": []
+  }
+}
