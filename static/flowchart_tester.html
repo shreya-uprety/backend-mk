@@ -545,8 +545,10 @@
                     s.push("CONDUCT_CONSULTATION","CONFIRM_DIAGNOSIS_EDUCATION","PATIENT_EDUCATION");
             }
             s.push("ONGOING_MONITORING_ASSESSMENT");
-            if (status.final_disposition === "surveillance") s.push("AI_SURVEILLANCE_LOOP", "FINAL_CONSULTANT_SIGNOFF");
-            if (status.final_disposition === "discharged") s.push("DISCHARGE_TO_GP");
+            if (status.metadata.monitoring_required === true || status.final_disposition === "surveillance")
+                s.push("AI_SURVEILLANCE_LOOP", "FINAL_CONSULTANT_SIGNOFF");
+            if (status.metadata.monitoring_required === false || status.final_disposition === "discharged")
+                s.push("DISCHARGE_TO_GP");
             return s;
         }
 

@@ -77,9 +77,7 @@ def handle_extract_risk_factors(patient_id: str, status: PatientStatus) -> Handl
     existing = _load_prior(patient_id, "enriched_payload.json")
     if existing and "risk_factors" in existing:
         logger.info("Patient %s: risk factors already pre-computed, skipping", patient_id)
-        pd = "Risk factors pre-computed from scenario data. R-factor, ULN multiples, and patient risk profile available."
-        _save_pathway_decision(patient_id, "EXTRACT_RISK_FACTORS", pd)
-        return _auto_advance(pd)
+        return _auto_advance()
 
     from debate_engine.modules.risk_factor_extractor import extract_risk_factors
     from debate_engine.modules.record_transformer import transform_record_to_payload
@@ -98,17 +96,8 @@ def handle_extract_risk_factors(patient_id: str, status: PatientStatus) -> Handl
     _save_result(patient_id, "enriched_payload.json", enriched)
     _save_result(patient_id, "risk_factors_result.json", result.model_dump())
 
-    dm = result.derived_metrics
-    rf = result.risk_factors
-    pd = (
-        f"Risk factors extracted. R-factor: {dm.r_factor.value} ({dm.r_factor.zone} zone). "
-        f"Key findings: BMI {rf.bmi_category.value} ({rf.bmi_category.category}), "
-        f"alcohol {rf.alcohol_risk.units_weekly} units/week ({rf.alcohol_risk.level}), "
-        f"overall lab severity: {dm.overall_lab_severity}."
-    )
-    _save_pathway_decision(patient_id, "EXTRACT_RISK_FACTORS", pd)
     logger.info("Patient %s: risk factors extracted", patient_id)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_red_flag_assessment(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -167,19 +156,8 @@ def handle_analyze_lft_pattern(patient_id: str, status: PatientStatus) -> Handle
         status.metadata.lft_pattern = LFTPatternType.MIXED
     status.metadata.lft_pattern_confidence = result.confidence_score
 
-    conf = f"{result.confidence_score * 100:.0f}%"
-    r_val = result.r_factor.value if hasattr(result, 'r_factor') and result.r_factor else "N/A"
-    rationale = ""
-    if hasattr(result, 'debate_summary') and result.debate_summary:
-        rationale = result.debate_summary.synthesis_rationale or ""
-
-    pd = (
-        f"LFT pattern classified as {result.final_classification} ({conf} confidence, R-factor: {r_val}). "
-        f"{rationale}"
-    )
-    _save_pathway_decision(patient_id, "ANALYZE_LFT_PATTERN", pd)
     logger.info("Patient %s: pattern = %s (%.0f%%)", patient_id, result.final_classification, result.confidence_score * 100)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_lft_pattern_classification(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -224,24 +202,8 @@ def _run_investigation(patient_id: str, status: PatientStatus, prompt_file: str)
 
     _save_result(patient_id, "investigation_result.json", result)
 
-    invs = result.get("recommended_investigations", [])
-    diffs = result.get("differential_diagnoses", [])
-    urgency = result.get("overall_urgency", "routine")
-    reasoning = result.get("reasoning", "")
-
-    inv_names = ", ".join(i.get("test_name", "") for i in invs[:4])
-    diff_names = ", ".join(diffs[:3])
-
-    pd = (
-        f"Investigations recommended ({urgency} priority): {inv_names}. "
-        f"Differential diagnoses under investigation: {diff_names}. "
-        f"{reasoning}"
-    )
-
-    step_name = status.current_step.value
-    _save_pathway_decision(patient_id, step_name, pd)
     logger.info("Patient %s: investigations recommended (%s)", patient_id, prompt_file)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_cholestatic_investigations(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -327,16 +289,8 @@ def handle_recommend_mri_biopsy_escalate(patient_id: str, status: PatientStatus)
     result.pop("_processing_time_ms", None)
 
     _save_result(patient_id, "complex_case_result.json", result)
-
-    proc = result.get("recommended_procedure", "further investigation")
-    reasoning = result.get("reasoning", "")
-    pd = (
-        f"Complex case — recommended procedure: {proc}. "
-        f"{reasoning}"
-    )
-    _save_pathway_decision(patient_id, "RECOMMEND_MRI_BIOPSY_ESCALATE", pd)
     logger.info("Patient %s: complex case recommendation generated", patient_id)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_consultant_review_signoff(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -368,11 +322,8 @@ def handle_consultant_review_signoff(patient_id: str, status: PatientStatus) -> 
 
     _save_result(patient_id, "consultant_summary_result.json", result)
 
-    summary = result.get("clinical_summary", "")
-    pd = f"Consultant MDT summary generated for review. {summary}"
-    _save_pathway_decision(patient_id, "CONSULTANT_REVIEW_SIGNOFF", pd)
     logger.info("Patient %s: consultant summary generated", patient_id)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 # ── Phase 4: Straightforward Path ──────────────────────────────────────
@@ -400,11 +351,8 @@ def handle_conduct_consultation(patient_id: str, status: PatientStatus) -> Handl
     _save_result(patient_id, "diagnosis_result.json", result)
 
     primary = result.get("primary_diagnosis", "unknown")
-    reasoning = result.get("reasoning", "")
-    pd = f"Primary diagnosis suggested: {primary}. {reasoning}"
-    _save_pathway_decision(patient_id, "CONDUCT_CONSULTATION", pd)
     logger.info("Patient %s: diagnosis suggested: %s", patient_id, primary)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_patient_education(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -424,11 +372,8 @@ def handle_patient_education(patient_id: str, status: PatientStatus) -> HandlerO
 
     _save_result(patient_id, "education_result.json", result)
 
-    explanation = result.get("condition_explanation", "")
-    pd = f"Patient education material generated. {explanation}"
-    _save_pathway_decision(patient_id, "PATIENT_EDUCATION", pd)
     logger.info("Patient %s: patient education generated", patient_id)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 # ── Phase 5: Monitoring & Discharge ────────────────────────────────────
@@ -502,13 +447,8 @@ def handle_ai_surveillance_loop(patient_id: str, status: PatientStatus) -> Handl
 
     _save_result(patient_id, "surveillance_result.json", result)
 
-    interval = result.get("schedule_interval", "").replace("_", " ")
-    duration = result.get("total_duration", "")
-    reasoning = result.get("reasoning", "")
-    pd = f"AI surveillance configured: {interval} for {duration}. {reasoning}"
-    _save_pathway_decision(patient_id, "AI_SURVEILLANCE_LOOP", pd)
     logger.info("Patient %s: surveillance loop configured", patient_id)
-    return _auto_advance(pd)
+    return _auto_advance()
 
 
 def handle_final_consultant_signoff(patient_id: str, status: PatientStatus) -> HandlerOutcome:
@@ -550,11 +490,8 @@ def handle_final_consultant_signoff(patient_id: str, status: PatientStatus) -> H
 
     _save_result(patient_id, "final_signoff_result.json", result)
 
-    signoff = result.get("sign_off_statement", "")
-    pd = f"Final consultant sign-off summary generated. {signoff}"
-    _save_pathway_decision(patient_id, "FINAL_CONSULTANT_SIGNOFF", pd)
     logger.info("Patient %s: final consultant sign-off summary generated", patient_id)
-    return _stay(pd)  # terminal step
+    return _stay()  # terminal step
 
 
 # ── Handler registry ──────────────────────────────────────────────────
