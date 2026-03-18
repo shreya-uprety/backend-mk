@@ -60,8 +60,11 @@ class ProcessStep(str, Enum):
     # Monitoring decision
     ONGOING_MONITORING_ASSESSMENT = "ONGOING_MONITORING_ASSESSMENT"
 
-    # Terminal states
+    # Surveillance
     AI_SURVEILLANCE_LOOP = "AI_SURVEILLANCE_LOOP"
+    FINAL_CONSULTANT_SIGNOFF = "FINAL_CONSULTANT_SIGNOFF"
+
+    # Terminal states
     DISCHARGE_TO_GP = "DISCHARGE_TO_GP"
 
 
@@ -126,7 +129,7 @@ class PatientStatus(BaseModel):
 # ── Terminal steps ────────────────────────────────────────────────────
 
 TERMINAL_STEPS = {
-    ProcessStep.AI_SURVEILLANCE_LOOP,
+    ProcessStep.FINAL_CONSULTANT_SIGNOFF,
     ProcessStep.DISCHARGE_TO_GP,
 }
 
@@ -197,6 +200,9 @@ TRANSITIONS: dict[ProcessStep, ProcessStep | dict[str, ProcessStep]] = {
         "yes": ProcessStep.AI_SURVEILLANCE_LOOP,
         "no": ProcessStep.DISCHARGE_TO_GP,
     },
+
+    # Surveillance → final consultant sign-off → end
+    ProcessStep.AI_SURVEILLANCE_LOOP: ProcessStep.FINAL_CONSULTANT_SIGNOFF,
 }
 
 
@@ -269,7 +275,7 @@ def advance_step(
     if next_step in TERMINAL_STEPS:
         status.step_status = StepStatus.COMPLETED
         status.is_archived = True
-        if next_step == ProcessStep.AI_SURVEILLANCE_LOOP:
+        if next_step == ProcessStep.FINAL_CONSULTANT_SIGNOFF:
             status.final_disposition = FinalDisposition.SURVEILLANCE
         elif next_step == ProcessStep.DISCHARGE_TO_GP:
             status.final_disposition = FinalDisposition.DISCHARGED

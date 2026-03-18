@@ -358,7 +358,55 @@ def handle_ai_surveillance_loop(patient_id: str, status: PatientStatus) -> str |
 
     _save_result(patient_id, "surveillance_result.json", result)
     logger.info("Patient %s: surveillance loop configured", patient_id)
-    return None  # terminal step, no advance
+    return _AUTO_ADVANCE
+
+
+def handle_final_consultant_signoff(patient_id: str, status: PatientStatus) -> str | None:
+    """Generate comprehensive AI summary for consultant to review and sign off.
+
+    This is the final step — the consultant reviews everything the AI did
+    throughout the entire pathway before the surveillance plan goes live.
+    """
+    from debate_engine.single_call import call_gemini
+
+    enriched = _load_prior(patient_id, "enriched_payload.json")
+
+    # Gather ALL prior results for the full summary
+    prior = {}
+    for key, filename in [
+        ("risk_factors", "risk_factors_result.json"),
+        ("red_flag", "red_flag_result.json"),
+        ("pattern_analysis", "pattern_result.json"),
+        ("investigations", "investigation_result.json"),
+        ("dilemma", "dilemma_result.json"),
+        ("complex_case", "complex_case_result.json"),
+        ("diagnosis", "diagnosis_result.json"),
+        ("education", "education_result.json"),
+        ("monitoring", "monitoring_result.json"),
+        ("surveillance", "surveillance_result.json"),
+        ("consultant_summary_mdt", "consultant_summary_result.json"),
+    ]:
+        data = _load_prior(patient_id, filename)
+        if data:
+            prior[key] = data
+
+    # Include step history for the pathway trace
+    prior["pathway_history"] = [
+        {"step": h.step.value, "metadata": h.metadata}
+        for h in status.step_history
+    ]
+
+    result = call_gemini(
+        prompt_file="final_consultant_signoff.md",
+        patient_data=enriched,
+        extra_context=prior,
+    )
+    result.pop("_token_usage", None)
+    result.pop("_processing_time_ms", None)
+
+    _save_result(patient_id, "final_signoff_result.json", result)
+    logger.info("Patient %s: final consultant sign-off summary generated", patient_id)
+    return None  # terminal step
 
 
 # ── Handler registry ──────────────────────────────────────────────────
@@ -383,6 +431,7 @@ STEP_HANDLERS: dict[ProcessStep, callable] = {
     # Phase 5: monitoring
     ProcessStep.ONGOING_MONITORING_ASSESSMENT: handle_ongoing_monitoring_assessment,
     ProcessStep.AI_SURVEILLANCE_LOOP: handle_ai_surveillance_loop,
+    ProcessStep.FINAL_CONSULTANT_SIGNOFF: handle_final_consultant_signoff,
 }
 
 

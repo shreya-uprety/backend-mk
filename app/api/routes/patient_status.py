@@ -279,6 +279,7 @@ async def get_pathway_map(patient_id: str):
 
     if meta.monitoring_required is True:
         active_path.add("AI_SURVEILLANCE_LOOP")
+        active_path.add("FINAL_CONSULTANT_SIGNOFF")
     elif meta.monitoring_required is False:
         active_path.add("DISCHARGE_TO_GP")
 
@@ -324,6 +325,7 @@ async def get_step_result(patient_id: str, step_name: str):
         "education": f"{prefix}/education_result.json",
         "monitoring": f"{prefix}/monitoring_result.json",
         "surveillance": f"{prefix}/surveillance_result.json",
+        "final_signoff": f"{prefix}/final_signoff_result.json",
     }
 
     path = file_map.get(step_name)

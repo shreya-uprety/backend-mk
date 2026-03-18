@@ -168,6 +168,7 @@
             PATIENT_EDUCATION: "Patient Education via App",
             ONGOING_MONITORING_ASSESSMENT: "Monitoring Required?",
             AI_SURVEILLANCE_LOOP: "AI Surveillance Loop",
+            FINAL_CONSULTANT_SIGNOFF: "Consultant Reviews & Signs Off",
             DISCHARGE_TO_GP: "Discharge to GP",
         };
 
@@ -184,6 +185,7 @@
             PATIENT_EDUCATION: "education",
             ONGOING_MONITORING_ASSESSMENT: "monitoring",
             AI_SURVEILLANCE_LOOP: "surveillance",
+            FINAL_CONSULTANT_SIGNOFF: "final_signoff",
         };
 
         function log(msg, cls = '') {
@@ -458,6 +460,34 @@
                     ${cont}`;
             }
 
+            if (type === 'final_signoff') {
+                const decisions = data.ai_decisions || [];
+                const findings = data.clinical_findings || {};
+                const plan = data.surveillance_plan || {};
+                const items = data.consultant_attention_items || [];
+                return `${close}<h2>Consultant Review & Sign-Off</h2>
+                    <div class="modal-section"><h3>Patient Overview</h3><div class="modal-text">${data.patient_overview||''}</div></div>
+                    <div class="modal-section"><h3>Pathway Summary</h3><div class="modal-text">${data.pathway_summary||''}</div></div>
+                    <div class="modal-section"><h3>AI Decisions Made</h3>
+                        ${decisions.map(d => `<div class="modal-evidence"><strong>${d.step}</strong>: ${d.decision} (${((d.confidence||0)*100).toFixed(0)}%)<br>${d.rationale}</div>`).join('')}</div>
+                    <div class="modal-section"><h3>Clinical Findings</h3>
+                        <ul class="modal-list">
+                            ${findings.lft_pattern ? `<li><strong>LFT Pattern:</strong> ${findings.lft_pattern}</li>` : ''}
+                            ${findings.risk_factors ? `<li><strong>Risk Factors:</strong> ${findings.risk_factors}</li>` : ''}
+                            ${findings.investigations_recommended ? `<li><strong>Investigations:</strong> ${findings.investigations_recommended}</li>` : ''}
+                            ${findings.diagnosis ? `<li><strong>Diagnosis:</strong> ${findings.diagnosis}</li>` : ''}
+                        </ul></div>
+                    ${plan.schedule ? `<div class="modal-section"><h3>Surveillance Plan</h3>
+                        <div class="modal-text">${(plan.schedule||'').replace(/_/g,' ')} for ${plan.duration||'N/A'}</div>
+                        <ul class="modal-list">${(plan.key_tests||[]).map(t=>`<li>${t}</li>`).join('')}</ul>
+                        ${plan.escalation_triggers?.length ? `<div style="margin-top:6px;"><strong>Escalation triggers:</strong><ul class="modal-list">${plan.escalation_triggers.map(e=>`<li style="color:#e63946;">${e}</li>`).join('')}</ul></div>` : ''}
+                    </div>` : ''}
+                    ${items.length ? `<div class="modal-section"><h3>Items Needing Consultant Attention</h3><ul class="modal-list">${items.map(i=>`<li style="color:#f59e0b; font-weight:600;">${i}</li>`).join('')}</ul></div>` : ''}
+                    <div class="modal-section"><h3>Recommendation</h3><div class="modal-text">${data.recommendation||''}</div></div>
+                    <div class="modal-section"><h3>Sign-Off Statement</h3><div class="modal-evidence" style="border-left-color:#059669;"><strong>${data.sign_off_statement||''}</strong></div></div>
+                    ${cont}`;
+            }
+
             return null;
         }
 
@@ -502,7 +532,7 @@
                     s.push("CONDUCT_CONSULTATION","CONFIRM_DIAGNOSIS_EDUCATION","PATIENT_EDUCATION");
             }
             s.push("ONGOING_MONITORING_ASSESSMENT");
-            if (status.final_disposition === "surveillance") s.push("AI_SURVEILLANCE_LOOP");
+            if (status.final_disposition === "surveillance") s.push("AI_SURVEILLANCE_LOOP", "FINAL_CONSULTANT_SIGNOFF");
             if (status.final_disposition === "discharged") s.push("DISCHARGE_TO_GP");
             return s;
         }
