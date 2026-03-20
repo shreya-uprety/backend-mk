@@ -77,11 +77,16 @@ async def create_patient_status(req: CreatePatientRequest):
     _save(status)
 
     if req.scenario:
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             from debate_engine.modules.risk_factor_extractor import extract_risk_factors
             from debate_engine.schemas import PatientPayload
 
-            payload_fields = {k: v for k, v in req.scenario.items() if not k.startswith("_")}
+            # Strip non-payload fields (internal keys, scenario metadata)
+            PAYLOAD_KEYS = {"scenario_id", "patient_demographics", "referral_summary",
+                            "lft_blood_results", "history_risk_factors"}
+            payload_fields = {k: v for k, v in req.scenario.items() if k in PAYLOAD_KEYS}
             payload = PatientPayload(**payload_fields)
             result = extract_risk_factors(payload)
 
@@ -93,8 +98,9 @@ async def create_patient_status(req: CreatePatientRequest):
             prefix = f"patient_status/{req.patient_id}"
             storage.write_json(f"{prefix}/enriched_payload.json", enriched)
             storage.write_json(f"{prefix}/risk_factors_result.json", result.model_dump())
-        except Exception:
-            pass
+            logger.info("Patient %s: scenario pre-computed successfully", req.patient_id)
+        except Exception as e:
+            logger.error("Patient %s: scenario pre-computation failed: %s", req.patient_id, e)
 
     return status.model_dump()
 
