@@ -377,15 +377,6 @@
             let cont;
             if (pendingConfirmation) {
                 const overrideOpts = pendingConfirmation.override_options || [];
-                const overrideHtml = overrideOpts.length > 0
-                    ? `<div style="display:flex;align-items:center;gap:6px;">
-                        <select class="override-select" id="overrideSelect">
-                            ${overrideOpts.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}
-                        </select>
-                        <button class="btn-override" onclick="overrideStep()">Override AI Decision</button>
-                       </div>`
-                    : '';
-
                 cont = `
                     <div class="confirm-section">
                         <h3>Nurse Confirmation Required</h3>
@@ -395,7 +386,7 @@
                         <textarea id="nurseNotes" placeholder="Optional: Add clinical notes or observations..."></textarea>
                         <div class="confirm-actions">
                             <button class="btn-confirm" onclick="confirmStep()">Confirm & Proceed</button>
-                            ${overrideHtml}
+                            <button class="btn-override" onclick="rejectStep()">Reject & Override</button>
                         </div>
                     </div>`;
             } else {
@@ -578,18 +569,35 @@
             } catch (e) { log(e.message, 'error'); }
         }
 
-        async function overrideStep() {
-            if (!patientId) return;
+        async function rejectStep() {
+            if (!patientId || !pendingConfirmation) return;
+            const opts = pendingConfirmation.override_options || [];
+            if (opts.length === 0) {
+                log('This step cannot be overridden (no alternative paths)', 'error');
+                return;
+            }
+            const aiDecision = pendingConfirmation.auto_decision;
+            const alternatives = opts.filter(o => o !== aiDecision);
+            const choice = prompt(
+                `AI decided: ${(aiDecision || 'N/A').toUpperCase()}\n\n` +
+                `Override to which decision?\n` +
+                alternatives.map((o, i) => `${i + 1}. ${o.toUpperCase()}`).join('\n') +
+                `\n\nType your choice (${alternatives.join(' / ')}):`
+            );
+            if (!choice) return;
+            const normalized = choice.trim().toLowerCase();
+            if (!alternatives.includes(normalized)) {
+                log(`Invalid choice: ${choice}. Options: ${alternatives.join(', ')}`, 'error');
+                return;
+            }
             const notes = document.getElementById('nurseNotes')?.value || '';
-            const overrideDecision = document.getElementById('overrideSelect')?.value;
-            if (!overrideDecision) { log('Select an override decision', 'error'); return; }
             try {
                 const result = await api('POST', `/${patientId}/confirm`, {
                     action: 'override',
                     nurse_notes: notes || null,
-                    override_decision: overrideDecision,
+                    override_decision: normalized,
                 });
-                log(`Overridden: ${result.confirmation?.step} → ${overrideDecision}`, 'error');
+                log(`Overridden: ${result.confirmation?.step} → ${normalized}`, 'error');
                 if (notes) log(`  Notes: ${notes}`, 'info');
                 pendingConfirmation = null;
                 closeModal();
