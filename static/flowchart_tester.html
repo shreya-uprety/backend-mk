@@ -371,22 +371,26 @@
 
         function buildPopup(type, data, pathwayDecision = null) {
             const close = '<button class="modal-close" onclick="closeModal()">x</button>';
-            const pd = pathwayDecision ? `<div class="modal-section"><h3>Pathway Decision</h3><div class="pathway-decision-box">${pathwayDecision}</div></div>` : '';
+            // Only show pathway decision for branching steps
+            const BRANCHING_TYPES = ['red_flag', 'dilemma', 'monitoring'];
+            const showPd = pathwayDecision && BRANCHING_TYPES.includes(type);
+            const pd = showPd ? `<div class="modal-section"><h3>Pathway Decision</h3><div class="pathway-decision-box">${pathwayDecision}</div></div>` : '';
 
             // If awaiting confirmation, show confirm/override section instead of Continue
             let cont;
             if (pendingConfirmation) {
                 const overrideOpts = pendingConfirmation.override_options || [];
+                const canOverride = overrideOpts.length > 0;
                 cont = `
                     <div class="confirm-section">
                         <h3>Nurse Confirmation Required</h3>
                         <p style="font-size:0.82rem;color:#666;margin-bottom:8px;">
-                            Review the AI findings above. You must confirm or override before the patient can proceed.
+                            Review the AI findings above. You must confirm before the patient can proceed.
                         </p>
                         <textarea id="nurseNotes" placeholder="Optional: Add clinical notes or observations..."></textarea>
                         <div class="confirm-actions">
                             <button class="btn-confirm" onclick="confirmStep()">Confirm & Proceed</button>
-                            <button class="btn-override" onclick="rejectStep()">Reject & Override</button>
+                            ${canOverride ? `<button class="btn-override" onclick="rejectStep()">Reject & Override</button>` : ''}
                         </div>
                     </div>`;
             } else {

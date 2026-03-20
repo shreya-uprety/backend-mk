@@ -529,11 +529,16 @@ async def list_all_patients():
 
 @router.delete("/{patient_id}")
 async def delete_patient_status(patient_id: str):
-    """Remove a patient status."""
+    """Remove a patient status and all associated GCS artifacts."""
     storage = get_storage()
     path = _status_path(patient_id)
     if not storage.exists(path):
         raise HTTPException(404, f"Patient {patient_id} not found")
 
-    storage.delete(path)
+    # Delete all files under this patient's prefix
+    prefix = f"{STATUS_PREFIX}/{patient_id}/"
+    blobs = storage.list_blobs(prefix)
+    for blob in blobs:
+        storage.delete(blob)
+
     return {"deleted": patient_id}

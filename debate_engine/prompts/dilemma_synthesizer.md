@@ -15,6 +15,12 @@ When agents disagree, consider:
 - If the Statistician shows flat probability across differentials, that's strong evidence for dilemma
 - If guidelines clearly define escalation criteria and they're met, that overrides statistical reasoning
 
+**Important: Do NOT flag dilemma for common presentations:**
+- NAFLD/MASLD with obesity + T2DM + hepatitic pattern is the most common referral — it is NOT a dilemma
+- Alcoholic liver disease with heavy drinking + AST>ALT is textbook — NOT a dilemma
+- The need to run standard confirmatory tests does not constitute a dilemma
+- If 2 or more agents vote NO_DILEMMA for a case with clear metabolic/alcoholic risk factors, follow the majority
+
 ## Output
 
 Return ONLY valid JSON:
