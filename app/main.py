@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.api.routes import health, pipeline, decisions, scenarios, patient_status
+from app.api.routes import health, pipeline, decisions, scenarios, patient_status, svg_dashboard
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -26,6 +26,7 @@ app.include_router(pipeline.router)
 app.include_router(decisions.router)
 app.include_router(scenarios.router)
 app.include_router(patient_status.router)
+app.include_router(svg_dashboard.router)
 
 static_dir = Path(__file__).resolve().parent.parent / "static"
 scenarios_dir = Path(__file__).resolve().parent.parent / "scenarios"

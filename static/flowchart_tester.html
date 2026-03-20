@@ -51,6 +51,21 @@
         .decision-btn { padding: 6px 16px; border: 2px solid #ddd; border-radius: 5px; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.82rem; margin-right: 6px; }
         .decision-btn:hover { border-color: #4361ee; background: #eef2ff; }
 
+        .confirm-section { margin-top: 14px; padding: 14px; background: #fefce8; border: 2px solid #facc15; border-radius: 8px; }
+        .confirm-section h3 { font-size: 0.9rem; color: #854d0e; margin-bottom: 8px; }
+        .confirm-section textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; resize: vertical; min-height: 50px; margin-bottom: 8px; font-family: inherit; }
+        .confirm-actions { display: flex; gap: 8px; }
+        .btn-confirm { background: #059669; color: #fff; padding: 8px 20px; border: none; border-radius: 5px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn-confirm:hover { background: #047857; }
+        .btn-override { background: #fff; color: #dc2626; padding: 8px 16px; border: 2px solid #dc2626; border-radius: 5px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn-override:hover { background: #fef2f2; }
+        .override-select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.82rem; margin-right: 8px; }
+        .step.awaiting { background: #fefce8; border: 2px solid #facc15; }
+        .step-dot.awaiting { background: #facc15; color: #854d0e; }
+        .badge-awaiting-confirmation { background: #fef3c7; color: #92400e; }
+        .confirmed-tag { font-size: 0.65rem; color: #059669; font-weight: 600; }
+        .overridden-tag { font-size: 0.65rem; color: #dc2626; font-weight: 600; }
+
         .scenario-item { padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-bottom: 3px; }
         .scenario-item:hover { background: #eef2ff; }
         .scenario-item.selected { background: #dbeafe; border: 1px solid #4361ee; }
@@ -310,7 +325,15 @@
                 for (const hr of results) {
                     const resultType = RESULT_MAP[hr.step];
                     if (resultType) {
-                        log(`  Showing popup: ${hr.step}`, 'info');
+                        // Set confirmation context if needed
+                        if (hr.requires_confirmation) {
+                            pendingConfirmation = {
+                                step: hr.step,
+                                auto_decision: hr.auto_decision,
+                                override_options: getOverrideOptions(hr.step),
+                            };
+                            log(`  Awaiting confirmation: ${hr.step}`, 'info');
+                        }
                         await showPopup(resultType, hr.pathway_decision);
                     }
                 }
@@ -344,10 +367,40 @@
             if (type) await showPopup(type, pd);
         }
 
+        let pendingConfirmation = null; // { step, auto_decision, pathway_decision }
+
         function buildPopup(type, data, pathwayDecision = null) {
             const close = '<button class="modal-close" onclick="closeModal()">x</button>';
             const pd = pathwayDecision ? `<div class="modal-section"><h3>Pathway Decision</h3><div class="pathway-decision-box">${pathwayDecision}</div></div>` : '';
-            const cont = '<button class="btn-primary btn-sm" onclick="closeModal()" style="margin-top:14px;width:100%;">Continue</button>';
+
+            // If awaiting confirmation, show confirm/override section instead of Continue
+            let cont;
+            if (pendingConfirmation) {
+                const overrideOpts = pendingConfirmation.override_options || [];
+                const overrideHtml = overrideOpts.length > 0
+                    ? `<div style="display:flex;align-items:center;gap:6px;">
+                        <select class="override-select" id="overrideSelect">
+                            ${overrideOpts.map(o => `<option value="${o}">${o.toUpperCase()}</option>`).join('')}
+                        </select>
+                        <button class="btn-override" onclick="overrideStep()">Override AI Decision</button>
+                       </div>`
+                    : '';
+
+                cont = `
+                    <div class="confirm-section">
+                        <h3>Nurse Confirmation Required</h3>
+                        <p style="font-size:0.82rem;color:#666;margin-bottom:8px;">
+                            Review the AI findings above. You must confirm or override before the patient can proceed.
+                        </p>
+                        <textarea id="nurseNotes" placeholder="Optional: Add clinical notes or observations..."></textarea>
+                        <div class="confirm-actions">
+                            <button class="btn-confirm" onclick="confirmStep()">Confirm & Proceed</button>
+                            ${overrideHtml}
+                        </div>
+                    </div>`;
+            } else {
+                cont = '<button class="btn-primary btn-sm" onclick="closeModal()" style="margin-top:14px;width:100%;">Continue</button>';
+            }
 
             if (type === 'risk_factors') {
                 const dm = data.derived_metrics || {};
@@ -503,7 +556,47 @@
             return null;
         }
 
-        function closeModal() { document.getElementById('modal').classList.remove('show'); }
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            pendingConfirmation = null;
+        }
+
+        async function confirmStep() {
+            if (!patientId) return;
+            const notes = document.getElementById('nurseNotes')?.value || '';
+            try {
+                const result = await api('POST', `/${patientId}/confirm`, {
+                    action: 'confirm',
+                    nurse_notes: notes || null,
+                });
+                log(`Confirmed: ${result.confirmation?.step}`, 'success');
+                if (notes) log(`  Notes: ${notes}`, 'info');
+                pendingConfirmation = null;
+                closeModal();
+                status = result;
+                render();
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function overrideStep() {
+            if (!patientId) return;
+            const notes = document.getElementById('nurseNotes')?.value || '';
+            const overrideDecision = document.getElementById('overrideSelect')?.value;
+            if (!overrideDecision) { log('Select an override decision', 'error'); return; }
+            try {
+                const result = await api('POST', `/${patientId}/confirm`, {
+                    action: 'override',
+                    nurse_notes: notes || null,
+                    override_decision: overrideDecision,
+                });
+                log(`Overridden: ${result.confirmation?.step} → ${overrideDecision}`, 'error');
+                if (notes) log(`  Notes: ${notes}`, 'info');
+                pendingConfirmation = null;
+                closeModal();
+                status = result;
+                render();
+            } catch (e) { log(e.message, 'error'); }
+        }
 
         async function render() {
             if (!status) return;
@@ -518,7 +611,7 @@
             badge.textContent = status.step_status;
             badge.className = `badge badge-${status.step_status.replace('_','-')}`;
 
-            await loadPathwayDecisions();
+            await Promise.all([loadPathwayDecisions(), loadConfirmations()]);
             renderSteps();
             renderMeta();
 
@@ -554,6 +647,17 @@
 
         let pathwayDecisions = {};
 
+        function getOverrideOptions(step) {
+            // Only branching steps can be overridden with a different decision
+            const opts = {
+                RED_FLAG_ASSESSMENT: ['yes', 'no'],
+                LFT_PATTERN_CLASSIFICATION: ['cholestatic', 'hepatitic', 'mixed'],
+                DIAGNOSTIC_DILEMMA_ASSESSMENT: ['yes', 'no'],
+                ONGOING_MONITORING_ASSESSMENT: ['yes', 'no'],
+            };
+            return opts[step] || [];
+        }
+
         async function loadPathwayDecisions() {
             if (!patientId) return;
             try {
@@ -568,14 +672,32 @@
             } catch (e) {}
         }
 
+        let confirmationLog = {};
+
+        async function loadConfirmations() {
+            if (!patientId) return;
+            try {
+                const res = await fetch(`${BASE}/${patientId}/confirmations`);
+                if (res.ok) {
+                    const data = await res.json();
+                    confirmationLog = {};
+                    for (const c of (data.confirmations || [])) {
+                        confirmationLog[c.step] = c;
+                    }
+                }
+            } catch (e) {}
+        }
+
         function renderSteps() {
             const done = new Set(status.step_history.map(h => h.step));
             const steps = buildPath();
             document.getElementById('stepList').innerHTML = steps.map(s => {
                 const active = s === status.current_step;
                 const isDone = done.has(s);
+                const isAwaiting = active && status.step_status === 'awaiting_confirmation';
                 let cls = 'future', dot = 'future';
-                if (active) { cls = 'active'; dot = 'active'; }
+                if (isAwaiting) { cls = 'awaiting'; dot = 'awaiting'; }
+                else if (active) { cls = 'active'; dot = 'active'; }
                 else if (isDone) { cls = 'done'; dot = 'done'; }
                 const hist = status.step_history.find(h => h.step === s);
                 let meta = '';
@@ -585,11 +707,18 @@
                     if (hist.metadata.confidence) parts.push(`${(hist.metadata.confidence*100).toFixed(0)}%`);
                     if (parts.length) meta = parts.join(' | ');
                 }
+                // Confirmation status
+                const conf = confirmationLog[s];
+                let confTag = '';
+                if (conf) {
+                    if (conf.action === 'confirm') confTag = '<span class="confirmed-tag">CONFIRMED</span>';
+                    else if (conf.action === 'override') confTag = `<span class="overridden-tag">OVERRIDDEN → ${conf.final_decision}</span>`;
+                }
                 const hasResult = (isDone || active) && RESULT_MAP[s];
                 return `<div class="step ${cls}">
-                    <div class="step-dot ${dot}">${isDone?'&#10003;':''}</div>
+                    <div class="step-dot ${dot}">${isDone?'&#10003;':(isAwaiting?'!':'')}</div>
                     <div>
-                        <div class="step-name">${LABELS[s]||s}</div>
+                        <div class="step-name">${LABELS[s]||s} ${confTag}</div>
                         ${meta?`<div class="step-meta">${meta}</div>`:''}
                     </div>
                     ${hasResult?`<span class="step-view" onclick="viewResult('${s}')">View</span>`:''}

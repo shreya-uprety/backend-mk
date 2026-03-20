@@ -14,6 +14,7 @@ from app.models.patient_status import (
     TRANSITIONS,
     DECISION_STEPS,
     TERMINAL_STEPS,
+    CONFIRMATION_REQUIRED_STEPS,
 )
 
 router = APIRouter(prefix="/api/v1/patient-status", tags=["patient-status"])
@@ -46,6 +47,12 @@ class CreatePatientRequest(BaseModel):
 
 class AdvanceStepRequest(BaseModel):
     decision: str | None = None
+
+
+class ConfirmStepRequest(BaseModel):
+    action: str  # "confirm" or "override"
+    nurse_notes: str | None = None
+    override_decision: str | None = None  # only for "override" on decision steps
 
 
 class UpdateMetadataRequest(BaseModel):
@@ -103,19 +110,28 @@ async def get_patient_status(patient_id: str):
 
 @router.post("/{patient_id}/advance")
 async def advance_patient_step(patient_id: str, req: AdvanceStepRequest):
-    """Advance the patient exactly one step.
+    """Advance the patient one step and run its handler.
 
-    Runs the step handler if one exists for the new step.
-    For decision steps with handlers (red_flag, lft_classification),
-    the handler auto-resolves the decision and advances past it.
+    If the step requires nurse confirmation, the step enters
+    `awaiting_confirmation` status. The nurse must call /confirm
+    before the patient can advance further.
 
-    For manual decision steps (diagnostic_dilemma, monitoring), provide `decision`.
+    Decision steps with AI handlers auto-resolve the decision,
+    but still pause for confirmation if configured.
     """
     from app.services.step_handlers import run_step_handler
 
     status = _load(patient_id)
     if status is None:
         raise HTTPException(404, f"Patient {patient_id} not found")
+
+    # Block if previous step awaiting confirmation
+    if status.step_status == StepStatus.AWAITING_CONFIRMATION:
+        raise HTTPException(
+            400,
+            f"Step {status.current_step.value} is awaiting nurse confirmation. "
+            f"Call /confirm or /override before advancing."
+        )
 
     try:
         advance_step(status, decision=req.decision)
@@ -124,57 +140,184 @@ async def advance_patient_step(patient_id: str, req: AdvanceStepRequest):
     _save(status)
 
     # Run handler for the step we landed on
-    from app.services.step_handlers import STEP_HANDLERS as _all_handlers
-
     handler_results = []
+    pending_decision = None  # store auto-decision if step needs confirmation
+
     while True:
-        current_step = status.current_step.value
+        current_step = status.current_step
+        current_step_val = current_step.value
         try:
             outcome = run_step_handler(patient_id, status)
         except Exception as e:
-            handler_results.append({"step": current_step, "error": str(e)})
+            handler_results.append({"step": current_step_val, "error": str(e)})
             _save(status)
             break
 
         if outcome is None:
-            # No handler for this step
             break
 
         entry = {
-            "step": current_step,
+            "step": current_step_val,
             "pathway_decision": outcome.pathway_decision,
         }
 
+        needs_confirmation = current_step in CONFIRMATION_REQUIRED_STEPS
+
         if outcome.action == "stay":
-            # Terminal step or handler wants to stay
             entry["action"] = "completed"
+            if needs_confirmation:
+                entry["requires_confirmation"] = True
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
             handler_results.append(entry)
             _save(status)
             break
 
         if outcome.action == "auto_advance":
             entry["action"] = "completed"
+            if needs_confirmation:
+                entry["requires_confirmation"] = True
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
             handler_results.append(entry)
             _save(status)
             break
 
         if outcome.action == "decide":
             entry["auto_decision"] = outcome.decision
-            handler_results.append(entry)
-            try:
-                advance_step(status, decision=outcome.decision)
-            except ValueError as e:
-                entry["error"] = str(e)
+
+            if needs_confirmation:
+                # Pause for confirmation — don't advance yet
+                entry["requires_confirmation"] = True
+                entry["action"] = "awaiting_confirmation"
+                handler_results.append(entry)
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
+                # Store the pending decision so /confirm can use it
+                _store_pending_decision(patient_id, outcome.decision)
                 _save(status)
                 break
-            _save(status)
-            continue  # run handler on the new step
+            else:
+                # No confirmation needed, advance immediately
+                handler_results.append(entry)
+                try:
+                    advance_step(status, decision=outcome.decision)
+                except ValueError as e:
+                    entry["error"] = str(e)
+                    _save(status)
+                    break
+                _save(status)
+                continue
 
     resp = status.model_dump()
     if handler_results:
         resp["handler_result"] = handler_results[-1]
         resp["handler_results"] = handler_results
     return resp
+
+
+def _store_pending_decision(patient_id: str, decision: str) -> None:
+    """Store a pending AI decision awaiting nurse confirmation."""
+    storage = get_storage()
+    storage.write_json(
+        f"{STATUS_PREFIX}/{patient_id}/pending_decision.json",
+        {"decision": decision},
+    )
+
+
+def _load_pending_decision(patient_id: str) -> str | None:
+    """Load the pending AI decision."""
+    storage = get_storage()
+    path = f"{STATUS_PREFIX}/{patient_id}/pending_decision.json"
+    if not storage.exists(path):
+        return None
+    data = storage.read_json(path)
+    return data.get("decision")
+
+
+def _clear_pending_decision(patient_id: str) -> None:
+    storage = get_storage()
+    path = f"{STATUS_PREFIX}/{patient_id}/pending_decision.json"
+    if storage.exists(path):
+        storage.delete(path)
+
+
+def _save_confirmation(patient_id: str, record: dict) -> None:
+    """Append a confirmation record to the patient's confirmations log."""
+    storage = get_storage()
+    path = f"{STATUS_PREFIX}/{patient_id}/confirmations.json"
+    records = storage.read_json(path) if storage.exists(path) else []
+    records.append(record)
+    storage.write_json(path, records)
+
+
+@router.post("/{patient_id}/confirm")
+async def confirm_step(patient_id: str, req: ConfirmStepRequest):
+    """Nurse confirms or overrides the AI result for the current step.
+
+    For decision steps, confirming uses the AI's decision. Overriding
+    uses the nurse's override_decision instead.
+
+    After confirmation, the patient advances past the step.
+    """
+    from datetime import datetime, timezone
+
+    status = _load(patient_id)
+    if status is None:
+        raise HTTPException(404, f"Patient {patient_id} not found")
+
+    if status.step_status != StepStatus.AWAITING_CONFIRMATION:
+        raise HTTPException(400, f"Step {status.current_step.value} is not awaiting confirmation")
+
+    now = datetime.now(timezone.utc).isoformat()
+    step_val = status.current_step.value
+    pending = _load_pending_decision(patient_id)
+
+    if req.action == "confirm":
+        decision = pending  # use AI's decision (None for non-decision steps)
+    elif req.action == "override":
+        if not req.override_decision:
+            raise HTTPException(400, "override_decision is required when action is 'override'")
+        decision = req.override_decision
+    else:
+        raise HTTPException(400, f"Invalid action: {req.action}. Use 'confirm' or 'override'")
+
+    # Record the confirmation
+    confirmation = {
+        "step": step_val,
+        "action": req.action,
+        "ai_decision": pending,
+        "final_decision": decision,
+        "nurse_notes": req.nurse_notes,
+        "timestamp": now,
+    }
+    _save_confirmation(patient_id, confirmation)
+
+    # Set status back to in_progress
+    status.step_status = StepStatus.IN_PROGRESS
+
+    # Advance if this was a decision step with a pending decision
+    if decision is not None:
+        try:
+            advance_step(status, decision=decision)
+        except ValueError as e:
+            _save(status)
+            raise HTTPException(400, str(e))
+
+    _clear_pending_decision(patient_id)
+    _save(status)
+
+    resp = status.model_dump()
+    resp["confirmation"] = confirmation
+    return resp
+
+
+@router.get("/{patient_id}/confirmations")
+async def get_confirmations(patient_id: str):
+    """Get all nurse confirmations for this patient."""
+    storage = get_storage()
+    path = f"{STATUS_PREFIX}/{patient_id}/confirmations.json"
+    if not storage.exists(path):
+        return {"patient_id": patient_id, "confirmations": []}
+    records = storage.read_json(path)
+    return {"patient_id": patient_id, "confirmations": records}
 
 
 @router.patch("/{patient_id}/metadata")

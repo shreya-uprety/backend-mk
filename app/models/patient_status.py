@@ -71,6 +71,7 @@ class ProcessStep(str, Enum):
 class StepStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
+    AWAITING_CONFIRMATION = "awaiting_confirmation"
     COMPLETED = "completed"
     ESCALATED = "escalated"
     SKIPPED = "skipped"
@@ -140,6 +141,25 @@ DECISION_STEPS = {
     ProcessStep.LFT_PATTERN_CLASSIFICATION,
     ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
     ProcessStep.ONGOING_MONITORING_ASSESSMENT,
+}
+
+# ── Steps requiring nurse confirmation before advancing ──────────────
+# After the AI handler runs, the step enters AWAITING_CONFIRMATION.
+# The nurse must call /confirm (or /override) before the patient can advance.
+
+CONFIRMATION_REQUIRED_STEPS = {
+    ProcessStep.RED_FLAG_ASSESSMENT,
+    ProcessStep.ANALYZE_LFT_PATTERN,
+    ProcessStep.CHOLESTATIC_INVESTIGATIONS,
+    ProcessStep.HEPATITIC_INVESTIGATIONS,
+    ProcessStep.DIAGNOSTIC_DILEMMA_ASSESSMENT,
+    ProcessStep.RECOMMEND_MRI_BIOPSY_ESCALATE,
+    ProcessStep.CONSULTANT_REVIEW_SIGNOFF,
+    ProcessStep.CONDUCT_CONSULTATION,
+    ProcessStep.PATIENT_EDUCATION,
+    ProcessStep.ONGOING_MONITORING_ASSESSMENT,
+    ProcessStep.AI_SURVEILLANCE_LOOP,
+    ProcessStep.FINAL_CONSULTANT_SIGNOFF,
 }
 
 
