@@ -1,0 +1,58 @@
+[
+  {
+    "qid": "Q-AUGTL",
+    "content": "When Augmentin finished?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "3 weeks ago, itching severe",
+    "headline": "Timeline",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Classic latency",
+    "tags": [
+      "timeline"
+    ]
+  },
+  {
+    "qid": "Q-EXP",
+    "content": "Travel or hepatitis exposure?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Exposure Risk",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Viral screening",
+    "tags": [
+      "exposure"
+    ]
+  },
+  {
+    "qid": "Q-ENCE",
+    "content": "Confusion?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Encephalopathy",
+    "domain": "Neurological",
+    "system_affected": "CNS",
+    "clinical_intent": "Rule out",
+    "tags": [
+      "encephalopathy"
+    ]
+  },
+  {
+    "qid": "Q-FEV",
+    "content": "Fevers or chills?",
+    "rank": 3,
+    "status": null,
+    "answer": null,
+    "headline": "Constitutional",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Infection",
+    "tags": [
+      "fever"
+    ]
+  }
+]

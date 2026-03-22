@@ -1,0 +1,113 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice, Mixed Hepatocellular-Cholestatic, Drug-Induced, Complete Clinical Picture",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus",
+        "check": true
+      },
+      {
+        "criteria": "Drug exposure (dual)",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine (bilirubinuria)",
+        "check": true
+      },
+      {
+        "criteria": "Pale stools (acholic)",
+        "check": true
+      },
+      {
+        "criteria": "Cholestatic triad present",
+        "check": true
+      },
+      {
+        "criteria": "Labs pending",
+        "check": false
+      }
+    ],
+    "reasoning": "Complete clinical picture: jaundice + dark urine + pale stools + pruritus = confirmed cholestasis with hepatocellular overlap from dual drug exposure.",
+    "followup_question": ""
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity with Cholestatic Features, Supratherapeutic",
+    "indicators_point": [
+      {
+        "criteria": "Supratherapeutic dose",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain",
+        "check": true
+      },
+      {
+        "criteria": "Nausea",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine",
+        "check": true
+      },
+      {
+        "criteria": "Pale stools",
+        "check": true
+      },
+      {
+        "criteria": "Elevated transaminases",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "Dark urine and pale stools confirm significant cholestasis. Mixed pattern may reflect combined injury from both hepatotoxins.",
+    "followup_question": ""
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis, Confirmed Pattern",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure",
+        "check": true
+      },
+      {
+        "criteria": "3-week latency",
+        "check": true
+      },
+      {
+        "criteria": "Severe pruritus",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine",
+        "check": true
+      },
+      {
+        "criteria": "Pale/acholic stools",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "Elevated ALP/GGT",
+        "check": false
+      }
+    ],
+    "reasoning": "CLASSIC: Dark urine + pale stools + pruritus is the pathognomonic triad of cholestatic liver injury. Textbook Augmentin DILI.",
+    "followup_question": ""
+  }
+]

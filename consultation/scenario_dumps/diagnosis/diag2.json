@@ -1,0 +1,72 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice secondary to Suspected Drug-Induced Liver Injury",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus / yellow skin",
+        "check": true
+      },
+      {
+        "criteria": "Recent hepatotoxic drug exposure",
+        "check": true
+      },
+      {
+        "criteria": "Elevated serum bilirubin",
+        "check": false
+      },
+      {
+        "criteria": "Hepatocellular injury markers (ALT/AST)",
+        "check": false
+      },
+      {
+        "criteria": "Dose-dependent toxicity confirmed",
+        "check": false
+      },
+      {
+        "criteria": "Viral causes excluded",
+        "check": false
+      }
+    ],
+    "reasoning": "Jaundice with reported Tylenol use raises immediate concern for acetaminophen hepatotoxicity. Dose quantification is critical.",
+    "followup_question": "How many Tylenol pills were you taking per day?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Drug-Induced Liver Injury",
+    "diagnosis": "Drug-Induced Liver Injury (DILI), Acetaminophen, Suspected",
+    "indicators_point": [
+      {
+        "criteria": "Acetaminophen exposure confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Supratherapeutic dose (>3g/day)",
+        "check": false
+      },
+      {
+        "criteria": "Jaundice within expected window",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain / hepatomegaly",
+        "check": false
+      },
+      {
+        "criteria": "Elevated transaminases (ALT >1000)",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy (INR >1.5)",
+        "check": false
+      },
+      {
+        "criteria": "Encephalopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "Tylenol use reported for toothache. Acetaminophen is the most common cause of acute liver failure. Dose must be quantified urgently.",
+    "followup_question": "How many pills per day and for how long?"
+  }
+]

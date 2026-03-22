@@ -1,0 +1,44 @@
+[
+  {
+    "qid": "Q-EXP",
+    "content": "Exposure?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "No travel, no contacts",
+    "headline": "Cleared",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Excluded",
+    "tags": [
+      "exposure"
+    ]
+  },
+  {
+    "qid": "Q-ENCE",
+    "content": "Confusion?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Encephalopathy",
+    "domain": "Neurological",
+    "system_affected": "CNS",
+    "clinical_intent": "Rule out",
+    "tags": [
+      "encephalopathy"
+    ]
+  },
+  {
+    "qid": "Q-FEV",
+    "content": "Fevers?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Constitutional",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Infection",
+    "tags": [
+      "fever"
+    ]
+  }
+]

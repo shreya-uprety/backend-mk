@@ -1,0 +1,58 @@
+[
+  {
+    "qid": "Q-TDOSE",
+    "content": "Tylenol dose?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "6-8 pills/day",
+    "headline": "CRITICAL Dose",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Supratherapeutic",
+    "tags": [
+      "overdose"
+    ]
+  },
+  {
+    "qid": "Q-ABD",
+    "content": "Any abdominal pain?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Abdominal Assessment",
+    "domain": "GI",
+    "system_affected": "GI",
+    "clinical_intent": "Localise pathology",
+    "tags": [
+      "pain"
+    ]
+  },
+  {
+    "qid": "Q-NAU",
+    "content": "Any nausea or vomiting?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "GI Symptoms",
+    "domain": "GI",
+    "system_affected": "GI",
+    "clinical_intent": "GI involvement",
+    "tags": [
+      "nausea"
+    ]
+  },
+  {
+    "qid": "Q-AUGTL",
+    "content": "When did Augmentin finish?",
+    "rank": 3,
+    "status": null,
+    "answer": null,
+    "headline": "Drug Timeline",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Latency",
+    "tags": [
+      "timeline"
+    ]
+  }
+]

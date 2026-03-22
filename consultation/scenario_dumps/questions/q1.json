@@ -1,0 +1,30 @@
+[
+  {
+    "qid": "Q-CC",
+    "content": "What brings you in today?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Yellow eyes, 2 days",
+    "headline": "Chief Complaint",
+    "domain": "Presenting",
+    "system_affected": "General",
+    "clinical_intent": "Answered",
+    "tags": [
+      "intake"
+    ]
+  },
+  {
+    "qid": "Q-MED",
+    "content": "What medications are you currently taking?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Medication Review",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Identify hepatotoxins",
+    "tags": [
+      "medications"
+    ]
+  }
+]

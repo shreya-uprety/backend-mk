@@ -1,0 +1,44 @@
+[
+  {
+    "qid": "Q-ALG",
+    "content": "Allergies?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "NKDA",
+    "headline": "No Allergies",
+    "domain": "Allergies",
+    "system_affected": "Immune",
+    "clinical_intent": "Confirmed",
+    "tags": [
+      "allergies"
+    ]
+  },
+  {
+    "qid": "Q-SURG",
+    "content": "Surgeries?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Surgical",
+    "domain": "Surgical",
+    "system_affected": "General",
+    "clinical_intent": "Baseline",
+    "tags": [
+      "surgical"
+    ]
+  },
+  {
+    "qid": "Q-PIER",
+    "content": "Piercings or tattoos?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Bloodborne Risk",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Hep B/C",
+    "tags": [
+      "piercings"
+    ]
+  }
+]

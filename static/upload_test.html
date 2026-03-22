@@ -29,14 +29,8 @@
         gap: 20px;
     }
 
-    .upload-panel {
-        flex: 0 0 380px;
-    }
-
-    .results-panel {
-        flex: 1;
-        min-width: 0;
-    }
+    .upload-panel { flex: 0 0 380px; }
+    .results-panel { flex: 1; min-width: 0; }
 
     .card {
         background: white;
@@ -52,10 +46,12 @@
         font-size: 13px;
         color: #003366;
         border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     .card-body { padding: 16px; }
 
-    /* Upload area */
     .drop-zone {
         border: 2px dashed #b0c4de;
         border-radius: 8px;
@@ -65,280 +61,161 @@
         transition: all 0.2s;
         background: #f8fafc;
     }
-    .drop-zone:hover, .drop-zone.dragover {
-        border-color: #0066cc;
-        background: #e8f0fe;
-    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #0066cc; background: #e8f0fe; }
     .drop-zone-icon { font-size: 36px; margin-bottom: 10px; }
     .drop-zone-text { font-size: 14px; color: #555; }
     .drop-zone-hint { font-size: 11px; color: #999; margin-top: 6px; }
-
     .file-input { display: none; }
 
-    /* Preview grid */
-    .preview-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 12px;
-    }
-    .preview-item {
-        position: relative;
-        border-radius: 4px;
-        overflow: hidden;
-        border: 1px solid #e0e0e0;
-    }
-    .preview-item img {
-        width: 100%;
-        height: 80px;
-        object-fit: cover;
-        display: block;
-    }
+    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    .preview-item { position: relative; border-radius: 4px; overflow: hidden; border: 1px solid #e0e0e0; }
+    .preview-item img { width: 100%; height: 80px; object-fit: cover; display: block; }
     .preview-item .remove-btn {
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        background: rgba(0,0,0,0.6);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
-        cursor: pointer;
-        line-height: 18px;
-        text-align: center;
+        position: absolute; top: 2px; right: 2px;
+        background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%;
+        width: 18px; height: 18px; font-size: 10px; cursor: pointer; line-height: 18px; text-align: center;
     }
-    .preview-name {
-        font-size: 9px;
-        padding: 2px 4px;
-        background: #f5f5f5;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+    .preview-name { font-size: 9px; padding: 2px 4px; background: #f5f5f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-count { font-size: 12px; color: #666; margin-top: 8px; }
 
-    .file-count {
-        font-size: 12px;
-        color: #666;
-        margin-top: 8px;
+    .extract-btn, .load-btn, .save-btn, .revert-btn {
+        width: 100%; padding: 10px; border: none; border-radius: 6px;
+        font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: opacity 0.2s;
     }
+    .extract-btn { background: linear-gradient(135deg, #003366, #0066cc); color: white; }
+    .load-btn { background: #fff; color: #003366; border: 2px solid #003366; }
+    .save-btn { background: #059669; color: white; }
+    .revert-btn { background: #fff; color: #dc2626; border: 2px solid #dc2626; }
+    .extract-btn:hover, .load-btn:hover, .save-btn:hover, .revert-btn:hover { opacity: 0.85; }
+    .extract-btn:disabled, .save-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    /* Extract button */
-    .extract-btn {
-        width: 100%;
-        padding: 12px;
-        background: linear-gradient(135deg, #003366, #0066cc);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 12px;
-        transition: opacity 0.2s;
-    }
-    .extract-btn:hover { opacity: 0.9; }
-    .extract-btn:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-    }
-
-    /* Status */
-    .status {
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 12px;
-        margin-top: 12px;
-        display: none;
-    }
+    .status { padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-top: 12px; display: none; }
     .status.info { display: block; background: #e8f0fe; color: #1a73e8; }
     .status.success { display: block; background: #e6f4ea; color: #137333; }
     .status.error { display: block; background: #fce8e6; color: #c5221f; }
     .status.loading { display: block; background: #fff8e1; color: #e37400; }
 
-    /* Results */
     .patient-banner-result {
         background: linear-gradient(to bottom, #e6eff8, #d0e2f2);
-        padding: 12px 16px;
-        border-bottom: 1px solid #b0c4de;
+        padding: 12px 16px; border-bottom: 1px solid #b0c4de;
     }
-    .patient-banner-result h2 {
-        font-size: 16px;
-        color: #003366;
-        margin-bottom: 4px;
-    }
-    .patient-meta {
-        display: flex;
-        gap: 15px;
-        font-size: 12px;
-        color: #555;
-    }
+    .patient-banner-result h2 { font-size: 16px; color: #003366; margin-bottom: 4px; }
+    .patient-meta { display: flex; gap: 15px; font-size: 12px; color: #555; flex-wrap: wrap; }
+    .validation-info { font-size: 11px; color: #666; margin-top: 4px; }
 
-    .section-card {
-        border: 1px solid #e0e0e0;
-        border-top: 3px solid #5b7f9e;
-        border-radius: 4px;
-        margin-bottom: 10px;
-        background: white;
-    }
+    .section-card { border: 1px solid #e0e0e0; border-top: 3px solid #5b7f9e; border-radius: 4px; margin-bottom: 10px; background: white; }
     .section-header {
-        background: #f8f9fa;
-        padding: 8px 12px;
-        font-weight: bold;
-        font-size: 12px;
-        color: #003366;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        justify-content: space-between;
+        background: #f8f9fa; padding: 8px 12px; font-weight: bold; font-size: 12px;
+        color: #003366; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;
     }
-    .section-type {
-        background: #e8f0fe;
-        color: #1a73e8;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-size: 10px;
-        font-weight: normal;
-    }
-    .section-body {
-        padding: 10px 12px;
-        font-size: 12px;
-    }
+    .section-type { background: #e8f0fe; color: #1a73e8; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: normal; }
+    .section-body { padding: 10px 12px; font-size: 12px; }
 
-    .kv-row {
-        display: flex;
-        padding: 3px 0;
-        border-bottom: 1px solid #f5f5f5;
-    }
-    .kv-label {
-        font-weight: bold;
-        color: #003366;
-        min-width: 130px;
-        flex-shrink: 0;
-    }
+    .kv-row { display: flex; padding: 3px 0; border-bottom: 1px solid #f5f5f5; align-items: center; }
+    .kv-label { font-weight: bold; color: #003366; min-width: 130px; flex-shrink: 0; }
+    .kv-value { flex: 1; }
 
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 11px;
-        margin: 6px 0;
-    }
-    .data-table th, .data-table td {
-        border: 1px solid #e0e0e0;
-        padding: 4px 8px;
-        text-align: left;
-    }
-    .data-table th {
-        background: #f0f4fa;
-        color: #003366;
-    }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 6px 0; }
+    .data-table th, .data-table td { border: 1px solid #e0e0e0; padding: 4px 8px; text-align: left; }
+    .data-table th { background: #f0f4fa; color: #003366; }
     .data-table tr:nth-child(even) { background: #fafbfc; }
-
     .list-item { padding: 2px 0 2px 12px; }
     .list-item::before { content: "- "; color: #999; }
-
     .high-value { color: red; font-weight: bold; }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #999;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: #999; }
     .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
 
-    .confidence-badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 11px;
-        font-weight: bold;
-    }
+    .confidence-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
     .confidence-high { background: #e6f4ea; color: #137333; }
     .confidence-medium { background: #fff8e1; color: #e37400; }
     .confidence-low { background: #fce8e6; color: #c5221f; }
 
-    .validation-info {
-        font-size: 11px;
-        color: #666;
-        margin-top: 4px;
-    }
-
-    /* API URL config */
-    .api-config {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 12px;
-    }
+    .api-config { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .api-config label { font-size: 11px; color: #666; white-space: nowrap; }
-    .api-config input {
-        flex: 1;
-        padding: 6px 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 12px;
-        font-family: monospace;
+    .api-config input { flex: 1; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; font-family: monospace; }
+
+    /* Edit mode styles */
+    .edit-mode .kv-value { cursor: text; }
+    .editable-field {
+        border: none; background: #fffde7; padding: 2px 4px; font-size: 12px; font-family: inherit;
+        width: 100%; border-bottom: 1px solid #facc15; outline: none;
+    }
+    .editable-field:focus { background: #fef9c3; border-bottom-color: #f59e0b; }
+    .edit-badge { background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; margin-left: 6px; }
+    .mode-toggle { display: flex; gap: 8px; }
+    .mode-toggle button {
+        padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; border: none;
+    }
+    .mode-toggle .active { background: #003366; color: white; }
+    .mode-toggle .inactive { background: #e0e0e0; color: #666; }
+    .unsaved-banner {
+        background: #fef3c7; color: #92400e; padding: 8px 14px; font-size: 12px; font-weight: 600;
+        border-bottom: 2px solid #facc15; display: none;
     }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>MedForce Milton Key - Photo Upload Test</h1>
-    <p>Upload iPad photos of patient EHR screens to extract structured medical data</p>
+    <h1>MedForce Milton Key - Photo Upload & Edit</h1>
+    <p>Upload iPad photos to extract data, or load existing patient records to review and edit</p>
 </div>
+<div class="unsaved-banner" id="unsaved-banner">You have unsaved edits. Click "Save Changes" to persist.</div>
 
 <div class="container">
-    <!-- Left: Upload Panel -->
     <div class="upload-panel">
         <div class="card">
-            <div class="card-header">API Configuration</div>
+            <div class="card-header">Load Existing Patient</div>
             <div class="card-body">
                 <div class="api-config">
-                    <label>Endpoint:</label>
-                    <input type="text" id="api-url" value="/pipeline/extract">
+                    <label>Patient ID:</label>
+                    <input type="text" id="load-patient-id" value="MK-0001" placeholder="e.g. MK-0001, p0001">
                 </div>
+                <button class="load-btn" id="load-btn" onclick="loadPatient()">Load from GCS</button>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">Upload Photos</div>
             <div class="card-body">
+                <div class="api-config">
+                    <label>Endpoint:</label>
+                    <input type="text" id="api-url" value="/pipeline/extract">
+                </div>
                 <div class="drop-zone" id="drop-zone">
                     <div class="drop-zone-icon">+</div>
                     <div class="drop-zone-text">Drop iPad photos here or click to browse</div>
                     <div class="drop-zone-hint">JPEG, PNG - Max 20 files, 10MB each</div>
                 </div>
                 <input type="file" id="file-input" class="file-input" multiple accept="image/jpeg,image/png,image/jpg">
-
                 <div class="preview-grid" id="preview-grid"></div>
                 <div class="file-count" id="file-count"></div>
-
                 <button class="extract-btn" id="extract-btn" disabled>Extract Patient Data</button>
-
                 <div class="status" id="status"></div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">How It Works</div>
-            <div class="card-body" style="font-size: 12px; color: #666; line-height: 1.6;">
-                <p><b>1.</b> Upload overlapping photos of any EHR screen</p>
-                <p><b>2.</b> Photos are validated as medical records</p>
-                <p><b>3.</b> AI extracts and deduplicates all clinical data</p>
-                <p><b>4.</b> Returns a unified structured patient record</p>
-                <p style="margin-top: 8px; font-style: italic;">Works with Cerner, Epic, MEDITECH, paper charts, or any clinical document.</p>
+        <div class="card" id="edit-controls" style="display:none;">
+            <div class="card-header">Edit Controls</div>
+            <div class="card-body">
+                <div class="mode-toggle" id="mode-toggle">
+                    <button class="active" onclick="setEditMode(false)">View Mode</button>
+                    <button class="inactive" onclick="setEditMode(true)">Edit Mode</button>
+                </div>
+                <button class="save-btn" id="save-btn" disabled onclick="saveChanges()">Save Changes</button>
+                <button class="revert-btn" onclick="revertChanges()">Revert to Original</button>
+                <div class="status" id="edit-status"></div>
             </div>
         </div>
     </div>
 
-    <!-- Right: Results Panel -->
     <div class="results-panel">
         <div id="results-area">
             <div class="card">
                 <div class="card-body empty-state">
                     <div class="empty-state-icon">+</div>
-                    <p>Upload photos and click "Extract Patient Data" to see results here</p>
+                    <p>Upload photos or load an existing patient to see results here</p>
                 </div>
             </div>
         </div>
@@ -348,8 +225,11 @@
 <script>
 // ── State ──
 let selectedFiles = [];
+let currentRecord = null;
+let currentPatientId = null;
+let editMode = false;
+let hasUnsavedEdits = false;
 
-// ── DOM refs ──
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const previewGrid = document.getElementById('preview-grid');
@@ -360,22 +240,10 @@ const resultsArea = document.getElementById('results-area');
 
 // ── Drop zone ──
 dropZone.addEventListener('click', () => fileInput.click());
-
-dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('dragover');
-});
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    addFiles(e.dataTransfer.files);
-});
-
-fileInput.addEventListener('change', () => {
-    addFiles(fileInput.files);
-    fileInput.value = '';
-});
+dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
 
 function addFiles(fileList) {
     for (const f of fileList) {
@@ -385,23 +253,13 @@ function addFiles(fileList) {
     }
     renderPreviews();
 }
-
-function removeFile(index) {
-    selectedFiles.splice(index, 1);
-    renderPreviews();
-}
-
+function removeFile(index) { selectedFiles.splice(index, 1); renderPreviews(); }
 function renderPreviews() {
     previewGrid.innerHTML = '';
     selectedFiles.forEach((f, i) => {
         const div = document.createElement('div');
         div.className = 'preview-item';
-        const url = URL.createObjectURL(f);
-        div.innerHTML = `
-            <img src="${url}" alt="${f.name}">
-            <button class="remove-btn" onclick="removeFile(${i})">x</button>
-            <div class="preview-name">${f.name}</div>
-        `;
+        div.innerHTML = `<img src="${URL.createObjectURL(f)}" alt="${f.name}"><button class="remove-btn" onclick="removeFile(${i})">x</button><div class="preview-name">${f.name}</div>`;
         previewGrid.appendChild(div);
     });
     fileCount.textContent = selectedFiles.length > 0 ? `${selectedFiles.length} file(s) selected` : '';
@@ -411,74 +269,190 @@ function renderPreviews() {
 // ── Extract ──
 extractBtn.addEventListener('click', async () => {
     if (selectedFiles.length === 0) return;
-
     const apiUrl = document.getElementById('api-url').value;
-    setStatus('loading', `Uploading ${selectedFiles.length} photos and extracting data... This may take 1-3 minutes.`);
+    setStatus('loading', `Uploading ${selectedFiles.length} photos... This may take 1-3 minutes.`);
     extractBtn.disabled = true;
-
     const formData = new FormData();
     selectedFiles.forEach(f => formData.append('files', f));
-
     try {
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            body: formData,
-        });
-
+        const res = await fetch(apiUrl, { method: 'POST', body: formData });
         const data = await res.json();
-
         if (!res.ok) {
-            const detail = data.detail;
-            const msg = typeof detail === 'object' ? detail.message : detail;
+            const msg = typeof data.detail === 'object' ? data.detail.message : data.detail;
             setStatus('error', `Error: ${msg}`);
             extractBtn.disabled = false;
             return;
         }
-
         setStatus('success', `Extracted ${data.sections_count} sections for ${data.patient.name} (Confidence: ${data.confidence})`);
+        currentRecord = data.record;
+        currentPatientId = data.patient_id;
         renderResults(data);
-
+        showEditControls();
     } catch (err) {
-        setStatus('error', `Network error: ${err.message}. Is the FastAPI server running?`);
+        setStatus('error', `Network error: ${err.message}`);
     }
     extractBtn.disabled = false;
 });
 
-function setStatus(type, msg) {
-    statusEl.className = `status ${type}`;
-    statusEl.textContent = msg;
+// ── Load existing patient ──
+async function loadPatient() {
+    const pid = document.getElementById('load-patient-id').value.trim();
+    if (!pid) return;
+    setStatus('loading', `Loading patient ${pid}...`);
+    try {
+        const res = await fetch(`/pipeline/result/${pid}`);
+        if (!res.ok) {
+            const data = await res.json();
+            setStatus('error', data.detail || `Patient ${pid} not found`);
+            return;
+        }
+        const record = await res.json();
+        currentRecord = record;
+        currentPatientId = pid;
+        setStatus('success', `Loaded ${record.sections?.length || 0} sections for ${record.patient?.name || pid}`);
+        renderResults({ record, patient_id: pid, validation: null });
+        showEditControls();
+    } catch (err) {
+        setStatus('error', `Error: ${err.message}`);
+    }
 }
 
-// ── Render Results ──
+function showEditControls() {
+    document.getElementById('edit-controls').style.display = '';
+    setEditMode(false);
+    hasUnsavedEdits = false;
+    document.getElementById('save-btn').disabled = true;
+    document.getElementById('unsaved-banner').style.display = 'none';
+}
+
+// ── Edit mode ──
+function setEditMode(on) {
+    editMode = on;
+    const btns = document.querySelectorAll('#mode-toggle button');
+    btns[0].className = on ? 'inactive' : 'active';
+    btns[1].className = on ? 'active' : 'inactive';
+    resultsArea.classList.toggle('edit-mode', on);
+    // Re-render with editable fields
+    renderResults({ record: currentRecord, patient_id: currentPatientId, validation: null });
+}
+
+function markEdited() {
+    hasUnsavedEdits = true;
+    document.getElementById('save-btn').disabled = false;
+    document.getElementById('unsaved-banner').style.display = 'block';
+}
+
+function updateField(path, value) {
+    // path like "patient.name" or "sections.0.data.Height"
+    const parts = path.split('.');
+    let obj = currentRecord;
+    for (let i = 0; i < parts.length - 1; i++) {
+        const key = isNaN(parts[i]) ? parts[i] : parseInt(parts[i]);
+        obj = obj[key];
+    }
+    obj[parts[parts.length - 1]] = value;
+    markEdited();
+}
+
+// ── Save ──
+async function saveChanges() {
+    if (!currentPatientId || !currentRecord) return;
+    setEditStatus('loading', 'Saving...');
+    try {
+        const res = await fetch(`/pipeline/result/${currentPatientId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentRecord),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            setEditStatus('error', data.detail || 'Save failed');
+            return;
+        }
+        setEditStatus('success', `Saved (edit #${data.edit_count})`);
+        hasUnsavedEdits = false;
+        document.getElementById('save-btn').disabled = true;
+        document.getElementById('unsaved-banner').style.display = 'none';
+    } catch (err) {
+        setEditStatus('error', `Error: ${err.message}`);
+    }
+}
+
+async function revertChanges() {
+    if (!currentPatientId) return;
+    if (!confirm('Revert all edits to the original AI extraction?')) return;
+    setEditStatus('loading', 'Loading original...');
+    try {
+        const res = await fetch(`/pipeline/result/${currentPatientId}/original`);
+        if (!res.ok) { setEditStatus('error', 'Could not load original'); return; }
+        currentRecord = await res.json();
+        // Save the reverted version
+        await fetch(`/pipeline/result/${currentPatientId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentRecord),
+        });
+        setEditStatus('success', 'Reverted to original');
+        hasUnsavedEdits = false;
+        document.getElementById('save-btn').disabled = true;
+        document.getElementById('unsaved-banner').style.display = 'none';
+        renderResults({ record: currentRecord, patient_id: currentPatientId, validation: null });
+    } catch (err) {
+        setEditStatus('error', `Error: ${err.message}`);
+    }
+}
+
+function setStatus(type, msg) { statusEl.className = `status ${type}`; statusEl.textContent = msg; }
+function setEditStatus(type, msg) {
+    const el = document.getElementById('edit-status');
+    el.className = `status ${type}`; el.textContent = msg;
+}
+
+// ── Render ──
+function editableValue(path, value) {
+    if (!editMode) return escapeHtml(String(value ?? ''));
+    return `<input class="editable-field" value="${escapeAttr(String(value ?? ''))}" onchange="updateField('${path}', this.value)" />`;
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeAttr(s) { return s.replace(/"/g,'&quot;').replace(/&/g,'&amp;'); }
+
 function renderResults(data) {
     const record = data.record;
-    const patient = record.patient;
-    const meta = record.extraction_metadata;
-    const confClass = `confidence-${meta.confidence}`;
+    const patient = record.patient || {};
+    const meta = record.extraction_metadata || {};
+    const confClass = `confidence-${meta.confidence || 'medium'}`;
 
     let html = `
     <div class="card">
         <div class="patient-banner-result">
-            <h2>${patient.name || 'Unknown Patient'}</h2>
+            <h2>${editMode
+                ? `<input class="editable-field" style="font-size:16px;font-weight:bold;" value="${escapeAttr(patient.name || '')}" onchange="updateField('patient.name', this.value)" />`
+                : escapeHtml(patient.name || 'Unknown Patient')}
+                ${editMode ? '<span class="edit-badge">EDITING</span>' : ''}
+            </h2>
             <div class="patient-meta">
-                ${patient.dob ? `<span>DOB: ${patient.dob}</span>` : ''}
-                ${patient.age ? `<span>Age: ${patient.age}</span>` : ''}
-                ${patient.sex ? `<span>Sex: ${patient.sex}</span>` : ''}
-                ${patient.mrn ? `<span>MRN: ${patient.mrn}</span>` : ''}
-                <span class="confidence-badge ${confClass}">${meta.confidence} confidence</span>
+                <span>DOB: ${editableValue('patient.dob', patient.dob)}</span>
+                <span>Age: ${editableValue('patient.age', patient.age)}</span>
+                <span>Sex: ${editableValue('patient.sex', patient.sex)}</span>
+                <span>MRN: ${editableValue('patient.mrn', patient.mrn)}</span>
+                ${meta.confidence ? `<span class="confidence-badge ${confClass}">${meta.confidence} confidence</span>` : ''}
             </div>
-            <div class="validation-info">
-                ${data.validation ? `Validated: ${data.validation.valid_image_count}/${data.validation.total_image_count} images are medical records` : ''}
-                | ${meta.source_images.length} images processed
-                | Session: ${data.session_id}
-            </div>
+            ${data.validation ? `<div class="validation-info">Validated: ${data.validation.valid_image_count}/${data.validation.total_image_count} images</div>` : ''}
+            ${currentPatientId ? `<div class="validation-info">Patient ID: <b>${currentPatientId}</b></div>` : ''}
         </div>
     </div>`;
 
-    record.sections.forEach(section => {
+    (record.sections || []).forEach((section, si) => {
         html += `<div class="section-card">
             <div class="section-header">
-                <span>${section.title}${section.date ? ' - ' + section.date : ''}</span>
+                <span>${editMode
+                    ? `<input class="editable-field" style="font-weight:bold;" value="${escapeAttr(section.title || '')}" onchange="updateField('sections.${si}.title', this.value)" />`
+                    : escapeHtml(section.title || '')}
+                    ${section.date ? (editMode
+                        ? ` - <input class="editable-field" style="width:100px;" value="${escapeAttr(section.date)}" onchange="updateField('sections.${si}.date', this.value)" />`
+                        : ` - ${escapeHtml(section.date)}`) : ''}
+                </span>
                 <span class="section-type">${section.type}</span>
             </div>
             <div class="section-body">`;
@@ -487,45 +461,47 @@ function renderResults(data) {
         if (section.data) {
             for (const [k, v] of Object.entries(section.data)) {
                 if (Array.isArray(v)) {
-                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v.join(', ')}</span></div>`;
+                    html += `<div class="kv-row"><span class="kv-label">${escapeHtml(k)}</span><span class="kv-value">${editableValue(`sections.${si}.data.${k}`, v.join(', '))}</span></div>`;
                 } else if (typeof v === 'object' && v !== null) {
-                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span></span></div>`;
+                    html += `<div class="kv-row"><span class="kv-label">${escapeHtml(k)}</span><span class="kv-value"></span></div>`;
                     for (const [k2, v2] of Object.entries(v)) {
-                        html += `<div class="kv-row" style="padding-left:20px;"><span class="kv-label">${k2}</span><span>${v2}</span></div>`;
+                        html += `<div class="kv-row" style="padding-left:20px;"><span class="kv-label">${escapeHtml(k2)}</span><span class="kv-value">${editableValue(`sections.${si}.data.${k}.${k2}`, v2)}</span></div>`;
                     }
                 } else {
-                    html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v}</span></div>`;
+                    html += `<div class="kv-row"><span class="kv-label">${escapeHtml(k)}</span><span class="kv-value">${editableValue(`sections.${si}.data.${k}`, v)}</span></div>`;
                 }
             }
         }
 
-        // List items
+        // Items
         if (section.items && section.items.length > 0) {
-            section.items.forEach(item => {
+            section.items.forEach((item, ii) => {
                 if (typeof item === 'object') {
                     const parts = Object.entries(item).map(([k, v]) => v ? `${k}: ${v}` : '').filter(Boolean);
-                    html += `<div class="list-item">${parts.join(' | ')}</div>`;
+                    html += `<div class="list-item">${editMode
+                        ? `<input class="editable-field" value="${escapeAttr(parts.join(' | '))}" onchange="updateField('sections.${si}.items.${ii}', this.value)" />`
+                        : escapeHtml(parts.join(' | '))}</div>`;
                 } else {
-                    html += `<div class="list-item">${item}</div>`;
+                    html += `<div class="list-item">${editableValue(`sections.${si}.items.${ii}`, item)}</div>`;
                 }
             });
         }
 
         // Tables
         if (section.tables) {
-            section.tables.forEach(table => {
-                html += `<div style="font-weight:bold;color:#003366;margin:6px 0 4px;">${table.name || ''}</div>`;
+            section.tables.forEach((table, ti) => {
+                html += `<div style="font-weight:bold;color:#003366;margin:6px 0 4px;">${escapeHtml(table.name || '')}</div>`;
                 html += `<table class="data-table"><tr>`;
-                (table.headers || []).forEach(h => { html += `<th>${h}</th>`; });
+                (table.headers || []).forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
                 html += `</tr>`;
-                (table.rows || []).forEach(row => {
+                (table.rows || []).forEach((row, ri) => {
                     html += `<tr>`;
-                    row.forEach((cell, i) => {
+                    row.forEach((cell, ci) => {
                         const isAbnormal = cell && typeof cell === 'string' &&
                             (cell.toUpperCase().includes('HIGH') || cell.toUpperCase().includes('LOW') || cell.toUpperCase().includes('CRIT'));
-                        const prevIsAbnormal = i === 1 && row[2] && typeof row[2] === 'string' &&
-                            (row[2].toUpperCase().includes('HIGH') || row[2].toUpperCase().includes('LOW') || row[2].toUpperCase().includes('CRIT'));
-                        html += `<td class="${isAbnormal || prevIsAbnormal ? 'high-value' : ''}">${cell || ''}</td>`;
+                        html += `<td class="${isAbnormal ? 'high-value' : ''}">${editMode
+                            ? `<input class="editable-field" value="${escapeAttr(String(cell ?? ''))}" onchange="updateTableCell(${si},${ti},${ri},${ci},this.value)" />`
+                            : escapeHtml(String(cell ?? ''))}</td>`;
                     });
                     html += `</tr>`;
                 });
@@ -537,49 +513,44 @@ function renderResults(data) {
         if (section.findings) {
             html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Findings</div>`;
             for (const [k, v] of Object.entries(section.findings)) {
-                html += `<div class="kv-row"><span class="kv-label">${k}</span><span>${v}</span></div>`;
+                html += `<div class="kv-row"><span class="kv-label">${escapeHtml(k)}</span><span class="kv-value">${editableValue(`sections.${si}.findings.${k}`, v)}</span></div>`;
             }
         }
 
         // Impression
         if (section.impression) {
             html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Impression</div>`;
-            section.impression.forEach(imp => { html += `<div class="list-item">${imp}</div>`; });
+            section.impression.forEach((imp, ii) => {
+                html += `<div class="list-item">${editableValue(`sections.${si}.impression.${ii}`, imp)}</div>`;
+            });
         }
 
         // Diagnosis
         if (section.diagnosis) {
-            html += `<div class="kv-row"><span class="kv-label">Diagnosis</span><span>${section.diagnosis}</span></div>`;
+            html += `<div class="kv-row"><span class="kv-label">Diagnosis</span><span class="kv-value">${editableValue(`sections.${si}.diagnosis`, section.diagnosis)}</span></div>`;
         }
 
         // Summary
         if (section.summary) {
-            html += `<div class="kv-row"><span class="kv-label">Summary</span><span>${section.summary}</span></div>`;
-        }
-
-        // Rationale
-        if (section.rationale) {
-            html += `<div class="kv-row"><span class="kv-label">Rationale</span><span>${section.rationale}</span></div>`;
-        }
-
-        // Immediate issues
-        if (section.immediate_issues && section.immediate_issues.length > 0) {
-            html += `<div style="font-weight:bold;color:#cc0000;margin:6px 0 3px;">Immediate Issues</div>`;
-            section.immediate_issues.forEach(issue => {
-                html += `<div style="padding:2px 0 2px 12px;color:#cc0000;">- ${issue}</div>`;
-            });
+            html += `<div class="kv-row"><span class="kv-label">Summary</span><span class="kv-value">${editableValue(`sections.${si}.summary`, section.summary)}</span></div>`;
         }
 
         // Plan
         if (section.plan) {
             html += `<div style="font-weight:bold;color:#003366;margin:6px 0 3px;">Plan</div>`;
-            section.plan.forEach(p => { html += `<div class="list-item">${p}</div>`; });
+            section.plan.forEach((p, pi) => {
+                html += `<div class="list-item">${editableValue(`sections.${si}.plan.${pi}`, p)}</div>`;
+            });
         }
 
         // QA
         if (section.qa) {
-            section.qa.forEach(([q, a]) => {
-                html += `<div style="margin-bottom:6px;"><div style="font-weight:bold;color:#003366;">${q}</div><div style="padding-left:12px;">${a}</div></div>`;
+            section.qa.forEach(([q, a], qi) => {
+                html += `<div style="margin-bottom:6px;"><div style="font-weight:bold;color:#003366;">${editMode
+                    ? `<input class="editable-field" value="${escapeAttr(q)}" onchange="updateQA(${si},${qi},0,this.value)" />`
+                    : escapeHtml(q)}</div><div style="padding-left:12px;">${editMode
+                    ? `<input class="editable-field" value="${escapeAttr(a)}" onchange="updateQA(${si},${qi},1,this.value)" />`
+                    : escapeHtml(a)}</div></div>`;
             });
         }
 
@@ -587,17 +558,26 @@ function renderResults(data) {
     });
 
     // Raw JSON toggle
-    html += `
-    <div class="card">
+    html += `<div class="card">
         <div class="card-header" style="cursor:pointer;" onclick="document.getElementById('raw-json').style.display = document.getElementById('raw-json').style.display === 'none' ? 'block' : 'none'">
-            Raw JSON Response (click to toggle)
+            Raw JSON (click to toggle)
         </div>
         <div class="card-body" id="raw-json" style="display:none;">
-            <pre style="font-size:11px;overflow-x:auto;white-space:pre-wrap;">${JSON.stringify(record, null, 2)}</pre>
+            <pre style="font-size:11px;overflow-x:auto;white-space:pre-wrap;">${escapeHtml(JSON.stringify(record, null, 2))}</pre>
         </div>
     </div>`;
 
     resultsArea.innerHTML = html;
+}
+
+function updateTableCell(si, ti, ri, ci, value) {
+    currentRecord.sections[si].tables[ti].rows[ri][ci] = value;
+    markEdited();
+}
+
+function updateQA(si, qi, idx, value) {
+    currentRecord.sections[si].qa[qi][idx] = value;
+    markEdited();
 }
 </script>
 </body>

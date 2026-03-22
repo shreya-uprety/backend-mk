@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.api.routes import health, pipeline, decisions, scenarios, patient_status, svg_dashboard
+from consultation.routers.consultation import router as consultation_router
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -27,6 +28,7 @@ app.include_router(decisions.router)
 app.include_router(scenarios.router)
 app.include_router(patient_status.router)
 app.include_router(svg_dashboard.router)
+app.include_router(consultation_router)
 
 static_dir = Path(__file__).resolve().parent.parent / "static"
 scenarios_dir = Path(__file__).resolve().parent.parent / "scenarios"

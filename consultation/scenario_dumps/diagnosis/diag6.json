@@ -1,0 +1,101 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice, Drug-Induced, Viral Causes Excluded by History",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus",
+        "check": true
+      },
+      {
+        "criteria": "Drug exposure confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Viral exposure denied",
+        "check": true
+      },
+      {
+        "criteria": "No travel risk",
+        "check": true
+      },
+      {
+        "criteria": "Labs pending",
+        "check": false
+      }
+    ],
+    "reasoning": "Viral hepatitis essentially excluded by history. Drug-induced aetiology is the primary working diagnosis.",
+    "followup_question": "Any confusion or changes in thinking?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity, Supratherapeutic, No Competing Cause",
+    "indicators_point": [
+      {
+        "criteria": "Supratherapeutic dose",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain",
+        "check": true
+      },
+      {
+        "criteria": "Nausea",
+        "check": true
+      },
+      {
+        "criteria": "No viral exposure",
+        "check": true
+      },
+      {
+        "criteria": "Elevated transaminases",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "Viral exposure ruled out \u2014 strengthens acetaminophen as primary cause.",
+    "followup_question": ""
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis, Probable",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure",
+        "check": true
+      },
+      {
+        "criteria": "3-week latency",
+        "check": true
+      },
+      {
+        "criteria": "Pruritus",
+        "check": true
+      },
+      {
+        "criteria": "No alternative cause",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine / pale stools",
+        "check": false
+      },
+      {
+        "criteria": "Elevated ALP/GGT",
+        "check": false
+      }
+    ],
+    "reasoning": "No alternative cause identified. Drug-induced cholestasis is the leading differential.",
+    "followup_question": ""
+  }
+]

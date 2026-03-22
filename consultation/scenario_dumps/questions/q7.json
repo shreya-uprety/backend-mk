@@ -1,0 +1,45 @@
+[
+  {
+    "qid": "Q-ENCE",
+    "content": "Confusion?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "No confusion, very tired",
+    "headline": "No Encephalopathy",
+    "domain": "Neurological",
+    "system_affected": "CNS",
+    "clinical_intent": "Negative",
+    "tags": [
+      "encephalopathy"
+    ]
+  },
+  {
+    "qid": "Q-FEV",
+    "content": "Fevers or chills?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Constitutional",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Infection",
+    "tags": [
+      "fever"
+    ]
+  },
+  {
+    "qid": "Q-URINE",
+    "content": "Changes in urine or stool color?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Cholestasis Markers",
+    "domain": "Hepatobiliary",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Obstructive pattern",
+    "tags": [
+      "urine",
+      "stool"
+    ]
+  }
+]

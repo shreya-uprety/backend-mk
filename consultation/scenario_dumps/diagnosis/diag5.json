@@ -1,0 +1,101 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice, Mixed Hepatocellular-Cholestatic Pattern, Drug-Induced",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus",
+        "check": true
+      },
+      {
+        "criteria": "Dual hepatotoxin exposure",
+        "check": true
+      },
+      {
+        "criteria": "Cholestatic features (pruritus)",
+        "check": true
+      },
+      {
+        "criteria": "Hepatocellular features (RUQ pain)",
+        "check": true
+      },
+      {
+        "criteria": "Labs pending",
+        "check": false
+      }
+    ],
+    "reasoning": "Mixed injury pattern emerging \u2014 hepatocellular from acetaminophen and cholestatic from Augmentin with confirmed latency.",
+    "followup_question": "Any changes in urine or stool colour?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity, Supratherapeutic, with Cholestatic Overlap",
+    "indicators_point": [
+      {
+        "criteria": "Supratherapeutic dose",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain",
+        "check": true
+      },
+      {
+        "criteria": "Nausea",
+        "check": true
+      },
+      {
+        "criteria": "Pruritus (atypical for pure APAP)",
+        "check": true
+      },
+      {
+        "criteria": "Elevated transaminases",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "Full hepatotoxicity picture. Pruritus suggests cholestatic overlap \u2014 possibly combined injury with Augmentin.",
+    "followup_question": ""
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis, Classic Presentation",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure",
+        "check": true
+      },
+      {
+        "criteria": "3-week latency (textbook range)",
+        "check": true
+      },
+      {
+        "criteria": "Severe pruritus",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine / pale stools",
+        "check": false
+      },
+      {
+        "criteria": "Elevated ALP/GGT",
+        "check": false
+      }
+    ],
+    "reasoning": "3-week latency is textbook for Augmentin cholestasis. Severe pruritus is hallmark of cholestatic injury from bile salt deposition.",
+    "followup_question": "Have you noticed dark urine or pale stools?"
+  }
+]

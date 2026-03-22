@@ -1,0 +1,93 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice, Drug-Induced, No Encephalopathy",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus",
+        "check": true
+      },
+      {
+        "criteria": "Drug exposure",
+        "check": true
+      },
+      {
+        "criteria": "No encephalopathy",
+        "check": true
+      },
+      {
+        "criteria": "Severe fatigue",
+        "check": true
+      },
+      {
+        "criteria": "Labs pending",
+        "check": false
+      }
+    ],
+    "reasoning": "No hepatic encephalopathy \u2014 important negative. Fatigue indicates significant dysfunction but preserved synthetic function.",
+    "followup_question": "Any fevers or chills?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity, Non-Fulminant Course",
+    "indicators_point": [
+      {
+        "criteria": "Supratherapeutic dose",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain",
+        "check": true
+      },
+      {
+        "criteria": "No encephalopathy",
+        "check": true
+      },
+      {
+        "criteria": "Severe fatigue",
+        "check": true
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "Absence of encephalopathy suggests non-fulminant course but still requires urgent monitoring.",
+    "followup_question": ""
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure",
+        "check": true
+      },
+      {
+        "criteria": "3-week latency",
+        "check": true
+      },
+      {
+        "criteria": "Pruritus",
+        "check": true
+      },
+      {
+        "criteria": "Fatigue",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine / pale stools",
+        "check": false
+      }
+    ],
+    "reasoning": "Fatigue common in cholestatic DILI. No encephalopathy supports favourable course.",
+    "followup_question": ""
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "clinical_handover": {
+    "hpi_narrative": "Marcus is a male patient referred from urgent care with acute onset jaundice (2 days), dark cola-colored urine (3 days), and pale stools (today). He has dual hepatotoxin exposure: supratherapeutic acetaminophen (6-8 tablets/day for dental pain) and a completed course of Augmentin for tooth infection (finished 3 weeks ago). Associated symptoms include right upper quadrant heaviness, nausea, anorexia, weight loss, severe fatigue, generalised pruritus, and intermittent low-grade fevers. No confusion or encephalopathy. No travel, hepatitis contacts, IV drug use, tattoos, or piercings. Moderate social alcohol. No drug allergies. No surgical history.",
+    "key_biomarkers_extracted": [
+      "Acetaminophen 6-8 tablets/day (supratherapeutic)",
+      "Augmentin course completed 3 weeks ago",
+      "Jaundice onset 2 days ago",
+      "Dark urine (cola-colored) 3 days",
+      "Pale stools today",
+      "RUQ heaviness",
+      "Generalised pruritus",
+      "Severe fatigue (left work)",
+      "Weight loss (poor appetite)",
+      "No encephalopathy"
+    ],
+    "clinical_impression_summary": "Acute jaundice with cholestatic features most likely secondary to drug-induced liver injury. Dual hepatotoxin exposure (acetaminophen + amoxicillin-clavulanate) with classic presentation and timeline. Acetaminophen hepatotoxicity is the primary concern given supratherapeutic dosing. Augmentin-induced cholestatic hepatitis is a strong secondary diagnosis supported by the 3-week latency and cholestatic symptoms (dark urine, pale stools, pruritus). Viral hepatitis is low probability but requires serological exclusion.",
+    "suggested_doctor_actions": [
+      "Urgent LFTs, coagulation screen (INR/PT), serum paracetamol level",
+      "Hepatitis serology panel (Hep A IgM, Hep B sAg/cAb, Hep C Ab, Hep E IgM)",
+      "Abdominal ultrasound with Doppler",
+      "Consider NAC protocol if paracetamol level elevated or ALT significantly raised",
+      "Urgent hepatology referral",
+      "Strict paracetamol avoidance \u2014 document in drug chart",
+      "Serial LFTs every 12-24 hours",
+      "Monitor for coagulopathy and encephalopathy"
+    ]
+  },
+  "audit_summary": {
+    "performance_narrative": "The nurse conducted a thorough and systematic consultation covering all major clinical domains. Medication history was particularly well done, identifying both the supratherapeutic acetaminophen use and the Augmentin exposure early. The nurse demonstrated good empathy and communication throughout, validating patient concerns and explaining the relevance of each question. Red flag screening was comprehensive including encephalopathy, exposure risks, and cholestasis markers.",
+    "areas_for_improvement_summary": "The Tylenol dose could have been quantified one question earlier. Herbal and dietary supplement use was not explored. Vital signs should be obtained during the consultation. The nurse could have provided more immediate reassurance about next steps and what to expect."
+  }
+}

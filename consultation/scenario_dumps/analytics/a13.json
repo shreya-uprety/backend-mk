@@ -1,0 +1,33 @@
+{
+  "overall_score": 92,
+  "metrics": {
+    "empathy": {
+      "score": 93,
+      "reasoning": "Empathetic",
+      "feedback": "Good"
+    },
+    "clarity": {
+      "score": 93,
+      "reasoning": "Clear",
+      "feedback": "Good"
+    },
+    "information_gathering": {
+      "score": 92,
+      "reasoning": "Systematic",
+      "feedback": "Thorough"
+    },
+    "patient_engagement": {
+      "score": 88,
+      "reasoning": "Engaged",
+      "feedback": "Good"
+    }
+  },
+  "key_strengths": [
+    "Medication history",
+    "Red flag screening"
+  ],
+  "improvement_areas": [
+    "Tylenol dose earlier"
+  ],
+  "sentiment_trend": "positive"
+}

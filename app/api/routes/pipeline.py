@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request
 from typing import List
 
 from storage import get_storage
@@ -122,3 +122,86 @@ async def get_pipeline_result(patient_id: str = "p0001"):
         )
 
     return storage.read_json(path)
+
+
+@router.put("/result/{patient_id}")
+async def update_pipeline_result(patient_id: str, request: Request):
+    """Update the extracted patient record with nurse edits.
+
+    Accepts the full record JSON. Saves to GCS alongside the original,
+    keeping an edit history.
+    """
+    from datetime import datetime, timezone
+
+    storage = get_storage()
+    record_path = f"pipeline_output/{patient_id}/record.json"
+
+    if not storage.exists(record_path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No extraction result found for {patient_id}.",
+        )
+
+    updated_record = await request.json()
+
+    # Save the original as a backup (only on first edit)
+    backup_path = f"pipeline_output/{patient_id}/record_original.json"
+    if not storage.exists(backup_path):
+        original = storage.read_json(record_path)
+        storage.write_json(backup_path, original)
+
+    # Track edit metadata
+    now = datetime.now(timezone.utc).isoformat()
+    edit_history_path = f"pipeline_output/{patient_id}/edit_history.json"
+    history = storage.read_json(edit_history_path) if storage.exists(edit_history_path) else []
+    history.append({"timestamp": now, "action": "record_updated"})
+    storage.write_json(edit_history_path, history)
+
+    # Save the updated record
+    storage.write_json(record_path, updated_record)
+
+    # Re-compute enriched payload so downstream handlers use edited data
+    enriched_updated = False
+    try:
+        from debate_engine.modules.record_transformer import transform_record_to_payload
+        from debate_engine.modules.risk_factor_extractor import extract_risk_factors
+        from debate_engine.schemas import PatientPayload
+
+        payload_dict = transform_record_to_payload(updated_record)
+        payload = PatientPayload(**payload_dict)
+        result = extract_risk_factors(payload)
+
+        enriched = payload_dict.copy()
+        enriched["risk_factors"] = result.risk_factors.model_dump()
+        enriched["derived_metrics"] = result.derived_metrics.model_dump()
+
+        prefix = f"patient_status/{patient_id}"
+        storage.write_json(f"{prefix}/enriched_payload.json", enriched)
+        storage.write_json(f"{prefix}/risk_factors_result.json", result.model_dump())
+        enriched_updated = True
+    except Exception:
+        pass  # Patient may not have a status tracker yet — that's fine
+
+    return {
+        "status": "updated",
+        "patient_id": patient_id,
+        "timestamp": now,
+        "edit_count": len(history),
+        "enriched_payload_updated": enriched_updated,
+    }
+
+
+@router.get("/result/{patient_id}/original")
+async def get_original_result(patient_id: str):
+    """Retrieve the original (pre-edit) extracted record."""
+    storage = get_storage()
+    backup_path = f"pipeline_output/{patient_id}/record_original.json"
+
+    if not storage.exists(backup_path):
+        # No edits made yet — return the current record
+        record_path = f"pipeline_output/{patient_id}/record.json"
+        if not storage.exists(record_path):
+            raise HTTPException(404, f"No record found for {patient_id}")
+        return storage.read_json(record_path)
+
+    return storage.read_json(backup_path)

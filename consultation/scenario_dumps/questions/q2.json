@@ -1,0 +1,45 @@
+[
+  {
+    "qid": "Q-MED",
+    "content": "Medications?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Lisinopril, stopped Tylenol yesterday",
+    "headline": "Medications",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Identified",
+    "tags": [
+      "medications"
+    ]
+  },
+  {
+    "qid": "Q-TDOSE",
+    "content": "How much Tylenol were you taking daily?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Tylenol Dosing",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Quantify acetaminophen",
+    "tags": [
+      "paracetamol",
+      "dose"
+    ]
+  },
+  {
+    "qid": "Q-ABX",
+    "content": "Were you prescribed any antibiotics?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Antibiotic History",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Screen DILI",
+    "tags": [
+      "antibiotics"
+    ]
+  }
+]

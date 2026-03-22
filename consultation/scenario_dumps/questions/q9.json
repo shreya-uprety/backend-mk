@@ -1,0 +1,44 @@
+[
+  {
+    "qid": "Q-URINE",
+    "content": "Urine/stool?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Dark urine (Coke), pale stool",
+    "headline": "Cholestasis Confirmed",
+    "domain": "Hepatobiliary",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Obstructive confirmed",
+    "tags": [
+      "cholestasis"
+    ]
+  },
+  {
+    "qid": "Q-ALC",
+    "content": "Alcohol?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Alcohol",
+    "domain": "Social History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Potentiates",
+    "tags": [
+      "alcohol"
+    ]
+  },
+  {
+    "qid": "Q-WT",
+    "content": "Weight loss?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Weight",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Severity",
+    "tags": [
+      "weight"
+    ]
+  }
+]

@@ -267,10 +267,19 @@
             if (!patientId) return;
             document.getElementById('log').innerHTML = '';
 
+            // Check if patient already exists
+            try {
+                await api('GET', `/${patientId}`);
+                log(`Patient ${patientId} already exists. Reset first or use Load.`, 'error');
+                return;
+            } catch (e) {}
+
             const body = { patient_id: patientId };
             if (selectedScenario) {
                 body.scenario = selectedScenario;
-                log(`Creating ${patientId} from scenario (pre-computing risk factors)...`, 'info');
+                log(`Creating ${patientId} from scenario (${Object.keys(selectedScenario).length} keys)...`, 'info');
+            } else {
+                log(`Creating ${patientId} (no scenario selected — will need pipeline_output)`, 'info');
             }
 
             try {
@@ -320,23 +329,8 @@
 
                 render();
 
-                // Show popups for all handler results in the chain
-                const results = status.handler_results || (status.handler_result ? [status.handler_result] : []);
-                for (const hr of results) {
-                    const resultType = RESULT_MAP[hr.step];
-                    if (resultType) {
-                        // Set confirmation context if needed
-                        if (hr.requires_confirmation) {
-                            pendingConfirmation = {
-                                step: hr.step,
-                                auto_decision: hr.auto_decision,
-                                override_options: getOverrideOptions(hr.step),
-                            };
-                            log(`  Awaiting confirmation: ${hr.step}`, 'info');
-                        }
-                        await showPopup(resultType, hr.pathway_decision);
-                    }
-                }
+                // Show popups for all handler results
+                await showHandlerPopups(status);
             } catch (e) { log(e.message, 'error'); }
             finally { btn.disabled = false; btn.textContent = 'Advance'; }
         }
@@ -372,7 +366,7 @@
         function buildPopup(type, data, pathwayDecision = null) {
             const close = '<button class="modal-close" onclick="closeModal()">x</button>';
             // Only show pathway decision for branching steps
-            const BRANCHING_TYPES = ['red_flag', 'dilemma', 'monitoring'];
+            const BRANCHING_TYPES = ['red_flag', 'pattern', 'dilemma', 'monitoring'];
             const showPd = pathwayDecision && BRANCHING_TYPES.includes(type);
             const pd = showPd ? `<div class="modal-section"><h3>Pathway Decision</h3><div class="pathway-decision-box">${pathwayDecision}</div></div>` : '';
 
@@ -385,9 +379,9 @@
                     <div class="confirm-section">
                         <h3>Nurse Confirmation Required</h3>
                         <p style="font-size:0.82rem;color:#666;margin-bottom:8px;">
-                            Review the AI findings above. You must confirm before the patient can proceed.
+                            Review the AI findings above. Add corrections or notes, then confirm or override.
                         </p>
-                        <textarea id="nurseNotes" placeholder="Optional: Add clinical notes or observations..."></textarea>
+                        <textarea id="nurseNotes" placeholder="Clinical notes, corrections, or observations..."></textarea>
                         <div class="confirm-actions">
                             <button class="btn-confirm" onclick="confirmStep()">Confirm & Proceed</button>
                             ${canOverride ? `<button class="btn-override" onclick="rejectStep()">Reject & Override</button>` : ''}
@@ -570,6 +564,9 @@
                 closeModal();
                 status = result;
                 render();
+
+                // Show popups for any handlers that ran after confirm
+                await showHandlerPopups(result);
             } catch (e) { log(e.message, 'error'); }
         }
 
@@ -582,17 +579,24 @@
             }
             const aiDecision = pendingConfirmation.auto_decision;
             const alternatives = opts.filter(o => o !== aiDecision);
-            const choice = prompt(
-                `AI decided: ${(aiDecision || 'N/A').toUpperCase()}\n\n` +
-                `Override to which decision?\n` +
-                alternatives.map((o, i) => `${i + 1}. ${o.toUpperCase()}`).join('\n') +
-                `\n\nType your choice (${alternatives.join(' / ')}):`
-            );
-            if (!choice) return;
-            const normalized = choice.trim().toLowerCase();
-            if (!alternatives.includes(normalized)) {
-                log(`Invalid choice: ${choice}. Options: ${alternatives.join(', ')}`, 'error');
-                return;
+            let normalized;
+            if (alternatives.length === 1) {
+                // Only one alternative — use it directly
+                normalized = alternatives[0];
+            } else {
+                // Multiple alternatives — ask which one
+                const choice = prompt(
+                    `AI decided: ${(aiDecision || 'N/A').toUpperCase()}\n\n` +
+                    `Override to which decision?\n` +
+                    alternatives.map((o, i) => `${i + 1}. ${o.toUpperCase()}`).join('\n') +
+                    `\n\nType your choice (${alternatives.join(' / ')}):`
+                );
+                if (!choice) return;
+                normalized = choice.trim().toLowerCase();
+                if (!alternatives.includes(normalized)) {
+                    log(`Invalid choice: ${choice}. Options: ${alternatives.join(', ')}`, 'error');
+                    return;
+                }
             }
             const notes = document.getElementById('nurseNotes')?.value || '';
             try {
@@ -607,7 +611,28 @@
                 closeModal();
                 status = result;
                 render();
+
+                // Show popups for any handlers that ran after override
+                await showHandlerPopups(result);
             } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function showHandlerPopups(result) {
+            const results = result.handler_results || (result.handler_result ? [result.handler_result] : []);
+            for (const hr of results) {
+                const resultType = RESULT_MAP[hr.step];
+                if (resultType) {
+                    if (hr.requires_confirmation) {
+                        pendingConfirmation = {
+                            step: hr.step,
+                            auto_decision: hr.auto_decision,
+                            override_options: getOverrideOptions(hr.step),
+                        };
+                        log(`  Awaiting confirmation: ${hr.step}`, 'info');
+                    }
+                    await showPopup(resultType, hr.pathway_decision);
+                }
+            }
         }
 
         async function render() {
@@ -660,10 +685,9 @@
         let pathwayDecisions = {};
 
         function getOverrideOptions(step) {
-            // Only branching steps can be overridden with a different decision
             const opts = {
                 RED_FLAG_ASSESSMENT: ['yes', 'no'],
-                LFT_PATTERN_CLASSIFICATION: ['cholestatic', 'hepatitic', 'mixed'],
+                ANALYZE_LFT_PATTERN: ['cholestatic', 'hepatitic', 'mixed'],
                 DIAGNOSTIC_DILEMMA_ASSESSMENT: ['yes', 'no'],
                 ONGOING_MONITORING_ASSESSMENT: ['yes', 'no'],
             };

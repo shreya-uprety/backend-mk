@@ -1,0 +1,35 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice, Cause Undetermined, New Onset",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus / yellow skin",
+        "check": true
+      },
+      {
+        "criteria": "Elevated serum bilirubin",
+        "check": false
+      },
+      {
+        "criteria": "Hepatocellular injury markers (ALT/AST)",
+        "check": false
+      },
+      {
+        "criteria": "Cholestatic markers (ALP/GGT)",
+        "check": false
+      },
+      {
+        "criteria": "Coagulation status (INR)",
+        "check": false
+      },
+      {
+        "criteria": "Underlying cause identified",
+        "check": false
+      }
+    ],
+    "reasoning": "Patient presents with visible jaundice noticed 2 days ago. Must differentiate between hepatocellular, cholestatic, and haemolytic causes.",
+    "followup_question": "What medications have you been taking recently?"
+  }
+]

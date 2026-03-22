@@ -1,0 +1,44 @@
+[
+  {
+    "qid": "Q-ALC",
+    "content": "Alcohol?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Few beers, couple nights/week",
+    "headline": "Moderate",
+    "domain": "Social History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Noted",
+    "tags": [
+      "alcohol"
+    ]
+  },
+  {
+    "qid": "Q-WT",
+    "content": "Weight loss?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Weight",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Severity",
+    "tags": [
+      "weight"
+    ]
+  },
+  {
+    "qid": "Q-ALG",
+    "content": "Drug allergies?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Allergies",
+    "domain": "Allergies",
+    "system_affected": "Immune",
+    "clinical_intent": "Safety",
+    "tags": [
+      "allergies"
+    ]
+  }
+]

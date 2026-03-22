@@ -1,0 +1,16 @@
+[
+  {
+    "qid": "Q-CC",
+    "content": "What brings you in today?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Chief Complaint",
+    "domain": "Presenting",
+    "system_affected": "General",
+    "clinical_intent": "Primary concern",
+    "tags": [
+      "intake"
+    ]
+  }
+]

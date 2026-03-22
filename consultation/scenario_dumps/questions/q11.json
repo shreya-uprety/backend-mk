@@ -1,0 +1,44 @@
+[
+  {
+    "qid": "Q-WT",
+    "content": "Weight loss?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Lost few pounds, poor appetite",
+    "headline": "Weight Loss",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Anorexia",
+    "tags": [
+      "weight"
+    ]
+  },
+  {
+    "qid": "Q-ALG",
+    "content": "Drug allergies?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Allergies",
+    "domain": "Allergies",
+    "system_affected": "Immune",
+    "clinical_intent": "Safety",
+    "tags": [
+      "allergies"
+    ]
+  },
+  {
+    "qid": "Q-SURG",
+    "content": "Previous surgeries?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Surgical",
+    "domain": "Surgical",
+    "system_affected": "General",
+    "clinical_intent": "Baseline",
+    "tags": [
+      "surgical"
+    ]
+  }
+]

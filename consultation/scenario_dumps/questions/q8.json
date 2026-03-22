@@ -1,0 +1,45 @@
+[
+  {
+    "qid": "Q-FEV",
+    "content": "Fevers?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Felt warm, no chills",
+    "headline": "Low-grade",
+    "domain": "Constitutional",
+    "system_affected": "General",
+    "clinical_intent": "Subclinical",
+    "tags": [
+      "fever"
+    ]
+  },
+  {
+    "qid": "Q-URINE",
+    "content": "Urine or stool changes?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Cholestasis Markers",
+    "domain": "Hepatobiliary",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Obstructive",
+    "tags": [
+      "urine",
+      "stool"
+    ]
+  },
+  {
+    "qid": "Q-ALC",
+    "content": "Any alcohol consumption?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Alcohol",
+    "domain": "Social History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Potentiates toxicity",
+    "tags": [
+      "alcohol"
+    ]
+  }
+]

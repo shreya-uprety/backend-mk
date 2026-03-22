@@ -84,7 +84,13 @@ def handle_extract_risk_factors(patient_id: str, status: PatientStatus) -> Handl
     from debate_engine.schemas import PatientPayload
 
     storage = get_storage()
-    record = storage.read_json(f"pipeline_output/{patient_id}/record.json")
+    record_path = f"pipeline_output/{patient_id}/record.json"
+    if not storage.exists(record_path):
+        raise RuntimeError(
+            f"No data found for patient {patient_id}. "
+            f"Either create from a scenario or ensure pipeline_output/{patient_id}/record.json exists."
+        )
+    record = storage.read_json(record_path)
 
     payload_dict = transform_record_to_payload(record)
     payload = PatientPayload(**payload_dict)
@@ -161,7 +167,16 @@ def handle_analyze_lft_pattern(patient_id: str, status: PatientStatus) -> Handle
 
 
 def handle_lft_pattern_classification(patient_id: str, status: PatientStatus) -> HandlerOutcome:
-    """Auto-decide LFT pattern classification from stored result."""
+    """Auto-decide LFT pattern classification from stored result or nurse override."""
+    # Check for nurse override first
+    override = _load_prior(patient_id, "pattern_override.json")
+    if override and override.get("classification"):
+        classification = override["classification"].lower()
+        logger.info("Patient %s: using nurse override for pattern: %s", patient_id, classification)
+        pd = f"Nurse overrode AI pattern classification to {classification}."
+        _save_pathway_decision(patient_id, "LFT_PATTERN_CLASSIFICATION", pd, classification)
+        return _decide(classification, pd)
+
     result = _load_prior(patient_id, "pattern_result.json")
     if not result:
         logger.warning("Patient %s: no pattern result, cannot auto-decide", patient_id)

@@ -1,0 +1,30 @@
+[
+  {
+    "qid": "Q-SURG",
+    "content": "Surgeries?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "None",
+    "headline": "No Surgical",
+    "domain": "Surgical",
+    "system_affected": "General",
+    "clinical_intent": "Confirmed",
+    "tags": [
+      "surgical"
+    ]
+  },
+  {
+    "qid": "Q-PIER",
+    "content": "Piercings or tattoos?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Bloodborne Risk",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Final screen",
+    "tags": [
+      "piercings"
+    ]
+  }
+]

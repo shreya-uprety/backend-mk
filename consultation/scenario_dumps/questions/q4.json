@@ -1,0 +1,72 @@
+[
+  {
+    "qid": "Q-ABD",
+    "content": "Abdominal pain?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Dull ache under ribs, heavy",
+    "headline": "RUQ Confirmed",
+    "domain": "GI",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Capsule stretch",
+    "tags": [
+      "RUQ"
+    ]
+  },
+  {
+    "qid": "Q-NAU",
+    "content": "Nausea?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "Nauseous, no appetite",
+    "headline": "GI Confirmed",
+    "domain": "GI",
+    "system_affected": "GI",
+    "clinical_intent": "Toxicity",
+    "tags": [
+      "nausea"
+    ]
+  },
+  {
+    "qid": "Q-AUGTL",
+    "content": "When did Augmentin finish?",
+    "rank": 1,
+    "status": null,
+    "answer": null,
+    "headline": "Drug Timeline",
+    "domain": "Drug History",
+    "system_affected": "Hepatobiliary",
+    "clinical_intent": "Latency",
+    "tags": [
+      "timeline"
+    ]
+  },
+  {
+    "qid": "Q-EXP",
+    "content": "Recent travel or hepatitis exposure?",
+    "rank": 2,
+    "status": null,
+    "answer": null,
+    "headline": "Exposure Risk",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Viral screening",
+    "tags": [
+      "exposure"
+    ]
+  },
+  {
+    "qid": "Q-ENCE",
+    "content": "Confusion or mental status changes?",
+    "rank": 3,
+    "status": null,
+    "answer": null,
+    "headline": "Encephalopathy",
+    "domain": "Neurological",
+    "system_affected": "CNS",
+    "clinical_intent": "Rule out encephalopathy",
+    "tags": [
+      "encephalopathy"
+    ]
+  }
+]

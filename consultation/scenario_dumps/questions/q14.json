@@ -1,0 +1,16 @@
+[
+  {
+    "qid": "Q-PIER",
+    "content": "Piercings?",
+    "rank": 1,
+    "status": "asked",
+    "answer": "None",
+    "headline": "All Cleared",
+    "domain": "Risk Factors",
+    "system_affected": "Infectious",
+    "clinical_intent": "Complete",
+    "tags": [
+      "piercings"
+    ]
+  }
+]

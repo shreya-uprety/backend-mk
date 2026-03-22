@@ -52,7 +52,8 @@ class AdvanceStepRequest(BaseModel):
 class ConfirmStepRequest(BaseModel):
     action: str  # "confirm" or "override"
     nurse_notes: str | None = None
-    override_decision: str | None = None  # only for "override" on decision steps
+    override_decision: str | None = None  # only for "override" on branching steps
+    nurse_edits: dict | None = None  # nurse corrections to AI output fields
 
 
 class UpdateMetadataRequest(BaseModel):
@@ -79,6 +80,7 @@ async def create_patient_status(req: CreatePatientRequest):
     if req.scenario:
         import logging
         logger = logging.getLogger(__name__)
+        logger.info("Patient %s: scenario keys received: %s", req.patient_id, list(req.scenario.keys()))
         try:
             from debate_engine.modules.risk_factor_extractor import extract_risk_factors
             from debate_engine.schemas import PatientPayload
@@ -87,6 +89,7 @@ async def create_patient_status(req: CreatePatientRequest):
             PAYLOAD_KEYS = {"scenario_id", "patient_demographics", "referral_summary",
                             "lft_blood_results", "history_risk_factors"}
             payload_fields = {k: v for k, v in req.scenario.items() if k in PAYLOAD_KEYS}
+            logger.info("Patient %s: filtered keys: %s", req.patient_id, list(payload_fields.keys()))
             payload = PatientPayload(**payload_fields)
             result = extract_risk_factors(payload)
 
@@ -100,6 +103,8 @@ async def create_patient_status(req: CreatePatientRequest):
             storage.write_json(f"{prefix}/risk_factors_result.json", result.model_dump())
             logger.info("Patient %s: scenario pre-computed successfully", req.patient_id)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.error("Patient %s: scenario pre-computation failed: %s", req.patient_id, e)
 
     return status.model_dump()
@@ -296,13 +301,37 @@ async def confirm_step(patient_id: str, req: ConfirmStepRequest):
     }
     _save_confirmation(patient_id, confirmation)
 
+    # Handle nurse edits stored alongside the confirmation
+    if req.nurse_edits:
+        storage = get_storage()
+        path = f"{STATUS_PREFIX}/{patient_id}/nurse_edits.json"
+        edits = storage.read_json(path) if storage.exists(path) else {}
+        edits[step_val] = {"edits": req.nurse_edits, "timestamp": now}
+        storage.write_json(path, edits)
+
+    # Special case: ANALYZE_LFT_PATTERN override → store for LFT_PATTERN_CLASSIFICATION
+    if step_val == "ANALYZE_LFT_PATTERN" and req.action == "override" and decision:
+        storage = get_storage()
+        storage.write_json(
+            f"{STATUS_PREFIX}/{patient_id}/pattern_override.json",
+            {"classification": decision},
+        )
+
     # Set status back to in_progress
     status.step_status = StepStatus.IN_PROGRESS
 
-    # Advance if this was a decision step with a pending decision
+    # Advance past this step
     if decision is not None:
+        # Decision step — advance with the decision
         try:
             advance_step(status, decision=decision)
+        except ValueError as e:
+            _save(status)
+            raise HTTPException(400, str(e))
+    else:
+        # Non-decision step — just advance to next
+        try:
+            advance_step(status)
         except ValueError as e:
             _save(status)
             raise HTTPException(400, str(e))
@@ -310,8 +339,73 @@ async def confirm_step(patient_id: str, req: ConfirmStepRequest):
     _clear_pending_decision(patient_id)
     _save(status)
 
+    # Run handler on the step we landed on (same logic as advance endpoint)
+    from app.services.step_handlers import run_step_handler
+
+    handler_results = []
+    while True:
+        current_step = status.current_step.value
+        try:
+            outcome = run_step_handler(patient_id, status)
+        except Exception as e:
+            handler_results.append({"step": current_step, "error": str(e)})
+            _save(status)
+            break
+
+        if outcome is None:
+            break
+
+        entry = {
+            "step": current_step,
+            "pathway_decision": outcome.pathway_decision,
+        }
+
+        needs_conf = status.current_step in CONFIRMATION_REQUIRED_STEPS
+
+        if outcome.action == "stay":
+            entry["action"] = "completed"
+            if needs_conf:
+                entry["requires_confirmation"] = True
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
+            handler_results.append(entry)
+            _save(status)
+            break
+
+        if outcome.action == "auto_advance":
+            entry["action"] = "completed"
+            if needs_conf:
+                entry["requires_confirmation"] = True
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
+            handler_results.append(entry)
+            _save(status)
+            break
+
+        if outcome.action == "decide":
+            entry["auto_decision"] = outcome.decision
+            if needs_conf:
+                entry["requires_confirmation"] = True
+                entry["action"] = "awaiting_confirmation"
+                handler_results.append(entry)
+                status.step_status = StepStatus.AWAITING_CONFIRMATION
+                _store_pending_decision(patient_id, outcome.decision)
+                _save(status)
+                break
+            else:
+                handler_results.append(entry)
+                try:
+                    advance_step(status, decision=outcome.decision)
+                except ValueError as e:
+                    entry["error"] = str(e)
+                    _save(status)
+                    break
+                _save(status)
+                continue
+
     resp = status.model_dump()
     resp["confirmation"] = confirmation
+    if handler_results:
+        resp["handler_result"] = handler_results[-1]
+        resp["handler_results"] = handler_results
     return resp
 
 

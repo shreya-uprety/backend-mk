@@ -1,0 +1,105 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice secondary to Drug-Induced Liver Injury, Evolving",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus",
+        "check": true
+      },
+      {
+        "criteria": "Hepatotoxic exposure",
+        "check": true
+      },
+      {
+        "criteria": "Supratherapeutic dosing",
+        "check": true
+      },
+      {
+        "criteria": "Abdominal symptoms present",
+        "check": true
+      },
+      {
+        "criteria": "Labs pending",
+        "check": false
+      },
+      {
+        "criteria": "Imaging pending",
+        "check": false
+      }
+    ],
+    "reasoning": "Progressive jaundice with RUQ pain and nausea. Clinical picture consistent with evolving hepatic injury from dual drug exposure.",
+    "followup_question": "When did you finish the Augmentin?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity, Supratherapeutic, Stage II-III",
+    "indicators_point": [
+      {
+        "criteria": "Acetaminophen supratherapeutic dose",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain (hepatomegaly/capsular stretch)",
+        "check": true
+      },
+      {
+        "criteria": "Nausea and anorexia",
+        "check": true
+      },
+      {
+        "criteria": "Elevated transaminases",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      },
+      {
+        "criteria": "Encephalopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "RUQ heaviness suggests hepatomegaly with capsular stretch \u2014 Stage II-III acetaminophen toxicity. Nausea indicates systemic hepatic dysfunction.",
+    "followup_question": "Any confusion or drowsiness?"
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis, Latency Pending",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure",
+        "check": true
+      },
+      {
+        "criteria": "Latency 1-6 weeks",
+        "check": false
+      },
+      {
+        "criteria": "Cholestatic symptoms",
+        "check": false
+      },
+      {
+        "criteria": "RUQ discomfort",
+        "check": true
+      },
+      {
+        "criteria": "Dark urine / pale stools",
+        "check": false
+      },
+      {
+        "criteria": "Elevated ALP/GGT",
+        "check": false
+      }
+    ],
+    "reasoning": "RUQ discomfort can occur with cholestatic DILI. Latency period needs quantification.",
+    "followup_question": "When exactly did you finish the antibiotic?"
+  }
+]

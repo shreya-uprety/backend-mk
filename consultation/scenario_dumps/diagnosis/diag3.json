@@ -1,0 +1,109 @@
+[
+  {
+    "did": "AJ001",
+    "headline": "Acute Jaundice \u2014 NYD",
+    "diagnosis": "Acute Jaundice secondary to Confirmed Drug-Induced Liver Injury",
+    "indicators_point": [
+      {
+        "criteria": "Scleral icterus / yellow skin",
+        "check": true
+      },
+      {
+        "criteria": "Hepatotoxic drug exposure confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Supratherapeutic dosing confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Elevated serum bilirubin",
+        "check": false
+      },
+      {
+        "criteria": "Hepatocellular injury markers",
+        "check": false
+      },
+      {
+        "criteria": "Viral causes excluded",
+        "check": false
+      }
+    ],
+    "reasoning": "Jaundice with confirmed supratherapeutic acetaminophen (6-8 tabs/day) and Augmentin exposure. Dual hepatotoxin exposure.",
+    "followup_question": "Have you had any abdominal pain or nausea?"
+  },
+  {
+    "did": "DI001",
+    "headline": "Acetaminophen Hepatotoxicity",
+    "diagnosis": "Acetaminophen Hepatotoxicity, Supratherapeutic Dose, Acute",
+    "indicators_point": [
+      {
+        "criteria": "Acetaminophen exposure confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Supratherapeutic dose (6-8 tabs/day = 3-4g)",
+        "check": true
+      },
+      {
+        "criteria": "Jaundice present",
+        "check": true
+      },
+      {
+        "criteria": "RUQ pain / hepatomegaly",
+        "check": false
+      },
+      {
+        "criteria": "Nausea / vomiting",
+        "check": false
+      },
+      {
+        "criteria": "Elevated transaminases",
+        "check": false
+      },
+      {
+        "criteria": "Coagulopathy",
+        "check": false
+      },
+      {
+        "criteria": "Encephalopathy",
+        "check": false
+      }
+    ],
+    "reasoning": "CRITICAL: Confirmed 6-8 tablets/day exceeds safe maximum (3g/day extended use). Type A dose-dependent DILI. NAC protocol consideration needed.",
+    "followup_question": "Any abdominal pain, especially on the right side?"
+  },
+  {
+    "did": "DI002",
+    "headline": "Amoxicillin-Clavulanate DILI",
+    "diagnosis": "Amoxicillin-Clavulanate Cholestatic Hepatitis, Idiosyncratic DILI",
+    "indicators_point": [
+      {
+        "criteria": "Augmentin exposure confirmed",
+        "check": true
+      },
+      {
+        "criteria": "Latency 1-6 weeks post-exposure",
+        "check": false
+      },
+      {
+        "criteria": "Cholestatic symptoms (pruritus)",
+        "check": false
+      },
+      {
+        "criteria": "Dark urine / pale stools",
+        "check": false
+      },
+      {
+        "criteria": "Elevated ALP/GGT",
+        "check": false
+      },
+      {
+        "criteria": "Eosinophilia",
+        "check": false
+      }
+    ],
+    "reasoning": "Augmentin is the most reported cause of idiosyncratic DILI. Clavulanic acid causes cholestatic injury. Latency period needs confirmation.",
+    "followup_question": "When did you finish the Augmentin course?"
+  }
+]

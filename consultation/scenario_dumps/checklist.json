@@ -1,0 +1,110 @@
+[
+  {
+    "id": "C01",
+    "title": "Patient Identification",
+    "description": "Confirm patient identity and referral source",
+    "reasoning": "Essential for safety and record accuracy",
+    "category": "Administrative",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C02",
+    "title": "Chief Complaint Documented",
+    "description": "Yellow eyes/skin (jaundice) for 2 days",
+    "reasoning": "Primary presenting symptom identified and characterised",
+    "category": "Clinical Assessment",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C03",
+    "title": "Medication History",
+    "description": "Complete medication review including OTC",
+    "reasoning": "Critical \u2014 identified supratherapeutic acetaminophen and Augmentin as hepatotoxins",
+    "category": "Drug History",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C04",
+    "title": "Acetaminophen Dose Quantified",
+    "description": "6-8 tablets/day exceeding safe maximum",
+    "reasoning": "Key finding \u2014 supratherapeutic dosing is leading cause of acute liver failure",
+    "category": "Drug History",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C05",
+    "title": "GI Symptoms Assessed",
+    "description": "RUQ heaviness, nausea, anorexia documented",
+    "reasoning": "Supports hepatic involvement with capsular stretch",
+    "category": "Clinical Assessment",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C06",
+    "title": "Cholestasis Markers",
+    "description": "Dark urine, pale stools, pruritus documented",
+    "reasoning": "Obstructive pattern suggests cholestatic component \u2014 supports Augmentin DILI",
+    "category": "Clinical Assessment",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C07",
+    "title": "Exposure Risk Screening",
+    "description": "Travel, contacts, IV drugs, tattoos assessed",
+    "reasoning": "Viral hepatitis exclusion \u2014 all negative",
+    "category": "Risk Factors",
+    "completed": true,
+    "priority": "medium"
+  },
+  {
+    "id": "C08",
+    "title": "Encephalopathy Screen",
+    "description": "No confusion or mental status changes",
+    "reasoning": "Important negative \u2014 no hepatic encephalopathy at this stage",
+    "category": "Neurological",
+    "completed": true,
+    "priority": "high"
+  },
+  {
+    "id": "C09",
+    "title": "Allergy Status",
+    "description": "No known drug allergies confirmed",
+    "reasoning": "Safety check before any treatment",
+    "category": "Safety",
+    "completed": true,
+    "priority": "medium"
+  },
+  {
+    "id": "C10",
+    "title": "Alcohol History",
+    "description": "Moderate social drinking documented",
+    "reasoning": "Alcohol can potentiate acetaminophen hepatotoxicity",
+    "category": "Social History",
+    "completed": true,
+    "priority": "medium"
+  },
+  {
+    "id": "C11",
+    "title": "Physical Examination",
+    "description": "Liver palpation and scleral icterus confirmation",
+    "reasoning": "Bedside assessment needed to complement history",
+    "category": "Examination",
+    "completed": false,
+    "priority": "high"
+  },
+  {
+    "id": "C12",
+    "title": "Urgent Bloods Ordered",
+    "description": "LFTs, coagulation, paracetamol level, hepatitis serology",
+    "reasoning": "Essential for diagnosis confirmation and severity grading",
+    "category": "Investigations",
+    "completed": false,
+    "priority": "high"
+  }
+]
