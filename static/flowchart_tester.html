@@ -414,7 +414,32 @@
                     <div style="font-size:0.78rem;color:#888;margin-bottom:6px;">Click any section above to edit the letter directly.</div>
                     <div style="margin-bottom:10px;">
                         <label style="font-size:0.82rem;font-weight:600;">GP Email:</label>
-                        <input type="email" id="gp-email" placeholder="gp@practice.nhs.uk" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.85rem;margin-top:4px;">
+                        <div style="display:flex;gap:6px;margin-top:4px;">
+                            <select id="gp-email-select" onchange="if(this.value)document.getElementById('gp-email').value=this.value" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:0.82rem;">
+                                <option value="">Select from list...</option>
+                                <option value="dr.smith@oakmeadpractice.nhs.uk">Dr Smith — Oak Mead Practice</option>
+                                <option value="dr.patel@riverside.nhs.uk">Dr Patel — Riverside Surgery</option>
+                                <option value="dr.jones@parkview.nhs.uk">Dr Jones — Park View Medical Centre</option>
+                                <option value="dr.wilson@stmarks.nhs.uk">Dr Wilson — St Marks Surgery</option>
+                                <option value="dr.chen@westgate.nhs.uk">Dr Chen — Westgate Health Centre</option>
+                            </select>
+                            <span style="font-size:0.75rem;color:#888;align-self:center;">or</span>
+                            <input type="email" id="gp-email" placeholder="type email manually" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.82rem;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:0.82rem;font-weight:600;">CC Email (optional):</label>
+                        <div style="display:flex;gap:6px;margin-top:4px;">
+                            <select id="cc-email-select" onchange="if(this.value)document.getElementById('cc-email').value=this.value" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:0.82rem;">
+                                <option value="">Select from list...</option>
+                                <option value="secretary@hepatology.nhs.uk">Hepatology Secretary</option>
+                                <option value="admin@lftclinic.nhs.uk">LFT Clinic Admin</option>
+                                <option value="mdt@hospital.nhs.uk">MDT Coordinator</option>
+                                <option value="safeguarding@hospital.nhs.uk">Safeguarding Team</option>
+                            </select>
+                            <span style="font-size:0.75rem;color:#888;align-self:center;">or</span>
+                            <input type="email" id="cc-email" placeholder="type email manually" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.82rem;">
+                        </div>
                     </div>
                     <div style="display:flex;gap:8px;">
                         <button class="btn-primary btn-sm" style="flex:1;" onclick="saveGpLetter()">Save Edits</button>
@@ -674,15 +699,17 @@
         async function sendGpLetter() {
             if (!patientId) return;
             await saveGpLetter();
-            const gpEmail = document.getElementById('gp-email')?.value || '';
+            const gpEmail = document.getElementById('gp-email')?.value || document.getElementById('gp-email-select')?.value || '';
+            const ccEmail = document.getElementById('cc-email')?.value || document.getElementById('cc-email-select')?.value || '';
             try {
                 const res = await fetch(`${BASE}/${patientId}/gp-letter/send`, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({ gp_email: gpEmail }),
+                    body: JSON.stringify({ gp_email: gpEmail, cc_email: ccEmail }),
                 });
                 if (res.ok) {
-                    log(`GP letter sent to ${gpEmail || '(no email)'}`, 'success');
-                    alert('Letter sent to GP successfully!');
+                    const recipients = [gpEmail, ccEmail].filter(Boolean).join(', ') || '(no email)';
+                    log(`GP letter sent to ${recipients}`, 'success');
+                    alert(`Letter sent successfully!\n\nTo: ${gpEmail || 'N/A'}\nCC: ${ccEmail || 'N/A'}`);
                 }
             } catch (e) { log(e.message, 'error'); }
         }

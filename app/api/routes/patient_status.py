@@ -430,10 +430,11 @@ async def send_gp_letter(patient_id: str, request: Request):
     storage = get_storage()
     body = await request.json()
     gp_email = body.get("gp_email", "")
+    cc_email = body.get("cc_email", "")
     now = datetime.now(timezone.utc).isoformat()
 
     # Save send record
-    send_record = {"sent_at": now, "gp_email": gp_email, "status": "sent"}
+    send_record = {"sent_at": now, "gp_email": gp_email, "cc_email": cc_email, "status": "sent"}
     storage.write_json(f"{STATUS_PREFIX}/{patient_id}/gp_letter_sent.json", send_record)
 
     return {"status": "sent", "patient_id": patient_id, "gp_email": gp_email, "timestamp": now}
