@@ -2,7 +2,7 @@
 
 Persists patient status to GCS at: patient_status/{patient_id}/status.json
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from storage import get_storage
@@ -409,6 +409,36 @@ async def confirm_step(patient_id: str, req: ConfirmStepRequest):
     return resp
 
 
+@router.put("/{patient_id}/gp-letter")
+async def update_gp_letter(patient_id: str, request: Request):
+    """Save an edited GP letter."""
+    from datetime import datetime, timezone
+
+    storage = get_storage()
+    letter_data = await request.json()
+    now = datetime.now(timezone.utc).isoformat()
+    letter_data["last_edited"] = now
+    storage.write_json(f"{STATUS_PREFIX}/{patient_id}/gp_letter_result.json", letter_data)
+    return {"status": "saved", "patient_id": patient_id, "timestamp": now}
+
+
+@router.post("/{patient_id}/gp-letter/send")
+async def send_gp_letter(patient_id: str, request: Request):
+    """Mark GP letter as sent (no actual sending — placeholder)."""
+    from datetime import datetime, timezone
+
+    storage = get_storage()
+    body = await request.json()
+    gp_email = body.get("gp_email", "")
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Save send record
+    send_record = {"sent_at": now, "gp_email": gp_email, "status": "sent"}
+    storage.write_json(f"{STATUS_PREFIX}/{patient_id}/gp_letter_sent.json", send_record)
+
+    return {"status": "sent", "patient_id": patient_id, "gp_email": gp_email, "timestamp": now}
+
+
 @router.get("/{patient_id}/confirmations")
 async def get_confirmations(patient_id: str):
     """Get all nurse confirmations for this patient."""
@@ -585,6 +615,7 @@ async def get_step_result(patient_id: str, step_name: str):
     file_map = {
         "risk_factors": f"{prefix}/risk_factors_result.json",
         "red_flag": f"{prefix}/red_flag_result.json",
+        "gp_letter": f"{prefix}/gp_letter_result.json",
         "pattern": f"{prefix}/pattern_result.json",
         "investigation": f"{prefix}/investigation_result.json",
         "dilemma": f"{prefix}/dilemma_result.json",

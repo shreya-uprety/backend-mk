@@ -191,6 +191,7 @@
         const RESULT_MAP = {
             EXTRACT_RISK_FACTORS: "risk_factors",
             RED_FLAG_ASSESSMENT: "red_flag",
+            GENERATE_GP_LETTER: "gp_letter",
             ANALYZE_LFT_PATTERN: "pattern",
             CHOLESTATIC_INVESTIGATIONS: "investigation",
             HEPATITIC_INVESTIGATIONS: "investigation",
@@ -337,9 +338,14 @@
 
         async function showPopup(resultType, pathwayDecision = null) {
             try {
-                const res = await fetch(`${BASE}/${patientId}/step-result/${resultType}`);
-                if (!res.ok) return;
-                const data = await res.json();
+                // Retry up to 3 times with delay (GCS write may not be complete yet)
+                let data = null;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    const res = await fetch(`${BASE}/${patientId}/step-result/${resultType}`);
+                    if (res.ok) { data = await res.json(); break; }
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+                }
+                if (!data) return;
 
                 // If no pathway decision passed, try to load from GCS
                 if (!pathwayDecision && patientId) {
@@ -389,6 +395,32 @@
                     </div>`;
             } else {
                 cont = '<button class="btn-primary btn-sm" onclick="closeModal()" style="margin-top:14px;width:100%;">Continue</button>';
+            }
+
+            if (type === 'gp_letter') {
+                const d = data;
+                const letterHtml = `
+                    <div style="font-family:Georgia,serif;background:#fff;border:1px solid #ddd;border-radius:6px;padding:24px;margin-bottom:12px;">
+                        <div style="text-align:right;font-size:0.82rem;color:#666;" contenteditable="true" id="gp-date">${d.letter_date||''}</div>
+                        <div style="margin-top:12px;" contenteditable="true" id="gp-salutation"><strong>${d.gp_salutation||'Dear Doctor'}</strong></div>
+                        <div style="margin-top:8px;font-weight:bold;" contenteditable="true" id="gp-subject">${d.subject_line||''}</div>
+                        <div style="margin-top:12px;line-height:1.6;" contenteditable="true" id="gp-opening">${d.opening_paragraph||''}</div>
+                        <div style="margin-top:12px;line-height:1.6;" contenteditable="true" id="gp-summary">${d.assessment_summary||''}</div>
+                        <div style="margin-top:12px;line-height:1.6;" contenteditable="true" id="gp-plan">${d.plan_paragraph||''}</div>
+                        <div style="margin-top:12px;line-height:1.6;" contenteditable="true" id="gp-closing">${d.closing_paragraph||''}</div>
+                        <div style="margin-top:20px;font-style:italic;" contenteditable="true" id="gp-signatory">${d.signatory||''}</div>
+                        <div style="margin-top:6px;font-size:0.78rem;color:#888;">cc: ${d.cc||'Patient medical records'}</div>
+                    </div>
+                    <div style="font-size:0.78rem;color:#888;margin-bottom:6px;">Click any section above to edit the letter directly.</div>
+                    <div style="margin-bottom:10px;">
+                        <label style="font-size:0.82rem;font-weight:600;">GP Email:</label>
+                        <input type="email" id="gp-email" placeholder="gp@practice.nhs.uk" style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.85rem;margin-top:4px;">
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn-primary btn-sm" style="flex:1;" onclick="saveGpLetter()">Save Edits</button>
+                        <button style="flex:1;padding:8px;background:#059669;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;" onclick="sendGpLetter()">Send to GP</button>
+                    </div>`;
+                return `${close}<h2>GP Acknowledgement Letter</h2>${letterHtml}${pd}${cont}`;
             }
 
             if (type === 'risk_factors') {
@@ -614,6 +646,44 @@
 
                 // Show popups for any handlers that ran after override
                 await showHandlerPopups(result);
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function saveGpLetter() {
+            if (!patientId) return;
+            const letter = {
+                letter_date: document.getElementById('gp-date')?.innerText || '',
+                gp_salutation: document.getElementById('gp-salutation')?.innerText || '',
+                subject_line: document.getElementById('gp-subject')?.innerText || '',
+                opening_paragraph: document.getElementById('gp-opening')?.innerText || '',
+                assessment_summary: document.getElementById('gp-summary')?.innerText || '',
+                plan_paragraph: document.getElementById('gp-plan')?.innerText || '',
+                closing_paragraph: document.getElementById('gp-closing')?.innerText || '',
+                signatory: document.getElementById('gp-signatory')?.innerText || '',
+            };
+            try {
+                const res = await fetch(`${BASE}/${patientId}/gp-letter`, {
+                    method: 'PUT', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(letter),
+                });
+                if (res.ok) log('GP letter saved', 'success');
+                else log('Failed to save GP letter', 'error');
+            } catch (e) { log(e.message, 'error'); }
+        }
+
+        async function sendGpLetter() {
+            if (!patientId) return;
+            await saveGpLetter();
+            const gpEmail = document.getElementById('gp-email')?.value || '';
+            try {
+                const res = await fetch(`${BASE}/${patientId}/gp-letter/send`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ gp_email: gpEmail }),
+                });
+                if (res.ok) {
+                    log(`GP letter sent to ${gpEmail || '(no email)'}`, 'success');
+                    alert('Letter sent to GP successfully!');
+                }
             } catch (e) { log(e.message, 'error'); }
         }
 

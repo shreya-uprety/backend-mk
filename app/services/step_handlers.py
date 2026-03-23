@@ -197,6 +197,34 @@ def handle_lft_pattern_classification(patient_id: str, status: PatientStatus) ->
     return _decide(classification, pd)
 
 
+# ── GP Letter Generation ───────────────────────────────────────────────
+
+
+def handle_generate_gp_letter(patient_id: str, status: PatientStatus) -> HandlerOutcome:
+    """Generate a GP acknowledgement letter based on patient data."""
+    from debate_engine.single_call import call_gemini
+
+    enriched = _load_prior(patient_id, "enriched_payload.json")
+    red_flag_result = _load_prior(patient_id, "red_flag_result.json")
+
+    extra = {}
+    if red_flag_result:
+        extra["red_flag_assessment"] = red_flag_result
+
+    result = call_gemini(
+        prompt_file="gp_letter.md",
+        patient_data=enriched,
+        extra_context=extra if extra else None,
+    )
+    result.pop("_token_usage", None)
+    result.pop("_processing_time_ms", None)
+
+    _save_result(patient_id, "gp_letter_result.json", result)
+
+    logger.info("Patient %s: GP letter generated", patient_id)
+    return _auto_advance()
+
+
 # ── Phase 1: Investigation Recommendations ─────────────────────────────
 
 
@@ -515,6 +543,7 @@ STEP_HANDLERS: dict[ProcessStep, callable] = {
     # Phase 0: existing
     ProcessStep.EXTRACT_RISK_FACTORS: handle_extract_risk_factors,
     ProcessStep.RED_FLAG_ASSESSMENT: handle_red_flag_assessment,
+    ProcessStep.GENERATE_GP_LETTER: handle_generate_gp_letter,
     ProcessStep.ANALYZE_LFT_PATTERN: handle_analyze_lft_pattern,
     ProcessStep.LFT_PATTERN_CLASSIFICATION: handle_lft_pattern_classification,
     # Phase 1: investigations
