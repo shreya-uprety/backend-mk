@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Chat Agent Tester</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e2e8f0; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #16213e; padding: 12px 20px; border-bottom: 1px solid #334155; display: flex; align-items: center; gap: 12px; }
+        .header h1 { font-size: 1.1rem; color: #f1f5f9; flex: 1; }
+        .header input { padding: 6px 10px; border: 1px solid #475569; border-radius: 4px; background: #0f172a; color: #e2e8f0; font-size: 0.85rem; width: 140px; }
+        .header button { padding: 6px 12px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.82rem; }
+        .btn-connect { background: #22c55e; color: #fff; }
+        .btn-clear { background: #475569; color: #fff; }
+
+        .main { display: flex; flex: 1; min-height: 0; }
+
+        /* Chat panel */
+        .chat-panel { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #334155; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 16px; }
+        .msg { margin-bottom: 12px; max-width: 80%; }
+        .msg.doctor { margin-left: auto; }
+        .msg.agent { margin-right: auto; }
+        .msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.5; }
+        .msg.doctor .msg-bubble { background: #1d4ed8; color: #fff; border-bottom-right-radius: 2px; }
+        .msg.agent .msg-bubble { background: #334155; color: #e2e8f0; border-bottom-left-radius: 2px; }
+        .msg-meta { font-size: 0.68rem; color: #64748b; margin-top: 3px; padding: 0 4px; }
+        .msg.doctor .msg-meta { text-align: right; }
+        .focus-tag { display: inline-block; padding: 2px 8px; background: #1e40af; color: #93c5fd; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-top: 4px; cursor: pointer; }
+        .focus-tag:hover { background: #2563eb; }
+
+        .chat-input { padding: 12px; background: #16213e; border-top: 1px solid #334155; display: flex; gap: 8px; }
+        .chat-input input { flex: 1; padding: 10px 14px; border: 1px solid #475569; border-radius: 8px; background: #0f172a; color: #e2e8f0; font-size: 0.9rem; }
+        .chat-input input:focus { outline: none; border-color: #3b82f6; }
+        .chat-input button { padding: 10px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .chat-input button:disabled { background: #475569; cursor: not-allowed; }
+
+        /* Board navigation panel */
+        .nav-panel { width: 320px; display: flex; flex-direction: column; }
+        .nav-header { padding: 10px 14px; background: #16213e; border-bottom: 1px solid #334155; font-size: 0.85rem; font-weight: 600; }
+        .nav-items { flex: 1; overflow-y: auto; padding: 8px; }
+        .nav-item { padding: 8px 12px; border-radius: 6px; margin-bottom: 4px; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; transition: 0.15s; }
+        .nav-item:hover { background: #1e293b; border-color: #475569; }
+        .nav-item.focused { background: #1e3a5f; border-color: #3b82f6; }
+        .nav-item .item-id { font-size: 0.65rem; color: #64748b; font-family: monospace; }
+        .nav-item .item-label { font-weight: 600; color: #e2e8f0; }
+
+        .typing { color: #64748b; font-size: 0.82rem; padding: 8px 14px; font-style: italic; }
+        .status-bar { padding: 6px 14px; font-size: 0.72rem; color: #64748b; background: #0f172a; border-top: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Board Chat Agent</h1>
+    <input type="text" id="patientId" value="MK-0001" placeholder="Patient ID">
+    <button class="btn-connect" onclick="loadHistory()">Load</button>
+    <button class="btn-clear" onclick="clearHistory()">Clear</button>
+</div>
+
+<div class="main">
+    <div class="chat-panel">
+        <div class="chat-messages" id="chatMessages">
+            <div style="color:#64748b; text-align:center; padding:40px;">Enter a patient ID and start chatting</div>
+        </div>
+        <div id="typingIndicator" class="typing" style="display:none;">Agent is thinking...</div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask about the patient..." onkeydown="if(event.key==='Enter')sendMessage()">
+            <button onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <div class="nav-panel">
+        <div class="nav-header">Board Navigation</div>
+        <div class="nav-items" id="navItems"></div>
+    </div>
+</div>
+
+<div class="status-bar" id="statusBar">Ready</div>
+
+<script>
+    const BASE = '/api/v1/chat';
+    let currentFocus = null;
+
+    const BOARD_ITEMS = [
+        { id: "sidebar-1", label: "Patient Profile", icon: "person" },
+        { id: "encounter-track-1", label: "Encounters Timeline", icon: "history" },
+        { id: "dashboard-item-lab-table", label: "Lab Results Table", icon: "science" },
+        { id: "dashboard-item-lab-chart", label: "Lab Results Chart", icon: "chart" },
+        { id: "medication-track-1", label: "Medications Timeline", icon: "medication" },
+        { id: "differential-diagnosis", label: "Differential Diagnosis", icon: "diagnosis" },
+        { id: "risk-track-1", label: "Risk Assessment", icon: "warning" },
+        { id: "adverse-event-analytics", label: "Adverse Events", icon: "alert" },
+        { id: "key-events-track-1", label: "Key Events Timeline", icon: "timeline" },
+        { id: "referral-doctor-info", label: "Referral Information", icon: "letter" },
+        { id: "raw-encounter-image-1", label: "Clinical Notes", icon: "document" },
+        { id: "raw-lab-image-radiology-1", label: "Imaging Reports", icon: "scan" },
+        { id: "raw-lab-image-1", label: "Lab Reports", icon: "report" },
+        { id: "monitoring-patient-chat", label: "Patient Chat", icon: "chat" },
+    ];
+
+    // Render board navigation items
+    function renderNavItems() {
+        const el = document.getElementById('navItems');
+        el.innerHTML = BOARD_ITEMS.map(item => `
+            <div class="nav-item ${currentFocus === item.id ? 'focused' : ''}"
+                 id="nav-${item.id}" onclick="focusItem('${item.id}')">
+                <div class="item-label">${item.label}</div>
+                <div class="item-id">${item.id}</div>
+            </div>
+        `).join('');
+    }
+
+    function focusItem(itemId) {
+        currentFocus = itemId;
+        renderNavItems();
+        setStatus(`Focused on: ${BOARD_ITEMS.find(i => i.id === itemId)?.label || itemId}`);
+    }
+
+    async function loadHistory() {
+        const pid = document.getElementById('patientId').value.trim();
+        if (!pid) return;
+        setStatus(`Loading patient ${pid}...`);
+        // Preload context in background for fast first response
+        fetch(`${BASE}/preload/${pid}`, { method: 'POST' }).then(r => r.json()).then(d => {
+            setStatus(`Context loaded in ${d.load_time_ms}ms. Ready to chat!`);
+        }).catch(() => {});
+        try {
+            const res = await fetch(`${BASE}/history/${pid}`);
+            const data = await res.json();
+            const el = document.getElementById('chatMessages');
+            el.innerHTML = '';
+            for (const msg of (data.messages || [])) {
+                addMessage(msg.role, msg.content, msg.focus_item, msg.focus_label);
+            }
+            if (!data.messages?.length) {
+                el.innerHTML = '<div style="color:#64748b; text-align:center; padding:20px;">No chat history. Start chatting!</div>';
+            }
+            setStatus(`Loaded ${data.messages?.length || 0} messages for ${pid}`);
+        } catch (e) {
+            setStatus(`Error: ${e.message}`);
+        }
+    }
+
+    async function clearHistory() {
+        const pid = document.getElementById('patientId').value.trim();
+        if (!pid || !confirm('Clear chat history?')) return;
+        await fetch(`${BASE}/history/${pid}`, { method: 'DELETE' });
+        document.getElementById('chatMessages').innerHTML = '<div style="color:#64748b; text-align:center; padding:20px;">Chat cleared</div>';
+        setStatus('History cleared');
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        const pid = document.getElementById('patientId').value.trim();
+        if (!msg || !pid) return;
+
+        input.value = '';
+        addMessage('doctor', msg);
+        document.getElementById('typingIndicator').style.display = '';
+        document.getElementById('sendBtn').disabled = true;
+
+        try {
+            const res = await fetch(`${BASE}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ patient_id: pid, message: msg }),
+            });
+            const data = await res.json();
+
+            document.getElementById('typingIndicator').style.display = 'none';
+            addMessage('agent', data.answer, data.focus_item, data.focus_label);
+
+            // Auto-navigate board
+            if (data.focus_item) {
+                focusItem(data.focus_item);
+            }
+
+            setStatus(`Response received. ${data.focus_item ? 'Focused on ' + data.focus_label : ''}`);
+        } catch (e) {
+            document.getElementById('typingIndicator').style.display = 'none';
+            addMessage('agent', `Error: ${e.message}`);
+            setStatus(`Error: ${e.message}`);
+        }
+        document.getElementById('sendBtn').disabled = false;
+    }
+
+    function addMessage(role, content, focusItem, focusLabel) {
+        const el = document.getElementById('chatMessages');
+        // Remove placeholder
+        const placeholder = el.querySelector('div[style*="text-align:center"]');
+        if (placeholder) placeholder.remove();
+
+        const div = document.createElement('div');
+        div.className = `msg ${role === 'doctor' ? 'doctor' : 'agent'}`;
+
+        let focusTag = '';
+        if (focusItem && focusLabel) {
+            focusTag = `<div><span class="focus-tag" onclick="focusItem('${focusItem}')">Navigate: ${focusLabel}</span></div>`;
+        }
+
+        // Render basic markdown
+        let rendered = (content || '')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/^\* /gm, '&bull; ')
+            .replace(/\n/g, '<br>');
+
+        div.innerHTML = `
+            <div class="msg-bubble">${rendered}</div>
+            ${focusTag}
+            <div class="msg-meta">${role === 'doctor' ? 'You' : 'Agent'} &middot; ${new Date().toLocaleTimeString()}</div>
+        `;
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function setStatus(text) {
+        document.getElementById('statusBar').textContent = text;
+    }
+
+    renderNavItems();
+</script>
+</body>
+</html>
