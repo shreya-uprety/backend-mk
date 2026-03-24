@@ -400,22 +400,10 @@ async def chat(patient_id: str, query: str, conversation_history: list[dict] | N
     if not answer:
         answer = "Sorry, the AI service is temporarily unavailable. Please try again in a moment."
 
-    # 5. Call board focus API if we have a target
-    if focus_section or focus_node:
-        try:
-            board_url = f"{BOARD_BASE_URL}/api/board/{patient_id}/focus"
-            focus_body = {}
-            if focus_section:
-                focus_body["sectionId"] = focus_section
-            if focus_node:
-                focus_body["nodeId"] = focus_node
-            focus_body["zoom"] = 1.2
-
-            async with httpx.AsyncClient(timeout=3.0) as client:
-                await client.post(board_url, json=focus_body)
-            logger.info(f"Board focus: {focus_label} ({focus_section})")
-        except Exception as e:
-            logger.debug(f"Board focus API not available: {e}")
+    if focus:
+        print(f"[CHAT AGENT] FOCUS -> section: {focus_section} | node: {focus_node} | label: {focus_label}")
+    else:
+        print(f"[CHAT AGENT] FOCUS -> none (no match for: {query[:50]})")
 
     return {
         "answer": answer,
