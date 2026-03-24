@@ -80,6 +80,8 @@ async def send_chat(req: ChatRequest):
         return {
             "answer": result["answer"],
             "focus_item": result.get("focus_item"),
+            "focus_section": result.get("focus_section"),
+            "focus_node": result.get("focus_node"),
             "focus_label": result.get("focus_label"),
             "patient_id": req.patient_id,
         }
@@ -162,6 +164,8 @@ async def websocket_chat(websocket: WebSocket, patient_id: str):
                     "type": "answer",
                     "content": result["answer"],
                     "focus_item": result.get("focus_item"),
+                    "focus_section": result.get("focus_section"),
+                    "focus_node": result.get("focus_node"),
                     "focus_label": result.get("focus_label"),
                 })
 
